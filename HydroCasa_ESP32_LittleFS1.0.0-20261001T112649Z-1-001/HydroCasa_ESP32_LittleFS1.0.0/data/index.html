@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="HydroCasa: monitoramento inteligente do consumo de água em uma maquete residencial com ESP32 e dois sensores de vazão.">
+  <meta name="keywords" content="ESP32, consumo de água, sensor de vazão, LittleFS, casa inteligente, engenharia, IoT">
+  <meta name="author" content="Projeto HydroCasa">
+  <meta name="theme-color" content="#07101f">
+  <meta property="og:title" content="HydroCasa — Monitoramento Inteligente de Água">
+  <meta property="og:description" content="Painel interativo para visualizar vazão, consumo diário, calendário e alertas.">
+  <title>HydroCasa | Monitoramento Inteligente de Água</title>
+  <link rel="stylesheet" href="/data/style.css">
+</head>
+<body>
+  <div class="ambient ambient-a"></div>
+  <div class="ambient ambient-b"></div>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">H₂O</div>
+      <div>
+        <strong>HydroCasa</strong>
+        <span>Water Intelligence System</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <span id="connectionBadge" class="badge offline">● Offline</span>
+      <button id="themeBtn" class="icon-btn" aria-label="Alternar tema">☼</button>
+    </div>
+  </header>
+
+  <main class="shell">
+    <section class="hero">
+      <div>
+        <span class="eyebrow">ESP32 • IoT • LITTLEFS</span>
+        <h1>Controle sua água<br><em>em tempo real.</em></h1>
+        <p>Visualize o caminho da água, compare os dois ramais e transforme cada leitura em informação.</p>
+      </div>
+      <div class="hero-time">
+        <span>Horário do dispositivo</span>
+        <strong id="clock">--:--:--</strong>
+        <small id="dateLabel">--/--/----</small>
+      </div>
+    </section>
+
+    <section class="metrics-grid">
+      <article class="metric-card">
+        <span class="metric-label">Consumo hoje</span>
+        <strong id="todayTotal">0,00 L</strong>
+        <small id="todayDelta">aguardando leituras</small>
+      </article>
+      <article class="metric-card">
+        <span class="metric-label">Ramal 01</span>
+        <strong id="sensor1Total">0,00 L</strong>
+        <small><i class="dot d1"></i><span id="flow1">0,00 L/min</span></small>
+      </article>
+      <article class="metric-card">
+        <span class="metric-label">Ramal 02</span>
+        <strong id="sensor2Total">0,00 L</strong>
+        <small><i class="dot d2"></i><span id="flow2">0,00 L/min</span></small>
+      </article>
+      <article class="metric-card">
+        <span class="metric-label">Status</span>
+        <strong id="statusText">Monitorando</strong>
+        <small id="statusDetail">Sistema pronto</small>
+      </article>
+    </section>
+
+    <nav class="tabs" aria-label="Navegação principal">
+      <button class="tab active" data-panel="dashboard">Visão geral</button>
+      <button class="tab" data-panel="calendar">Calendário</button>
+      <button class="tab" data-panel="analysis">Análise</button>
+      <button class="tab" data-panel="settings">Sistema</button>
+    </nav>
+
+    <section id="dashboard" class="panel active-panel">
+      <div class="section-heading">
+        <div><span class="eyebrow">LIVE MONITOR</span><h2>Visão geral</h2></div>
+        <button class="ghost-btn" id="openLegend">Como funciona</button>
+      </div>
+
+      <div class="dashboard-grid">
+        <article class="glass-card water-map">
+          <div class="card-head"><div><h3>Caminho da água</h3><p>Representação dos dois ramais da maquete</p></div><span class="live-dot">AO VIVO</span></div>
+          <div class="pipe-diagram" aria-label="Diagrama do caminho da água">
+            <div class="tank top-tank"><span>Entrada</span><b>ÁGUA</b></div>
+            <div class="pipe vertical"></div>
+            <div class="junction">Y</div>
+            <div class="branch left">
+              <div class="pipe horizontal"></div><div class="sensor sensor1">S1</div><div class="pipe horizontal after"></div>
+            </div>
+            <div class="branch right">
+              <div class="pipe horizontal"></div><div class="sensor sensor2">S2</div><div class="pipe horizontal after"></div>
+            </div>
+            <div class="pipe drain-left"></div><div class="pipe drain-right"></div>
+            <div class="tank bottom-tank"><span>Depósito</span><b>REUSO</b></div>
+          </div>
+          <div class="diagram-legend">
+            <span><i class="legend-sensor s1"></i>Sensor 01</span>
+            <span><i class="legend-sensor s2"></i>Sensor 02</span>
+            <span>As setas indicam o sentido do fluxo</span>
+          </div>
+        </article>
+
+        <article class="glass-card">
+          <div class="card-head"><div><h3>Distribuição</h3><p>Participação de cada ramal</p></div></div>
+          <div class="donut-wrap">
+            <div class="donut" id="donut"><div><strong id="ratio1">50%</strong><span>Ramal 01</span></div></div>
+          </div>
+          <div class="split-row"><span><i class="dot d1"></i>Ramal 01</span><strong id="split1">0,00 L</strong></div>
+          <div class="split-row"><span><i class="dot d2"></i>Ramal 02</span><strong id="split2">0,00 L</strong></div>
+        </article>
+      </div>
+
+      <div class="lower-grid">
+        <article class="glass-card chart-card">
+          <div class="card-head"><div><h3>Consumo recente</h3><p>Estimativa acumulada do dia</p></div><span class="mini-tag">LITROS</span></div>
+          <canvas id="dailyChart" height="190"></canvas>
+        </article>
+
+        <article class="glass-card alert-card" id="alertCard">
+          <div class="card-head"><div><h3>Inteligência de consumo</h3><p>Detecção de comportamento acima do padrão</p></div></div>
+          <div id="alertContent" class="alert-content neutral">
+            <div class="alert-icon">✓</div>
+            <div><strong>Sem anomalias detectadas</strong><p>O sistema está comparando o consumo com o padrão configurado.</p></div>
+          </div>
+          <button class="secondary-btn" id="openJustify">Justificar consumo</button>
+        </article>
+      </div>
+    </section>
+
+    <section id="calendar" class="panel">
+      <div class="section-heading">
+        <div><span class="eyebrow">HISTÓRICO</span><h2>Calendário de consumo</h2><p>Baseado na data e hora do computador que está acessando o painel.</p></div>
+        <div class="month-nav"><button id="prevMonth">‹</button><strong id="monthTitle">---</strong><button id="nextMonth">›</button></div>
+      </div>
+      <div class="calendar-card glass-card">
+        <div class="weekdays"><span>DOM</span><span>SEG</span><span>TER</span><span>QUA</span><span>QUI</span><span>SEX</span><span>SÁB</span></div>
+        <div id="calendarGrid" class="calendar-grid"></div>
+      </div>
+      <div class="calendar-key">
+        <span><i class="key-dot empty"></i>Sem informação</span>
+        <span><i class="key-dot future"></i>Aguardando coleta</span>
+        <span><i class="key-dot data"></i>Com dados</span>
+      </div>
+    </section>
+
+    <section id="analysis" class="panel">
+      <div class="section-heading">
+        <div><span class="eyebrow">ANÁLISE</span><h2>Relatório inteligente</h2></div>
+        <button class="primary-btn" id="openJustify2">+ Registrar atividade</button>
+      </div>
+      <div class="analysis-grid">
+        <article class="glass-card big-number"><span>Consumo sem filtro</span><strong id="rawAnalysis">0,00 L</strong><small>Todos os litros medidos pelos sensores.</small></article>
+        <article class="glass-card big-number"><span>Atividades justificadas</span><strong id="justifiedValue">0,00 L</strong><small>Estimativa das atividades selecionadas.</small></article>
+        <article class="glass-card big-number highlight"><span>Consumo contextualizado</span><strong id="contextualValue">0,00 L</strong><small>Leitura visual após aplicar justificativas.</small></article>
+      </div>
+      <article class="glass-card report-card">
+        <div class="card-head"><div><h3>Detalhamento por ramal</h3><p>Comparação do período selecionado</p></div></div>
+        <div id="analysisBars"></div>
+      </article>
+    </section>
+
+    <section id="settings" class="panel">
+      <div class="section-heading"><div><span class="eyebrow">CONFIGURAÇÃO</span><h2>Sistema</h2></div></div>
+      <div class="settings-grid">
+        <article class="glass-card setting-card"><span>Conectividade</span><strong id="ipInfo">Detectando...</strong><p>O endereço IP aparece quando o ESP32 está conectado à mesma rede.</p></article>
+        <article class="glass-card setting-card"><span>Calibração</span><strong id="calibrationInfo">450 pulsos/L</strong><p>Valor inicial para sensores YF-S201. Calibre com um recipiente medidor.</p></article>
+        <article class="glass-card setting-card"><span>Persistência</span><strong>LittleFS + navegador</strong><p>O ESP32 guarda snapshots e o navegador mantém o histórico visual.</p></article>
+        <article class="glass-card setting-card danger"><span>Manutenção</span><strong>Zerar contadores</strong><p>Use somente antes de uma nova demonstração do projeto.</p><button class="danger-btn" id="resetBtn">Zerar ESP32</button></article>
+      </div>
+    </section>
+  </main>
+
+  <div id="modal" class="modal" aria-hidden="true">
+    <div class="modal-backdrop"></div>
+    <div class="modal-box" role="dialog" aria-modal="true">
+      <button class="modal-close" id="closeModal">×</button>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <footer><span>HydroCasa</span> • Projeto acadêmico de Engenharia • ESP32 + LittleFS</footer>
+  <script src="/data/app.js"></script>
+</body>
+</html>
