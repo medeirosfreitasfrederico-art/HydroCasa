@@ -367,18 +367,18 @@ O objetivo final é transformar **dados de consumo em informação útil para to
 
 A arquitetura do projeto permite diversas extensões futuras:
 
-* [ ] Armazenamento histórico permanente;
-* [ ] Dashboard de consumo;
-* [ ] Aplicativo mobile;
-* [ ] Sistema de notificações;
-* [ ] Alertas automáticos de vazamento;
-* [ ] Definição de metas de consumo;
-* [ ] Comparação entre períodos;
-* [ ] Monitoramento de diferentes ambientes;
-* [ ] Banco de dados remoto;
-* [ ] Análise estatística do consumo;
-* [ ] Detecção automática de anomalias;
-* [ ] Aplicação de Machine Learning para identificação de padrões.
+* - Armazenamento histórico permanente;
+* - Dashboard de consumo;
+* - Aplicativo mobile;
+* - Sistema de notificações;
+* - Alertas automáticos de vazamento;
+* - Definição de metas de consumo;
+* - Comparação entre períodos;
+* - Monitoramento de diferentes ambientes;
+* - Banco de dados remoto;
+* - Análise estatística do consumo;
+* - Detecção automática de anomalias;
+* - Aplicação de Machine Learning para identificação de padrões.
 
 A utilização de dados históricos também abre possibilidade para futuras análises estatísticas e modelos de aprendizado de máquina.
 
