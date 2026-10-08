@@ -410,10 +410,8 @@ Prof. Dr. Rodrigo Henrique Geraldo
 
 ### Integrantes
 
-* Dyulian Yuji Muramatsu de Faria
 * Frederico de Medeiros Freitas
 * Gabriel José Vieira Leme Teles
-* Jyuan Miyazaki
 * Miguel Costa e Souza
 * Nicolas Andrade Marinelli
 * Ryan Oliveira Leme
