@@ -1,5 +1,5 @@
 /*
-  Casa Inteligente - Monitoramento de Vazão
+  Casa Inteligente (HydroCasa) - Monitoramento de Vazão
   ESP32 + 2 sensores de vazão Hall + LittleFS + WebServer
 
   SENSOR PADRÃO (exemplo): YF-S201
