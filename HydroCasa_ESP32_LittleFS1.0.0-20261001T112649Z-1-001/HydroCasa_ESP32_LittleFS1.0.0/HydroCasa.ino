@@ -17,6 +17,7 @@
 #include <WiFi.h>
 #include <WebServer.h>
 #include <LittleFS.h>
+#include "FlowSample.h"
 
 const char* WIFI_SSID = "SEU_WIFI";
 const char* WIFI_PASS = "SUA_SENHA";
@@ -36,20 +37,22 @@ WebServer server(80);
 
 portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
 
-uint32_t readPulses1() {
-  uint32_t p;
+FlowSample flow1;
+FlowSample flow2;
+
+void readPulses(uint32_t& p1, uint32_t& p2) {
   portENTER_CRITICAL(&mux);
-  p = pulses1;
+  p1 = pulses1;
+  p2 = pulses2;
   portEXIT_CRITICAL(&mux);
-  return p;
 }
 
-uint32_t readPulses2() {
-  uint32_t p;
-  portENTER_CRITICAL(&mux);
-  p = pulses2;
-  portEXIT_CRITICAL(&mux);
-  return p;
+void updateFlows() {
+  uint32_t p1, p2;
+  readPulses(p1, p2);
+  const uint32_t now = millis();
+  flow1.update(now, p1, PULSES_PER_LITER_1);
+  flow2.update(now, p2, PULSES_PER_LITER_2);
 }
 
 void IRAM_ATTR flow1ISR() {
@@ -156,8 +159,8 @@ void handleDailyFile() {
 }
 
 void handleLive() {
-  uint32_t p1 = readPulses1();
-  uint32_t p2 = readPulses2();
+  uint32_t p1, p2;
+  readPulses(p1, p2);
 
   float liters1 = p1 / PULSES_PER_LITER_1;
   float liters2 = p2 / PULSES_PER_LITER_2;
@@ -169,8 +172,8 @@ void handleLive() {
   json += "\"pulses2\":" + String(p2) + ",";
   json += "\"liters1\":" + String(liters1, 4) + ",";
   json += "\"liters2\":" + String(liters2, 4) + ",";
-  json += "\"flow1_lpm\":" + String((float)p1 / PULSES_PER_LITER_1, 4) + ",";
-  json += "\"flow2_lpm\":" + String((float)p2 / PULSES_PER_LITER_2, 4);
+  json += "\"flow1_lpm\":" + String(flow1.litersPerMinute, 4) + ",";
+  json += "\"flow2_lpm\":" + String(flow2.litersPerMinute, 4);
   json += "}";
 
   server.send(200, "application/json", json);
@@ -181,6 +184,8 @@ void handleReset() {
   pulses1 = 0;
   pulses2 = 0;
   portEXIT_CRITICAL(&mux);
+  flow1.reset(millis());
+  flow2.reset(millis());
 
   server.send(200, "application/json", "{\"ok\":true,\"message\":\"contadores zerados\"}");
 }
@@ -201,6 +206,9 @@ void setup() {
 
   pinMode(FLOW1_PIN, INPUT_PULLUP);
   pinMode(FLOW2_PIN, INPUT_PULLUP);
+
+  flow1.reset(millis());
+  flow2.reset(millis());
 
   attachInterrupt(digitalPinToInterrupt(FLOW1_PIN), flow1ISR, RISING);
   attachInterrupt(digitalPinToInterrupt(FLOW2_PIN), flow2ISR, RISING);
@@ -250,5 +258,6 @@ void setup() {
 }
 
 void loop() {
+  updateFlows();
   server.handleClient();
 }
