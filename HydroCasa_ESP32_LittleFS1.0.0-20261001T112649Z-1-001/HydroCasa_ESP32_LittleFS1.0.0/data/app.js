@@ -2,7 +2,7 @@ const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 
 const state = {
-  live: { liters1:0, liters2:0, flow1:0, flow2:0 },
+  live: { liters1:0, liters2:0, flow1_lpm:0, flow2_lpm:0 },
   history: JSON.parse(localStorage.getItem("hydrocasa_history") || "{}"),
   justifications: JSON.parse(localStorage.getItem("hydrocasa_justifications") || "{}"),
   monthOffset: 0,
@@ -88,8 +88,8 @@ function updateLive(){
   $("#sensor2Total").textContent=fmt(h.total2)+" L";
   $("#split1").textContent=fmt(h.total1)+" L";
   $("#split2").textContent=fmt(h.total2)+" L";
-  $("#flow1").textContent=fmt(d.flow1)+" L/min";
-  $("#flow2").textContent=fmt(d.flow2)+" L/min";
+  $("#flow1").textContent=fmt(d.flow1_lpm)+" L/min";
+  $("#flow2").textContent=fmt(d.flow2_lpm)+" L/min";
   const ratio=t?Math.round((h.total1/t)*100):50;
   $("#ratio1").textContent=ratio+"%";
   $("#donut").style.background=`conic-gradient(var(--primary) 0 ${ratio}%,var(--primary2) ${ratio}% 100%)`;
