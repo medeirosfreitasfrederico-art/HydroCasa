@@ -17,6 +17,7 @@
 #include <WiFi.h>
 #include <WebServer.h>
 #include <LittleFS.h>
+#include <esp_system.h>
 #include "FlowSample.h"
 
 const char* WIFI_SSID = "SEU_WIFI";
@@ -36,6 +37,13 @@ const float PULSES_PER_LITER_2 = 450.0f;
 WebServer server(80);
 
 portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
+
+String bootId;
+uint32_t resetGeneration = 0;
+
+String countingSession() {
+  return bootId + "-" + String(resetGeneration);
+}
 
 FlowSample flow1;
 FlowSample flow2;
@@ -167,6 +175,8 @@ void handleLive() {
 
   String json = "{";
   json += "\"ok\":true,";
+  json += "\"device_id\":\"" + WiFi.macAddress() + "\",";
+  json += "\"session_id\":\"" + countingSession() + "\",";
   json += "\"uptime_ms\":" + String(millis()) + ",";
   json += "\"pulses1\":" + String(p1) + ",";
   json += "\"pulses2\":" + String(p2) + ",";
@@ -186,6 +196,7 @@ void handleReset() {
   portEXIT_CRITICAL(&mux);
   flow1.reset(millis());
   flow2.reset(millis());
+  resetGeneration++;
 
   server.send(200, "application/json", "{\"ok\":true,\"message\":\"contadores zerados\"}");
 }
@@ -221,6 +232,7 @@ void setup() {
 
   WiFi.mode(WIFI_STA);
   WiFi.begin(WIFI_SSID, WIFI_PASS);
+  bootId = String(esp_random(), HEX) + "-" + String(esp_random(), HEX);
 
   Serial.print("Conectando ao Wi-Fi");
   uint32_t start = millis();

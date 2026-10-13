@@ -1,15 +1,36 @@
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 
+function readStored(key, fallback){
+  try {
+    const value=JSON.parse(localStorage.getItem(key));
+    return value && typeof value==="object" && !Array.isArray(value) ? value : fallback;
+  } catch(e) { return fallback; }
+}
+
+function loadLedger(){
+  const stored=readStored("hydrocasa_ledger_v2",null);
+  if(stored && stored.version===2 && stored.history && typeof stored.history==="object" && !Array.isArray(stored.history)) return stored;
+  // Preserve recoverable legacy totals; the old rolling-window losses cannot be reconstructed.
+  const history=readStored("hydrocasa_history",{});
+  for(const [key,h] of Object.entries(history)){
+    if(!h || !Number.isFinite(h.total1) || !Number.isFinite(h.total2) || h.total1<0 || h.total2<0){delete history[key];continue;}
+    h.snapshots=Array.isArray(h.snapshots)?h.snapshots.slice(-250):[];
+    h.readings=h.snapshots.length;
+    h.partial=true;
+  }
+  return {version:2,history,cursor:null};
+}
+
+const ledger=loadLedger();
 const state = {
   live: { liters1:0, liters2:0, flow1_lpm:0, flow2_lpm:0 },
-  history: JSON.parse(localStorage.getItem("hydrocasa_history") || "{}"),
-  justifications: JSON.parse(localStorage.getItem("hydrocasa_justifications") || "{}"),
+  history: ledger.history,
+  justifications: readStored("hydrocasa_justifications",{}),
   monthOffset: 0,
   connected: false,
-  basePulses1: null,
-  basePulses2: null,
-  lastSnapshot: null
+  cursor: ledger.cursor,
+  storageError: false
 };
 
 const activities = [
@@ -20,25 +41,49 @@ const activities = [
 
 function fmt(v){ return Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2}); }
 function keyForDate(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
-function save(){ localStorage.setItem("hydrocasa_history",JSON.stringify(state.history)); localStorage.setItem("hydrocasa_justifications",JSON.stringify(state.justifications)); }
+function save(){
+  try {
+    // Cursor and daily totals are persisted together to avoid recounting on reload.
+    localStorage.setItem("hydrocasa_ledger_v2",JSON.stringify({version:2,history:state.history,cursor:state.cursor}));
+    localStorage.setItem("hydrocasa_justifications",JSON.stringify(state.justifications));
+    state.storageError=false;
+  } catch(e) { state.storageError=true; }
+}
 
 function todayKey(){ return keyForDate(new Date()); }
 
-function ensureToday(){
-  const k=todayKey();
-  if(!state.history[k]) state.history[k]={snapshots:[],total1:0,total2:0};
+function ensureDay(k){
+  if(!state.history[k]) state.history[k]={snapshots:[],total1:0,total2:0,readings:0,partial:true};
+  return state.history[k];
 }
 
-function addSnapshot(k, l1, l2){
-  if(!state.history[k]) state.history[k]={snapshots:[],total1:0,total2:0};
-  const h=state.history[k];
-  h.snapshots.push({t:Date.now(),l1,l2});
-  // Mantém uma janela razoável de snapshots.
+function ensureToday(){ ensureDay(todayKey()); }
+
+function addSnapshot(k, d, now=Date.now()){
+  const h=ensureDay(k),previous=state.cursor;
+  if(previous && previous.day===k && previous.device===d.device_id){
+    if(previous.session!==d.session_id){
+      // New counting session: keep earlier consumption and add the new session's volume.
+      h.total1+=d.liters1;
+      h.total2+=d.liters2;
+      h.partial=true; // Unobserved consumption before reset/reboot cannot be recovered.
+    }else if(d.liters1>=previous.l1 && d.liters2>=previous.l2){
+      h.total1+=d.liters1-previous.l1;
+      h.total2+=d.liters2-previous.l2;
+      if(now-previous.t>10000) h.partial=true;
+    }else{
+      // Unexpected rollback/wrap: rebase, never subtract recorded consumption.
+      h.partial=true;
+    }
+  }else{
+    // First observation or day/device change: do not assign an unknown interval to this day.
+    h.partial=true;
+    if(previous && state.history[previous.day]) state.history[previous.day].partial=true;
+  }
+  h.readings=(h.readings||0)+1;
+  h.snapshots.push({t:now,l1:d.liters1,l2:d.liters2});
   if(h.snapshots.length>250) h.snapshots.shift();
-  // O valor diário é a diferença entre o primeiro e o último acumulado do ESP32.
-  const first=h.snapshots[0];
-  h.total1=Math.max(0,l1-first.l1);
-  h.total2=Math.max(0,l2-first.l2);
+  state.cursor={day:k,device:d.device_id,session:d.session_id,l1:d.liters1,l2:d.liters2,t:now};
   save();
 }
 
@@ -49,9 +94,8 @@ async function poll(){
     const d=await r.json();
     state.connected=true;
     state.live=d;
-    if(state.basePulses1===null){ state.basePulses1=d.pulses1; state.basePulses2=d.pulses2; }
     ensureToday();
-    addSnapshot(todayKey(),d.liters1,d.liters2);
+    addSnapshot(todayKey(),d);
     updateLive();
     syncToEsp(d);
   }catch(e){
@@ -142,10 +186,10 @@ function renderCalendar(){
     const today=new Date();today.setHours(0,0,0,0);const dd=new Date(d);dd.setHours(0,0,0,0);
     const h=state.history[k],isFuture=dd>today,isPast=dd<today;
     if(isFuture) el.classList.add("future");
-    else if(h && (h.total1+h.total2)>0) el.classList.add("has-data");
+    else if(h && h.readings>0) el.classList.add("has-data");
     else if(isPast) el.classList.add("empty");
     if(dd.getTime()===today.getTime()) el.classList.add("today");
-    let bottom=isFuture?"Aguardando coleta":h&&h.total1+h.total2>0?fmt(h.total1+h.total2)+" L":"Sem informação";
+    let bottom=isFuture?"Aguardando coleta":h&&h.readings>0?fmt(h.total1+h.total2)+" L"+(h.partial?" • parcial":""):"Sem informação";
     el.innerHTML=`<span class="num">${day}</span><span class="day-total">${bottom}</span>`;
     el.addEventListener("click",()=>openDayModal(d));
     grid.appendChild(el);
@@ -158,16 +202,16 @@ function openDayModal(d){
     showModal(`<span class="eyebrow">DIA FUTURO</span><h3>Coleta ainda não disponível</h3><p>O dia ${d.toLocaleDateString("pt-BR")} ainda não chegou. Quando chegar, o sistema poderá registrar as leituras usando o relógio do computador.</p>`);
     return;
   }
-  if(!h || !(h.total1+h.total2)){
+  if(!h || !h.readings){
     showModal(`<span class="eyebrow">HISTÓRICO</span><h3>Nenhuma informação</h3><p>Não houve nenhuma leitura computada em ${d.toLocaleDateString("pt-BR")}.</p>`);
     return;
   }
-  const total=h.total1+h.total2,r=Math.round(h.total1/total*100);
+  const total=h.total1+h.total2,r=total?Math.round(h.total1/total*100):0;
   showModal(`<span class="eyebrow">RELATÓRIO DIÁRIO</span><h3>${d.toLocaleDateString("pt-BR",{dateStyle:"full"})}</h3>
     <div class="analysis-grid" style="grid-template-columns:1fr 1fr;margin-top:18px">
       <div class="glass-card"><span>Ramal 01</span><strong>${fmt(h.total1)} L</strong><small>${r}% do total</small></div>
       <div class="glass-card"><span>Ramal 02</span><strong>${fmt(h.total2)} L</strong><small>${100-r}% do total</small></div>
-    </div><p><b>Total: ${fmt(total)} L.</b> O gráfico e a divisão por ramal são calculados a partir dos snapshots registrados.</p>`);
+    </div><p><b>Total: ${fmt(total)} L.</b> ${h.partial?"Coleta parcial: pode haver consumo não registrado neste dia.":"Consumo registrado neste dia."}</p>`);
 }
 
 function updateAnalysis(){
