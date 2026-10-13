@@ -405,9 +405,6 @@ Projeto desenvolvido na **Facens — Centro Universitário Facens**, no contexto
 **Líder do projeto:**
 Frederico de Medeiros Freitas
 
-**Orientador:**
-Prof. Dr. Rodrigo Henrique Geraldo
-
 ### Integrantes
 
 * Frederico de Medeiros Freitas
