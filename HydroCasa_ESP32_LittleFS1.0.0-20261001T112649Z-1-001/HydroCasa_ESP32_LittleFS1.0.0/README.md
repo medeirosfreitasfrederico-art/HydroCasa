@@ -75,3 +75,63 @@ Antes da apresentação:
 - registre uma atividade como "Lavou o carro";
 - mostre a diferença entre consumo bruto e contextualizado;
 - provoque um fluxo maior para demonstrar o alerta.
+
+
+## Correções de medição, histórico e conexão
+
+Atualize o firmware (incluindo `FlowSample.h`) e os arquivos de `data/` juntos.
+O painel atualizado exige `device_id` e `session_id` em `/api/live`; firmware
+antigo será tratado como resposta incompatível, sem registrar zeros fictícios.
+
+- A vazão é calculada no ESP32 por diferença de pulsos e tempo real transcorrido,
+  com atualização a partir de 1 segundo, independentemente das consultas HTTP.
+- O volume diário acumula diferenças entre leituras. O limite de 250 snapshots
+  afeta somente os pontos armazenados, não o total diário.
+- Reset e reinicialização mudam a sessão de contagem. O painel preserva os totais
+  observados e soma o volume observado na nova sessão quando ela pertence ao mesmo dia.
+- O navegador persiste total e última leitura juntos em `hydrocasa_ledger_v2`.
+  Totais antigos são migrados como parciais; perdas causadas pela versão antiga
+  não podem ser reconstruídas automaticamente.
+- O primeiro acesso estabelece uma referência. Na virada de dia, o intervalo
+  entre a última leitura anterior e a primeira nova não é atribuído a um dia
+  arbitrariamente. O painel identifica a coleta como parcial.
+- Uma resposta válida de zero é uma leitura; ausência de dados aparece como `—`
+  ou “Sem informação”. Falhas preservam a última leitura com indicação de horário.
+- As requisições têm timeout de 5 segundos. Uma nova consulta é agendada 2 segundos
+  após o ciclo anterior terminar. O reset aguarda a consulta em andamento.
+- Erros HTTP, respostas inválidas e falhas de gravação são informados. O firmware
+  responde HTTP 500 quando não consegue abrir ou escrever o snapshot no LittleFS.
+
+### Limitações que permanecem
+
+Os contadores ainda ficam na RAM do ESP32. O consumo não observado antes de uma
+queda de energia pode ser perdido. O CSV ainda depende do navegador e não é
+importado automaticamente pelo painel. O histórico usa o relógio e o armazenamento
+do navegador; use uma aba para a coleta, pois não há coordenação entre abas ou
+sincronização entre dispositivos. Não há ainda rotação automática do CSV.
+
+### Verificações de software
+
+Na raiz do repositório, com Node.js e um compilador C++ disponíveis:
+
+```sh
+node --test tests/*.test.cjs
+g++ -std=c++11 -Wall -Wextra -pedantic tests/flow_sample.cpp -o /tmp/hydrocasa-flow-test
+/tmp/hydrocasa-flow-test
+```
+
+Os testes cobrem cálculo de vazão, intervalo variável, ausência de pulsos,
+overflow dos contadores de tempo/pulsos, histórico longo, reset, reinicialização,
+recarga, virada do dia, falhas HTTP, timeout, validação de leituras e serialização
+entre consulta e reset. Não substituem a compilação para a placa e os ensaios físicos.
+
+### Validação na placa, antes da apresentação
+
+1. Compile para o modelo real de ESP32 e envie firmware e arquivos LittleFS.
+2. Passe um volume conhecido por cada ramal e confira litros e vazão; depois
+   interrompa o fluxo e confirme que a vazão volta a zero sem apagar o volume.
+3. Mantenha a coleta por mais de 10 minutos e confirme que o total não diminui.
+4. Recarregue o navegador, zere os contadores e reinicie a placa separadamente;
+   confira que o histórico observado permanece e a nova sessão é reconhecida.
+5. Desconecte e reconecte a rede; confira a indicação de dados desatualizados
+   e a retomada da coleta.

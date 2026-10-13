@@ -114,20 +114,13 @@ String getArg(const String& body, const String& key) {
   return value;
 }
 
-void appendDailySnapshot(const String& dateKey, float liters1, float liters2) {
-  // Formato simples e robusto para uma maquete:
-  // /daily.csv -> YYYY-MM-DD;litros_sensor_1;litros_sensor_2
+bool appendDailySnapshot(const String& dateKey, float liters1, float liters2) {
   File f = LittleFS.open("/daily.csv", FILE_APPEND);
-  if (!f) return;
-
-  // O frontend envia o valor acumulado do ESP no instante da sincronização.
-  // A linha é um snapshot; o site usa a diferença entre snapshots do mesmo dia.
-  f.print(dateKey);
-  f.print(";");
-  f.print(liters1, 4);
-  f.print(";");
-  f.println(liters2, 4);
+  if (!f) return false;
+  const String line = dateKey + ";" + String(liters1, 4) + ";" + String(liters2, 4) + "\n";
+  const bool written = f.print(line) == line.length();
   f.close();
+  return written;
 }
 
 void handleDaily() {
@@ -146,7 +139,10 @@ void handleDaily() {
     return;
   }
 
-  appendDailySnapshot(dateKey, l1.toFloat(), l2.toFloat());
+  if (!appendDailySnapshot(dateKey, l1.toFloat(), l2.toFloat())) {
+    server.send(500, "application/json", "{\"ok\":false,\"error\":\"falha ao gravar snapshot\"}");
+    return;
+  }
   server.send(200, "application/json", "{\"ok\":true}");
 }
 
