@@ -30,7 +30,9 @@ const state = {
   monthOffset: 0,
   connected: false,
   cursor: ledger.cursor,
-  storageError: false
+  storageError: false,
+  lastValidAt: null,
+  syncError: false
 };
 
 const activities = [
@@ -87,39 +89,85 @@ function addSnapshot(k, d, now=Date.now()){
   save();
 }
 
+async function requestJson(url, options={}){
+  const controller=new AbortController();
+  const timeout=setTimeout(()=>controller.abort(),5000);
+  try {
+    const response=await fetch(url,{...options,cache:"no-store",signal:controller.signal});
+    if(!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data=await response.json();
+    if(!data || data.ok!==true) throw new Error("Resposta inválida do ESP32");
+    return data;
+  } finally { clearTimeout(timeout); }
+}
+
+function validateLive(d){
+  for(const key of ["liters1","liters2","flow1_lpm","flow2_lpm"]){
+    if(typeof d[key]!=="number" || !Number.isFinite(d[key]) || d[key]<0) throw new Error("Leitura inválida");
+  }
+  for(const key of ["pulses1","pulses2","uptime_ms"]){
+    if(!Number.isInteger(d[key]) || d[key]<0 || d[key]>0xffffffff) throw new Error("Contador inválido");
+  }
+  if(typeof d.session_id!=="string" || !d.session_id || typeof d.device_id!=="string" || !d.device_id) throw new Error("Firmware incompatível");
+  return d;
+}
+
 async function poll(){
-  try{
-    const r=await fetch("/api/live",{cache:"no-store"});
-    if(!r.ok) throw new Error();
-    const d=await r.json();
+  try {
+    const d=validateLive(await requestJson("/api/live"));
+    const now=Date.now(),day=keyForDate(new Date(now));
     state.connected=true;
     state.live=d;
-    ensureToday();
-    addSnapshot(todayKey(),d);
+    state.lastValidAt=now;
+    addSnapshot(day,d,now);
     updateLive();
-    syncToEsp(d);
-  }catch(e){
+    await syncToEsp(d,day);
+  } catch(e) {
     state.connected=false;
     updateConnection();
   }
 }
 
-let syncBusy=false;
-async function syncToEsp(d){
-  if(syncBusy) return;
-  syncBusy=true;
-  try{
-    await fetch("/api/daily",{method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({date:todayKey(),liters1:d.liters1,liters2:d.liters2})});
-  }catch(e){} finally{syncBusy=false;}
+async function syncToEsp(d,day){
+  try {
+    await requestJson("/api/daily",{method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({date:day,liters1:d.liters1,liters2:d.liters2})});
+    state.syncError=false;
+  } catch(e) { state.syncError=true; }
+  updateConnection();
+}
+
+let pollTimer=null,currentPoll=null,resetPending=false;
+async function runPoll(){
+  if(resetPending) return;
+  currentPoll=poll();
+  try { await currentPoll; }
+  finally {
+    currentPoll=null;
+    if(!resetPending) pollTimer=setTimeout(runPoll,2000);
+  }
 }
 
 function updateConnection(){
-  const b=$("#connectionBadge");
+  const b=$("#connectionBadge"),hasReading=state.lastValidAt!==null;
   b.className="badge "+(state.connected?"online":"offline");
   b.textContent=state.connected?"● Online":"● Offline";
   $("#statusText").textContent=state.connected?"Monitorando":"Sem conexão";
-  $("#statusDetail").textContent=state.connected?"ESP32 respondendo":"Verifique Wi-Fi";
+  $("#statusDetail").textContent=hasReading
+    ? (state.connected?"Última leitura: ":"Dados desatualizados desde ")+new Date(state.lastValidAt).toLocaleTimeString("pt-BR")
+    : "Aguardando primeira leitura válida";
+  const warnings=[];
+  if(state.storageError) warnings.push("Falha ao salvar no navegador");
+  if(state.syncError) warnings.push("Falha ao salvar no ESP32");
+  const h=state.history[todayKey()];
+  $("#todayDelta").textContent=warnings.length?warnings.join(" • ")
+    : h && h.readings?"Coleta parcial do dia":"Aguardando leituras";
+  const live=$(".live-dot");
+  live.textContent=state.connected?"AO VIVO":"SEM CONEXÃO";
+  if(!state.connected){
+    $("#alertContent").className="alert-content neutral";
+    $("#alertContent").textContent="Análise indisponível: aguardando conexão e leitura válida.";
+  }
 }
 
 function updateLive(){
@@ -127,18 +175,18 @@ function updateLive(){
   const d=state.live;
   const h=state.history[todayKey()]||{total1:0,total2:0};
   const t=(h.total1||0)+(h.total2||0);
-  $("#todayTotal").textContent=fmt(t)+" L";
-  $("#sensor1Total").textContent=fmt(h.total1)+" L";
-  $("#sensor2Total").textContent=fmt(h.total2)+" L";
-  $("#split1").textContent=fmt(h.total1)+" L";
-  $("#split2").textContent=fmt(h.total2)+" L";
-  $("#flow1").textContent=fmt(d.flow1_lpm)+" L/min";
-  $("#flow2").textContent=fmt(d.flow2_lpm)+" L/min";
+  $("#todayTotal").textContent=h.readings?fmt(t)+" L":"—";
+  $("#sensor1Total").textContent=h.readings?fmt(h.total1)+" L":"—";
+  $("#sensor2Total").textContent=h.readings?fmt(h.total2)+" L":"—";
+  $("#split1").textContent=h.readings?fmt(h.total1)+" L":"—";
+  $("#split2").textContent=h.readings?fmt(h.total2)+" L":"—";
+  $("#flow1").textContent=state.lastValidAt!==null?fmt(d.flow1_lpm)+" L/min":"—";
+  $("#flow2").textContent=state.lastValidAt!==null?fmt(d.flow2_lpm)+" L/min":"—";
   const ratio=t?Math.round((h.total1/t)*100):50;
-  $("#ratio1").textContent=ratio+"%";
-  $("#donut").style.background=`conic-gradient(var(--primary) 0 ${ratio}%,var(--primary2) ${ratio}% 100%)`;
+  $("#ratio1").textContent=t?ratio+"%":"—";
+  $("#donut").style.background=!t?"var(--line)":`conic-gradient(var(--primary) 0 ${ratio}%,var(--primary2) ${ratio}% 100%)`;
   updateChart();
-  updateAlert(t);
+  if(state.connected) updateAlert(t);
   updateAnalysis();
 }
 
@@ -151,15 +199,16 @@ function updateChart(){
   const now=new Date(); const vals=[];
   for(let i=6;i>=0;i--){
     const d=new Date(now);d.setDate(now.getDate()-i);const k=keyForDate(d);
-    const x=state.history[k];vals.push(x?(x.total1+x.total2):0);
+    const x=state.history[k];vals.push(x&&x.readings?(x.total1+x.total2):null);
   }
-  const max=Math.max(10,...vals);
+  const max=Math.max(10,...vals.filter(v=>v!==null));
   ctx.strokeStyle=getComputedStyle(document.body).getPropertyValue("--line");ctx.lineWidth=1;
   for(let y=1;y<4;y++){ctx.beginPath();ctx.moveTo(0,y*h/4);ctx.lineTo(w,y*h/4);ctx.stroke();}
   ctx.beginPath();
-  vals.forEach((v,i)=>{const x=i*(w/(vals.length-1)),y=h-28-(v/max)*(h-55);i?ctx.lineTo(x,y):ctx.moveTo(x,y)});
+  let previousValid=false;
+  vals.forEach((v,i)=>{if(v===null){previousValid=false;return;}const x=i*(w/(vals.length-1)),y=h-28-(v/max)*(h-55);previousValid?ctx.lineTo(x,y):ctx.moveTo(x,y);previousValid=true;});
   ctx.lineWidth=3;ctx.strokeStyle=getComputedStyle(document.body).getPropertyValue("--primary");ctx.stroke();
-  vals.forEach((v,i)=>{const x=i*(w/(vals.length-1)),y=h-28-(v/max)*(h-55);ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fillStyle=getComputedStyle(document.body).getPropertyValue("--primary2");ctx.fill()});
+  vals.forEach((v,i)=>{if(v===null)return;const x=i*(w/(vals.length-1)),y=h-28-(v/max)*(h-55);ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fillStyle=getComputedStyle(document.body).getPropertyValue("--primary2");ctx.fill()});
 }
 
 function updateAlert(total){
@@ -210,7 +259,7 @@ function openDayModal(d){
   showModal(`<span class="eyebrow">RELATÓRIO DIÁRIO</span><h3>${d.toLocaleDateString("pt-BR",{dateStyle:"full"})}</h3>
     <div class="analysis-grid" style="grid-template-columns:1fr 1fr;margin-top:18px">
       <div class="glass-card"><span>Ramal 01</span><strong>${fmt(h.total1)} L</strong><small>${r}% do total</small></div>
-      <div class="glass-card"><span>Ramal 02</span><strong>${fmt(h.total2)} L</strong><small>${100-r}% do total</small></div>
+      <div class="glass-card"><span>Ramal 02</span><strong>${fmt(h.total2)} L</strong><small>${total?100-r:0}% do total</small></div>
     </div><p><b>Total: ${fmt(total)} L.</b> ${h.partial?"Coleta parcial: pode haver consumo não registrado neste dia.":"Consumo registrado neste dia."}</p>`);
 }
 
@@ -248,11 +297,27 @@ $$(".tab").forEach(b=>b.onclick=()=>{$$(".tab").forEach(x=>x.classList.remove("a
 $("#prevMonth").onclick=()=>{state.monthOffset--;renderCalendar()};$("#nextMonth").onclick=()=>{state.monthOffset++;renderCalendar()};
 
 $("#themeBtn").onclick=()=>{document.body.classList.toggle("dark");localStorage.setItem("hydrocasa_theme",document.body.classList.contains("dark")?"dark":"light");updateChart()};
-if(localStorage.getItem("hydrocasa_theme")==="dark")document.body.classList.add("dark");
+try { if(localStorage.getItem("hydrocasa_theme")==="dark")document.body.classList.add("dark"); } catch(e) {}
 
 $("#resetBtn").onclick=async()=>{
-  if(!confirm("Zerar os contadores do ESP32? Faça isso apenas antes de uma nova demonstração."))return;
-  try{await fetch("/api/reset",{method:"POST"});alert("Contadores zerados.");}catch(e){alert("Não foi possível falar com o ESP32.");}
+  if(resetPending || !confirm("Zerar os contadores do ESP32? O consumo já registrado será preservado.")) return;
+  resetPending=true;
+  clearTimeout(pollTimer);
+  $("#resetBtn").disabled=true;
+  try {
+    // Finish the in-flight reading before resetting, avoiding out-of-order snapshots.
+    if(currentPoll) await currentPoll;
+    await requestJson("/api/reset",{method:"POST"});
+    state.connected=false;
+    updateConnection();
+    alert("Contadores zerados. Aguardando nova leitura; histórico preservado.");
+  } catch(e) {
+    alert("Não foi possível confirmar o reset. Verifique a conexão antes de tentar novamente.");
+  } finally {
+    resetPending=false;
+    $("#resetBtn").disabled=false;
+    pollTimer=setTimeout(runPoll,0);
+  }
 };
 
 function clock(){
@@ -260,5 +325,5 @@ function clock(){
 }
 setInterval(clock,1000);clock();
 ensureToday();renderCalendar();updateLive();
-setInterval(poll,2000);poll();
+runPoll();
 window.addEventListener("resize",updateChart);
