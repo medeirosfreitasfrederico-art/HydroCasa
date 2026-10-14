@@ -427,3 +427,13 @@ Facens — Sorocaba/SP
 ## 📜 Licença
 
 Projeto desenvolvido para fins acadêmicos e educacionais.
+
+## Atualização 1.1.0 — moradores, referências e m³
+
+O painel inclui perfil da residência e atividades com fontes consultáveis. A referência por pessoa é multiplicada pelo número de moradores; usos compartilhados são calculados por ocorrência. Volumes aparecem em m³. Dias parciais e medições limitadas a ramais têm restrições explícitas de comparação.
+
+- [Uso, fontes, fórmulas, instalação e testes](docs/CONSUMO.md)
+- [Backlog priorizado e evidências para a AC2](docs/BACKLOG.md)
+- [Histórico de versões](CHANGELOG.md)
+
+A implantação requer atualizar firmware **e** a pasta `data/` no LittleFS. Os recursos efetivamente implementados e as limitações estão documentados acima; os objetivos conceituais deste README, como custo financeiro e detecção automática de vazamentos, não constituem comprovação de funcionamento.
