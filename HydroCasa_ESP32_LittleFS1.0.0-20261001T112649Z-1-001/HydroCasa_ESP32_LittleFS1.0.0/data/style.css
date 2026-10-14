@@ -199,3 +199,28 @@ details[open] > :not(summary) { animation: details-appear 160ms ease-out; }
   details[open] > :not(summary) { animation: none; }
   .secondary-btn, .ghost-btn, .icon-btn { transition: none; }
 }
+
+
+/* Segunda página na mesma aplicação: preservar o coletor e os estilos do painel. */
+[hidden] { display: none !important; }
+.page-nav { display: flex; gap: 8px; padding-top: 20px; }
+.page-nav a { padding: 10px 16px; border-radius: 10px; color: var(--muted); text-decoration: none; font-weight: 650; border: 1px solid transparent; }
+.page-nav a[aria-current="page"] { color: var(--card-accent); background: var(--card-title-bg); border-color: var(--card-title-border); }
+.consumption-page { padding-top: 32px; }
+.consumption-page h1 { font-size: clamp(28px,4vw,40px); margin: 8px 0 12px; letter-spacing: -.035em; }
+.consumption-page h2 { font-size: 20px; margin: 0; }
+.history-notice { font-size: 14px; line-height: 1.7; color: var(--muted); max-width: 85ch; }
+.history-filters { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; }
+.history-filters label { display: grid; gap: 8px; font-size: 14px; flex: 1 1 180px; }
+.history-filters button { min-height: 44px; }
+.history-summary { margin-top: 24px; }
+.history-chart, .history-table-scroll { overflow-x: auto; }
+.history-chart { color: var(--muted); padding-top: 16px; }
+.history-chart svg { display: block; min-width: 100%; }
+.history-table-card, .history-details { margin-top: 24px; }
+.history-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.history-table th, .history-table td { text-align: left; padding: 14px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+.history-table thead th { color: var(--muted); font-size: 12px; }
+.history-details p, .history-details li { font-size: 14px; line-height: 1.7; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
+@media(max-width:560px) { .history-filters button { width: 100%; } .consumption-page { padding-top: 24px; } }
