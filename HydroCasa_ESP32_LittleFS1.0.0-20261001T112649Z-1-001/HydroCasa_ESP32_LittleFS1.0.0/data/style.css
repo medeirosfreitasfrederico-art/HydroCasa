@@ -122,3 +122,28 @@ body.dark .metric-card:nth-child(3) { --card-accent: #d6b5ff; --card-title-bg: #
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+
+/* Confirmação: ícone de 32 px, sem fundo externo; o check é apenas decorativo.
+   A mensagem continua acessível no role=status. Split abre das laterais ao centro. */
+.profile-feedback { display: flex; align-items: flex-start; gap: 10px; line-height: 1.6; }
+.profile-feedback.saved > span:last-child { padding-top: 3px; }
+.profile-success-icon { position: relative; display: inline-block; flex: 0 0 32px; width: 32px; height: 32px; }
+.success-half {
+  position: absolute; inset: 0; border-radius: 10px;
+  background: linear-gradient(145deg,#aa86fa 0%,#8252dd 48%,#4c2698 100%);
+  color: #f1e8ff;
+  box-shadow: inset 0 2px 3px #ffffff65, inset 0 -3px 4px #29104f60;
+  animation: profile-split 360ms cubic-bezier(.2,.8,.2,1) both;
+}
+.success-half svg { display: block; width: 32px; height: 32px; filter: drop-shadow(0 2px 1px #30105b80); }
+.success-left { clip-path: inset(0 50% 0 0); --split-x: -6px; }
+.success-right { clip-path: inset(0 0 0 50%); --split-x: 6px; }
+@keyframes profile-split {
+  from { opacity: 0; transform: translateX(var(--split-x)); }
+  to { opacity: 1; transform: translateX(0); }
+}
+/* Sem deslocamento ou animação para quem solicita movimento reduzido. */
+@media (prefers-reduced-motion: reduce) {
+  .success-half { animation: none; transform: none; opacity: 1; }
+}

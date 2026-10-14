@@ -365,19 +365,42 @@ function renderActivityLog(){
   $$('[data-remove-activity]').forEach(b=>b.onclick=()=>{records.splice(Number(b.dataset.removeActivity),1);save();renderActivityLog();updateAnalysis();});
 }
 
+// Check vetorial inspirado na referência: duas metades se unem ao confirmar o salvamento.
+// Recriar os elementos reinicia a animação a cada confirmação, sem temporizadores.
+function profileFeedback(message, saved=false, error=false){
+  const el=$("#profileMessage");
+  el.className=error?"form-error":saved?"profile-feedback saved":"profile-feedback";
+  el.textContent="";
+  if(saved){
+    const icon=document.createElement("span");
+    icon.className="profile-success-icon";
+    icon.setAttribute("aria-hidden","true");
+    const check='<svg viewBox="0 0 32 32" focusable="false"><path d="M8 16.5l5.2 5.2L24 10.8" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    icon.innerHTML='<span class="success-half success-left">'+check+'</span><span class="success-half success-right">'+check+'</span>';
+    el.appendChild(icon);
+  }
+  const text=document.createElement("span");
+  text.textContent=message;
+  el.appendChild(text);
+}
+function profilePending(){
+  profileFeedback("Alterações pendentes. Clique em Aplicar perfil para salvar.");
+}
+
 function setupConsumptionUI(){
   fillProfileForm();
+  $("#householdForm").addEventListener("input",profilePending);
+  $("#householdForm").addEventListener("change",profilePending);
   $("#householdForm").onsubmit=e=>{
     e.preventDefault();
     try {
       applyProfile({residents:Number($("#residentsInput").value),referenceMode:$("#referenceMode").value,referenceLiters:Number($("#referenceM3").value)*1000,tolerance:Number($("#toleranceInput").value),scope:$("#scopeInput").value,ramal1:$("#ramal1Input").value,ramal2:$("#ramal2Input").value});
-      $("#profileMessage").textContent=state.storageError?"Perfil aplicado nesta sessão, mas não foi possível salvar no navegador.":"Perfil salvo. Dias anteriores preservados; mudanças durante a coleta impedem uma classificação única do dia.";
-      $("#profileMessage").className=state.storageError?"form-error":"";
+      profileFeedback(state.storageError?"Perfil aplicado nesta sessão, mas não foi possível salvar no navegador.":"Perfil salvo. Dias anteriores preservados; mudanças durante a coleta impedem uma classificação única do dia.", !state.storageError, state.storageError);
       updateLive();selectActivity();
-    }catch(err){$("#profileMessage").textContent=err.message;$("#profileMessage").className="form-error";}
+    }catch(err){profileFeedback(err.message,false,true);}
   };
-  for(const [id,delta] of [["residentsMinus",-1],["residentsPlus",1]])$("#"+id).onclick=()=>{const el=$("#residentsInput");el.value=Math.max(1,Math.min(100,(Number(el.value)||0)+delta));};
-  $("#referenceMode").onchange=()=>{$("#referenceM3").disabled=$("#referenceMode").value==="snis";if($("#referenceM3").disabled)$("#referenceM3").value=.1521;$("#profileMessage").textContent="Clique em Aplicar perfil para salvar esta alteração.";};
+  for(const [id,delta] of [["residentsMinus",-1],["residentsPlus",1]])$("#"+id).onclick=()=>{const el=$("#residentsInput");el.value=Math.max(1,Math.min(100,(Number(el.value)||0)+delta));profilePending();};
+  $("#referenceMode").onchange=()=>{$("#referenceM3").disabled=$("#referenceMode").value==="snis";if($("#referenceM3").disabled)$("#referenceM3").value=.1521;profilePending();};
   $("#activitySelect").innerHTML=M.activities.map(a=>`<option value="${a.id}">${escapeHtml(a.name)}</option>`).join("");
   $("#activitySelect").onchange=()=>{$("#activityObservedM3").value="";selectActivity();};
   for(const id of ["activityQuantity","activityMinutes","customActivityM3","activityObservedM3"])$("#"+id).oninput=updateActivityPreview;
