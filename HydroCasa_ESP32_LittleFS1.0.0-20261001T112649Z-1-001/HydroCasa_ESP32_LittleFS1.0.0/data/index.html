@@ -48,7 +48,7 @@
     <section class="glass-card household-card" aria-labelledby="householdTitle">
       <div class="card-head"><div><span class="eyebrow">PERFIL DA RESIDÊNCIA</span><h2 id="householdTitle">Quantas pessoas moram aqui?</h2><p>O perfil ajusta a comparação. As medições dos sensores continuam iguais.</p></div></div>
       <form id="householdForm">
-        <div class="household-controls"><label for="residentsInput">Moradores</label><div class="stepper"><button type="button" id="residentsMinus" aria-label="Diminuir moradores">−</button><input id="residentsInput" type="number" min="1" max="100" step="1" required inputmode="numeric" placeholder="Ex.: 4"><button type="button" id="residentsPlus" aria-label="Aumentar moradores">+</button></div><button class="primary-btn" type="submit">Aplicar perfil</button></div>
+        <div class="household-controls"><label for="residentsInput">Moradores</label><div class="stepper"><button type="button" id="residentsMinus" aria-label="Diminuir moradores">−</button><input id="residentsInput" type="number" min="1" max="100" step="1" required inputmode="numeric" placeholder="Ex.: 4"><button type="button" id="residentsPlus" aria-label="Aumentar moradores">+</button></div></div>
         <details class="profile-details"><summary>Referência, abrangência e nomes dos ramais</summary>
           <div class="form-grid">
             <label>Referência por pessoa<select id="referenceMode"><option value="snis">SNIS 2020 — média histórica nacional</option><option value="user">Personalizada — hipótese do usuário</option></select></label>
@@ -59,7 +59,9 @@
             <label>Nome do ramal 02<input id="ramal2Input" maxlength="32" value="Ramal 02" required></label>
           </div>
         </details>
-        <p id="profileMessage" role="status"></p>
+        <!-- A confirmação fica junto da ação final; avisos do dia permanecem separados. -->
+        <div class="profile-actions"><button class="primary-btn" type="submit">Aplicar perfil</button><p id="profileMessage" role="status"></p></div>
+        <p id="profileDayNotice" class="muted-note" hidden></p>
       </form>
       <div id="householdSource" class="source-inline"></div>
       <p class="muted-note">Configuração salva neste navegador. Alterações ficam registradas por dia; um dia com perfis diferentes não recebe uma classificação única.</p>

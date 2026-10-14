@@ -150,3 +150,52 @@ body.dark .metric-card:nth-child(3) { --card-accent: #d6b5ff; --card-title-bg: #
 @media (prefers-reduced-motion: reduce) {
   .profile-success-icon { animation: none; transform: none; opacity: 1; }
 }
+
+
+/* Acabamento: sombras leves e estados semânticos. Azul/violeta identificam ramais;
+   sucesso, atenção e erro sempre têm texto, nunca dependem somente da cor. */
+:root {
+  --shadow: 0 4px 18px rgba(30,50,90,.055);
+  --success-text: #167044; --success-bg: #edf8f1;
+  --warning-text: #865408; --warning-bg: #fff7e5;
+  --error-text: #b42332; --error-bg: #fff1f2;
+}
+body.dark {
+  --shadow: 0 4px 20px rgba(0,0,0,.2);
+  --success-text: #8ce0b0; --success-bg: #102c22;
+  --warning-text: #f7ce7a; --warning-bg: #302615;
+  --error-text: #fda4af; --error-bg: #341b25;
+}
+/* Degradê de ação restrito ao botão principal e à aba ativa.
+   Marca, sensores e gráfico preservam as cores de identificação do sistema. */
+.hero h1 em { background: none; color: var(--primary); -webkit-text-fill-color: currentColor; }
+.bar-fill { background: var(--primary); }
+.day.has-data { background: var(--card-title-bg); }
+.day:hover { transform: none; }
+.metric-card, .glass-card { transition: none; }
+.secondary-btn, .ghost-btn, .icon-btn { transition: background-color 140ms ease, border-color 140ms ease; }
+.secondary-btn:hover, .ghost-btn:hover, .icon-btn:hover { background: var(--card-title-bg); border-color: var(--card-title-border); }
+.profile-actions { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin: 20px 0 16px; }
+.profile-actions > .primary-btn { min-height: 44px; flex-shrink: 0; }
+.profile-actions #profileMessage { margin: 0; font-size: 14px; }
+#profileMessage:empty { display: none; }
+#profileMessage.saved { color: var(--success-text); background: var(--success-bg); padding: 8px 12px; border-radius: 10px; }
+#profileDayNotice { color: var(--warning-text); background: var(--warning-bg); border-left: 3px solid currentColor; padding: 12px 14px; border-radius: 8px; }
+.form-error, body.dark .form-error, .field-error, .form-grid .field-error { color: var(--error-text); }
+.field-error { display: block; font-size: 12px; line-height: 1.5; margin-top: 6px; }
+[aria-invalid="true"] { border-color: var(--error-text); background: var(--error-bg); }
+.alert-content.neutral { background: var(--card-title-bg); color: var(--text); }
+.alert-content.warning { background: var(--warning-bg); color: var(--warning-text); }
+.comparison-above, body.dark .comparison-above { color: var(--warning-text); }
+.badge.online { color: var(--success-text); background: var(--success-bg); }
+/* Só o conteúdo expandido ganha um fade curto; não mover os cartões de leitura. */
+details[open] > :not(summary) { animation: details-appear 160ms ease-out; }
+@keyframes details-appear { from { opacity: .3; } to { opacity: 1; } }
+@media (max-width: 560px) {
+  .profile-actions { align-items: flex-start; gap: 12px; }
+  .profile-actions > .primary-btn { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  details[open] > :not(summary) { animation: none; }
+  .secondary-btn, .ghost-btn, .icon-btn { transition: none; }
+}

@@ -387,7 +387,34 @@ function profilePending(){
   profileFeedback("Alterações pendentes. Clique em Aplicar perfil para salvar.");
 }
 
+// Mensagens de validação junto ao campo, mantendo a validação nativa do navegador.
+function setupFieldFeedback(form){
+  form.addEventListener("invalid",event=>{
+    const field=event.target;
+    if(!field.id)return;
+    const details=field.closest("details");if(details)details.open=true;
+    const id=field.id+"-error";
+    let note=document.getElementById(id);
+    if(!note){
+      note=document.createElement("small");note.id=id;note.className="field-error";
+      (field.closest(".stepper")||field).insertAdjacentElement("afterend",note);
+    }
+    note.textContent="Atenção: "+field.validationMessage;
+    field.setAttribute("aria-invalid","true");
+    const ids=new Set((field.getAttribute("aria-describedby")||"").split(" ").filter(Boolean));
+    ids.add(id);field.setAttribute("aria-describedby",[...ids].join(" "));
+  },true);
+  form.addEventListener("input",event=>{
+    const field=event.target,id=field.id+"-error",note=document.getElementById(id);
+    if(note){note.remove();field.removeAttribute("aria-invalid");
+      const ids=(field.getAttribute("aria-describedby")||"").split(" ").filter(x=>x!==id);
+      if(ids.length)field.setAttribute("aria-describedby",ids.join(" "));else field.removeAttribute("aria-describedby");
+    }
+  });
+}
 function setupConsumptionUI(){
+  setupFieldFeedback($("#householdForm"));
+  setupFieldFeedback($("#activityForm"));
   fillProfileForm();
   $("#householdForm").addEventListener("input",profilePending);
   $("#householdForm").addEventListener("change",profilePending);
@@ -395,7 +422,10 @@ function setupConsumptionUI(){
     e.preventDefault();
     try {
       applyProfile({residents:Number($("#residentsInput").value),referenceMode:$("#referenceMode").value,referenceLiters:Number($("#referenceM3").value)*1000,tolerance:Number($("#toleranceInput").value),scope:$("#scopeInput").value,ramal1:$("#ramal1Input").value,ramal2:$("#ramal2Input").value});
-      profileFeedback(state.storageError?"Perfil aplicado nesta sessão, mas não foi possível salvar no navegador.":"Perfil salvo. Dias anteriores preservados; mudanças durante a coleta impedem uma classificação única do dia.", !state.storageError, state.storageError);
+      profileFeedback(state.storageError?"Perfil aplicado nesta sessão, mas não foi possível salvar no navegador.":"Perfil salvo.", !state.storageError, state.storageError);
+      const notice=$("#profileDayNotice"),day=state.history[todayKey()];
+      notice.hidden=!(day&&day.profileMixed);
+      notice.textContent=notice.hidden?"":"Atenção: o perfil mudou durante a coleta. A comparação deste dia fica indisponível; os volumes registrados são preservados.";
       updateLive();selectActivity();
     }catch(err){profileFeedback(err.message,false,true);}
   };
