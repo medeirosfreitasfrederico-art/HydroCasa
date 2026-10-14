@@ -3,26 +3,27 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const vm=require('node:vm');
 const path=require('node:path');
+const HydroConsumption=require('../HydroCasa_ESP32_LittleFS1.0.0-20261001T112649Z-1-001/HydroCasa_ESP32_LittleFS1.0.0/data/consumption.js');
 const source=fs.readFileSync(path.join(__dirname,'../HydroCasa_ESP32_LittleFS1.0.0-20261001T112649Z-1-001/HydroCasa_ESP32_LittleFS1.0.0/data/app.js'),'utf8');
 const valid={ok:true,device_id:'esp32',session_id:'boot-0',liters1:10,liters2:5,flow1_lpm:2,flow2_lpm:1,pulses1:4500,pulses2:2250,uptime_ms:10000};
 const response=data=>({ok:true,json:async()=>data});
 function setup(fetch){
   const elements=new Map(),timers=new Map(),alerts=[];let id=0;
-  const element=s=>{if(!elements.has(s))elements.set(s,{textContent:'',className:'',style:{}});return elements.get(s);};
-  const ctx=vm.createContext({fetch,AbortController,Date,Math,Number,JSON,
+  const element=s=>{if(!elements.has(s))elements.set(s,{textContent:'',className:'',style:{},classList:{contains:()=>false}});return elements.get(s);};
+  const ctx=vm.createContext({HydroConsumption,fetch,AbortController,Date,Math,Number,JSON,
     localStorage:{getItem:()=>null,setItem:()=>{}},document:{querySelector:element},
     setTimeout:(fn,ms)=>{timers.set(++id,{fn,ms});return id;},clearTimeout:i=>timers.delete(i),
     confirm:()=>true,alert:s=>alerts.push(s)});
   const reset=source.slice(source.indexOf('$("#resetBtn").onclick='),source.indexOf('function clock()'));
   vm.runInContext(source.slice(0,source.indexOf('$("#closeModal")'))+
-    '\nupdateChart=()=>{};updateAnalysis=()=>{};'+reset+
+    '\nupdateChart=()=>{};updateAnalysis=()=>{};updateHousehold=()=>{};'+reset+
     '\nglobalThis.api={state,poll,runPoll,requestJson,validateLive,updateLive};',ctx);
   return {...ctx.api,elements,timers,alerts,reset:element('#resetBtn').onclick};
 }
 test('valid sample renders API flow fields and records last valid time',async()=>{
   const a=setup(async url=>response(url==='/api/live'?valid:{ok:true}));await a.poll();
   assert.equal(a.state.connected,true);assert.ok(a.state.lastValidAt);
-  assert.match(a.elements.get('#flow1').textContent,/2,00 L\/min/);
+  assert.match(a.elements.get('#flow1').textContent,/0,002 m³\/min/);
 });
 test('HTTP failure preserves last reading and marks it stale',async()=>{
   let fail=false;const a=setup(async url=>fail?{ok:false,status:503}:response(url==='/api/live'?valid:{ok:true}));

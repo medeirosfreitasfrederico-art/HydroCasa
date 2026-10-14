@@ -255,6 +255,7 @@ void setup() {
   server.serveStatic("/", LittleFS, "/index.html");
   server.serveStatic("/index.html", LittleFS, "/index.html");
   server.serveStatic("/style.css", LittleFS, "/style.css");
+  server.serveStatic("/consumption.js", LittleFS, "/consumption.js");
   server.serveStatic("/app.js", LittleFS, "/app.js");
 
   server.onNotFound([]() {
