@@ -1,0 +1,12 @@
+const {test}=require('node:test');
+const assert=require('node:assert/strict');
+const M=require('../HydroCasa_ESP32_LittleFS1.0.0-20261001T112649Z-1-001/HydroCasa_ESP32_LittleFS1.0.0/data/consumption.js');
+test('volume conversion retains small prototype readings',()=>{assert.equal(M.m3(1000),'1,000 m³');assert.equal(M.m3(.5),'0,0005 m³');assert.equal(M.m3(0),'0,000 m³');assert.equal(M.m3(NaN),'—');});
+test('residents must be positive integers',()=>{for(const residents of [0,-1,1.5,101,NaN,null])assert.throws(()=>M.profile({residents}));assert.equal(M.profile({residents:4}).referenceLiters*4,608.4);});
+test('showers scale by people and minutes, dishes by occurrences',()=>{assert.equal(M.estimate('shower-electric',{residents:4,quantity:1,minutes:5}),60);assert.equal(M.estimate('dishes',{residents:4,quantity:2,minutes:15}),234);assert.equal(M.estimate('laundry',{residents:9,quantity:1}),135);});
+test('custom activity requires explicit reference',()=>{assert.throws(()=>M.estimate('pool',{quantity:1}));assert.equal(M.estimate('pool',{quantity:1,customLiters:2000}),2000);});
+test('complete occurrences classify below within above with inclusive bounds',()=>{for(const [actual,code] of [[89,'below'],[90,'within'],[110,'within'],[111,'above']])assert.equal(M.classify(actual,100,10,{complete:true}).code,code);});
+test('partial and missing days never get an economical label',()=>{assert.equal(M.classify(0,100).code,'partial');assert.equal(M.classify(120,100).code,'above');assert.equal(M.classify(NaN,100).code,'unknown');});
+test('scope and profile changes block household conclusions',()=>{const d={readings:2,total1:100,total2:30,partial:false};assert.equal(M.compareDay(d,{residents:1},{closed:true}).code,'unknown');assert.equal(M.compareDay({...d,profileMixed:true},{residents:1,scope:'whole'},{closed:true}).code,'unknown');});
+test('historical profile wins over current household size',()=>{const p=M.profile({residents:1,scope:'whole'}),d={readings:2,total1:160,total2:0,partial:false,profile:p};assert.equal(M.compareDay(d,{residents:4,scope:'whole'},{closed:true}).code,'within');assert.equal(M.compareDay(d,p,{connected:false}).code,'unknown');});
+test('all published estimates have explicit sources and conditions',()=>{for(const a of M.activities){assert.ok(M.sources[a.source]);assert.ok(a.conditions);if(a.liters!==null)assert.ok(M.sources[a.source].url.startsWith('https://'));}});
