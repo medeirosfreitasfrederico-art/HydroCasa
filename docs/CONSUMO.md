@@ -59,3 +59,11 @@ Esse teste usa servidor local e API simulada. **Não foi concluído neste ambien
 ## Reversão
 
 As mudanças são separadas em commits. Para desfazer uma versão publicada, reverta os commits do mais recente ao mais antigo com `git revert <sha>` e publique a reversão. Isso preserva o histórico compartilhado. Para reverter o dispositivo, reinstale o firmware e os arquivos LittleFS da versão anterior. Reverter código não restaura dados apagados do navegador.
+
+## Página interna “Meu consumo”
+
+No menu superior, selecione **Meu consumo** (`?pagina=consumo`). A página compartilha o documento e as rotas já existentes do ESP32; a navegação usa o histórico do navegador e mantém o painel montado, com o polling original. Voltar/avançar do navegador também navega entre as páginas. Não foi alterado nenhum arquivo do firmware, cálculo de pulsos, API ou coletor `app.js`.
+
+A consulta apenas lê `hydrocasa_ledger_v2`: hoje, últimos sete dias, mês ou intervalo personalizado de até 366 dias. O resumo apresenta volume total, média por dia com leitura (incluindo dias parciais) e cobertura. Sem leitura não equivale a zero. Gráfico e tabela separam os ramais; “Ver dia” apresenta perfil e atividades preservados. Clique em **Atualizar histórico** para atualizar a consulta enquanto a coleta continua. Fechar o site ainda pode gerar lacunas.
+
+Para instalar esta extensão, atualize somente `data/index.html` e `data/style.css` no LittleFS da versão atual. Não é necessário recompilar ou alterar o código ESP32. O histórico é local ao navegador e à origem do site; não representa armazenamento permanente no dispositivo.

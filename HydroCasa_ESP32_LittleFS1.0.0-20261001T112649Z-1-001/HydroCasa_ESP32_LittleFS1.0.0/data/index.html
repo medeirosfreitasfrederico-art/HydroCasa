@@ -31,7 +31,8 @@
     </div>
   </header>
 
-  <main class="shell">
+  <nav class="page-nav shell" aria-label="Páginas do HydroCasa"><a href="?" data-page="dashboard">Painel</a><a href="?pagina=consumo" data-page="consumption">Meu consumo</a></nav>
+  <main class="shell" id="dashboard-page">
     <section class="hero">
       <div>
         <span class="eyebrow">ESP32 • IoT • LITTLEFS</span>
@@ -225,6 +226,29 @@
     </section>
   </main>
 
+
+  <!-- Página interna: mantém o painel montado para não interromper sua coleta.
+       O endereço usa a rota existente; não requer alterações no firmware. -->
+  <main class="shell consumption-page" id="consumption-page" hidden>
+    <header class="section-heading"><div><span class="eyebrow">HISTÓRICO DA RESIDÊNCIA</span><h1 tabindex="-1" id="consumptionTitle">Meu consumo</h1><p>Explore os volumes registrados e entenda a cobertura das medições.</p></div><button class="secondary-btn" id="refreshConsumption" type="button">Atualizar histórico</button></header>
+    <p class="history-notice">Dados deste navegador. A coleta do painel continua durante a navegação; fechar o site pode deixar lacunas no histórico. Os períodos abaixo não representam necessariamente dias completos.</p>
+    <section class="glass-card" aria-label="Filtros do histórico">
+      <form id="historyFilters" class="history-filters">
+        <label>Período<select id="historyPeriod"><option value="today">Hoje</option><option value="week" selected>Últimos 7 dias</option><option value="month">Este mês</option><option value="custom">Personalizado</option></select></label>
+        <label>De<input type="date" id="historyFrom" required></label><label>Até<input type="date" id="historyTo" required></label>
+        <button class="primary-btn" type="submit">Consultar período</button>
+      </form><p id="historyFilterMessage" role="status"></p>
+    </section>
+    <section class="comparison-grid history-summary" aria-label="Resumo do período">
+      <article class="glass-card"><span>Volume registrado</span><strong id="periodVolume">—</strong><small>Soma dos dois ramais no período.</small></article>
+      <article class="glass-card"><span>Média por dia com leitura</span><strong id="periodAverage">—</strong><small>Considera apenas dias com dados, inclusive parciais.</small></article>
+      <article class="glass-card"><span>Dias com leituras</span><strong id="periodCoverage">—</strong><small id="periodCoverageNote">Dias sem dados não são consumo zero.</small></article>
+    </section>
+    <section class="glass-card"><div class="card-head"><div><h2>Evolução por dia</h2><p>Volumes em m³. Azul: ramal 1; violeta: ramal 2. Consulte os valores na tabela.</p></div></div><div id="historyChart" class="history-chart" aria-label="Gráfico diário"></div></section>
+    <section class="glass-card history-table-card"><div class="card-head"><div><h2>Leituras do período</h2><p>Escolha um dia para consultar o perfil, as atividades e a comparação.</p></div></div><div class="history-table-scroll"><table class="history-table"><caption class="sr-only">Volumes por dia e cobertura das leituras</caption><thead><tr><th scope="col">Dia</th><th scope="col">Ramal 1 (m³)</th><th scope="col">Ramal 2 (m³)</th><th scope="col">Total (m³)</th><th scope="col">Cobertura</th><th scope="col">Detalhes</th></tr></thead><tbody id="historyRows"></tbody></table></div></section>
+    <section class="glass-card history-details" id="historyDayDetails" hidden aria-labelledby="historyDayTitle"><h2 id="historyDayTitle" tabindex="-1">Detalhes do dia</h2><div id="historyDayBody"></div></section>
+  </main>
+
   <div id="modal" class="modal" aria-hidden="true">
     <div class="modal-backdrop"></div>
     <div class="modal-box" role="dialog" aria-modal="true" aria-label="Detalhes do HydroCasa">
@@ -236,5 +260,97 @@
   <footer><span>HydroCasa</span> • Projeto acadêmico de Engenharia • ESP32 + LittleFS</footer>
   <script src="consumption.js"></script>
   <script src="app.js"></script>
+
+  <script id="consumptionPageScript">
+  // Navegação interna por URL: não recriar app.js, não duplicar polling e nunca escrever no ledger.
+  (()=>{
+    const q=id=>document.getElementById(id),M=HydroConsumption;
+    const escape=value=>String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const dateKey=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    function datesBetween(from,to){
+      const start=new Date(from+'T12:00:00'),end=new Date(to+'T12:00:00');
+      if(!Number.isFinite(+start)||!Number.isFinite(+end)||dateKey(start)!==from||dateKey(end)!==to||start>end)throw Error('Informe um intervalo de datas válido.');
+      const days=[];for(let d=new Date(start);d<=end;d.setDate(d.getDate()+1)){
+        if(days.length>=366)throw Error('Escolha até 366 dias por consulta.');days.push(dateKey(d));
+      }return days;
+    }
+    function summarize(history,days){
+      const rows=days.map(day=>{
+        const h=history[day],valid=h&&h.readings>0&&Number.isFinite(h.total1)&&h.total1>=0&&Number.isFinite(h.total2)&&h.total2>=0;
+        return {day,h:valid?h:null};
+      });
+      const recorded=rows.filter(r=>r.h),total=recorded.reduce((sum,r)=>sum+r.h.total1+r.h.total2,0);
+      return {rows,total,count:recorded.length,partial:recorded.filter(r=>r.h.partial!==false).length,average:recorded.length?total/recorded.length:null};
+    }
+    let saved={},selected=null,activeDays=[];
+    function readHistory(){
+      const raw=localStorage.getItem('hydrocasa_ledger_v2');
+      if(!raw)return {history:{},activityRecords:{}};
+      const data=JSON.parse(raw);
+      if(data.version!==2||!data.history||typeof data.history!=='object'||Array.isArray(data.history))throw Error('Formato de histórico inválido.');
+      return data;
+    }
+    function presets(){
+      const now=new Date(),start=new Date(now),period=q('historyPeriod').value;
+      if(period==='custom')return;
+      if(period==='week')start.setDate(start.getDate()-6);
+      if(period==='month')start.setDate(1);
+      q('historyFrom').value=dateKey(start);q('historyTo').value=dateKey(now);
+    }
+    function showDay(day,focus=false){
+      const h=saved.history[day];if(!h)return;
+      selected=day;q('historyDayDetails').hidden=false;
+      q('historyDayTitle').textContent='Detalhes de '+day.split('-').reverse().join('/');
+      const p=M.maybeProfile(h.profile),result=M.compareDay(h,null,{closed:day<dateKey(new Date())});
+      const records=Array.isArray(saved.activityRecords?.[day])?saved.activityRecords[day]:[];
+      q('historyDayBody').innerHTML=`<p><b>Total registrado: ${M.m3(h.total1+h.total2)}</b></p><p>${escape(result.label)}. A classificação não comprova desperdício ou economia.</p><p>${p?escape(p.residents)+' moradores no perfil registrado. Base: '+escape(M.sources[p.referenceMode].name)+'. Referência da casa: '+M.m3(p.residents*p.referenceLiters)+'/dia.':'Sem perfil de moradores registrado para este dia.'}</p><p>${p&&!h.profileMixed?'Volume monitorado por morador: '+M.m3((h.total1+h.total2)/p.residents)+'.':'Não há uma configuração única para calcular o volume por morador.'}</p><p>Coleta ${h.partial!==false?'parcial — pode haver consumo não registrado':'marcada como completa'}. ${p&&p.scope==='whole'?'Perfil declara cobertura da residência inteira.':'A medição por ramais não representa necessariamente a casa inteira.'}</p><h3>Atividades registradas</h3>${records.length?'<ul>'+records.filter(r=>r&&typeof r==='object').map(r=>'<li><b>'+escape(r.name)+'</b>: estimativa '+M.m3(r.liters)+'; volume manual '+(r.observed==null?'não informado':M.m3(r.observed))+'. Fonte: '+escape(r.sourceName||'Não informada')+'.</li>').join('')+'</ul>':'<p>Nenhuma atividade registrada neste dia.</p>'}<p class="muted-note">Estimativas de atividades não são subtraídas do consumo dos sensores.</p>`;
+      if(focus)q('historyDayTitle').focus();
+    }
+    function draw(rows){
+      const w=Math.max(620,rows.length*34),height=220,top=24,bottom=176,scale=Math.max(1,...rows.filter(r=>r.h).map(r=>Math.max(r.h.total1,r.h.total2)));
+      const step=(w-70)/rows.length;
+      let content=`<svg viewBox="0 0 ${w} ${height}" width="${w}" height="${height}" role="img" aria-label="Volumes diários dos ramais; valores exatos na tabela"><text x="8" y="16" fill="currentColor" font-size="12">${M.m3(scale)}</text><path d="M40 ${top}V${bottom}H${w-10}" fill="none" stroke="currentColor" opacity=".25"/>`;
+      rows.forEach((r,i)=>{
+        const x=45+i*step,bw=Math.min(12,step/3);
+        if(r.h){[r.h.total1,r.h.total2].forEach((v,j)=>{const bh=v/scale*(bottom-top);content+=`<rect x="${x+j*(bw+2)}" y="${bottom-bh}" width="${bw}" height="${bh}" fill="${j?'#a855f7':'#3b82f6'}"><title>${r.day}, ramal ${j+1}: ${M.m3(v)}</title></rect>`;});}
+        else content+=`<text x="${x}" y="${bottom-5}" fill="currentColor" font-size="12">—</text>`;
+        if(i%Math.max(1,Math.ceil(rows.length/12))===0)content+=`<text x="${x}" y="200" fill="currentColor" font-size="11">${r.day.slice(8)}/${r.day.slice(5,7)}</text>`;
+      });q('historyChart').innerHTML=content+'</svg>';
+    }
+    function render(){
+      try{
+        const days=datesBetween(q('historyFrom').value,q('historyTo').value);
+        saved=readHistory();const summary=summarize(saved.history,days);activeDays=days;
+        q('historyFilterMessage').textContent=summary.count?'Histórico consultado.':'Sem leituras neste período.';q('historyFilterMessage').className='muted-note';
+        q('periodVolume').textContent=summary.count?M.m3(summary.total):'—';q('periodAverage').textContent=M.m3(summary.average);
+        q('periodCoverage').textContent=summary.count+' de '+days.length;
+        q('periodCoverageNote').textContent=summary.partial+' dia(s) com coleta parcial; '+(days.length-summary.count)+' sem leituras.';
+        q('historyRows').innerHTML=summary.rows.map(({day,h})=>`<tr><th scope="row">${day.split('-').reverse().join('/')}</th><td>${h?M.m3(h.total1):'—'}</td><td>${h?M.m3(h.total2):'—'}</td><td>${h?M.m3(h.total1+h.total2):'—'}</td><td>${h?(h.partial!==false?'Coleta parcial':'Completa'):'Sem dados'}</td><td>${h?'<button type="button" class="ghost-btn" data-history-day="'+day+'" aria-label="Ver detalhes de '+day+'">Ver dia</button>':'—'}</td></tr>`).join('');
+        draw(summary.rows);
+        if(selected&&activeDays.includes(selected)&&saved.history[selected])showDay(selected);else{selected=null;q('historyDayDetails').hidden=true;}
+      }catch(e){q('historyFilterMessage').textContent='Não foi possível consultar o histórico: '+e.message;q('historyFilterMessage').className='form-error';q('historyRows').textContent='';q('historyChart').textContent='Consulta indisponível.';['periodVolume','periodAverage','periodCoverage'].forEach(id=>q(id).textContent='—');q('periodCoverageNote').textContent='';q('historyDayDetails').hidden=true;}
+    }
+    function route(focus=false){
+      const internal=new URLSearchParams(location.search).get('pagina')==='consumo';
+      q('dashboard-page').hidden=internal;q('consumption-page').hidden=!internal;
+      document.querySelectorAll('[data-page]').forEach(link=>{if((link.dataset.page==='consumption')===internal)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');});
+      document.title=internal?'Meu consumo | HydroCasa':'HydroCasa | Monitoramento Inteligente de Água';
+      if(internal){render();if(focus)q('consumptionTitle').focus();}else window.dispatchEvent(new Event('resize'));
+    }
+    document.querySelectorAll('[data-page]').forEach(link=>link.addEventListener('click',e=>{
+      if(e.button!==0||e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)return;
+      e.preventDefault();history.pushState(null,'',link.href);route(true);window.scrollTo({top:0,behavior:'instant'});
+    }));
+    window.addEventListener('popstate',()=>route(true));
+    q('historyFilters').addEventListener('submit',e=>{e.preventDefault();render();});
+    q('historyPeriod').addEventListener('change',()=>{presets();render();});
+    ['historyFrom','historyTo'].forEach(id=>q(id).addEventListener('input',()=>q('historyPeriod').value='custom'));
+    q('historyRows').addEventListener('click',e=>{const button=e.target.closest('[data-history-day]');if(button)showDay(button.dataset.historyDay,true);});
+    q('refreshConsumption').addEventListener('click',render);
+    window.addEventListener('storage',e=>{if(e.key==='hydrocasa_ledger_v2'&&!q('consumption-page').hidden)render();});
+    presets();route();
+  })();
+  </script>
+
 </body>
 </html>
