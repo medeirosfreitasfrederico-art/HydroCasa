@@ -224,3 +224,22 @@ details[open] > :not(summary) { animation: details-appear 160ms ease-out; }
 .history-details p, .history-details li { font-size: 14px; line-height: 1.7; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; }
 @media(max-width:560px) { .history-filters button { width: 100%; } .consumption-page { padding-top: 24px; } }
+
+
+/* Rolagem roxa em toda a interface, incluindo tabelas e painéis internos.
+   O seletor do html acompanha o tema para também colorir a barra da janela. */
+:root { --scroll-thumb: #7c3aed; --scroll-track: #eee9f8; --scroll-hover: #6d28d9; }
+html:has(body.dark), body.dark {
+  --scroll-thumb: #8b5cf6; --scroll-track: #141025; --scroll-hover: #a78bfa;
+}
+* { scrollbar-color: var(--scroll-thumb) var(--scroll-track); }
+/* Compatibilidade com navegadores que utilizam os pseudo-elementos WebKit. */
+::-webkit-scrollbar { width: 12px; height: 12px; }
+::-webkit-scrollbar-track { background: var(--scroll-track); }
+::-webkit-scrollbar-thumb {
+  background: var(--scroll-thumb); border: 3px solid var(--scroll-track); border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--scroll-hover); }
+::-webkit-scrollbar-corner { background: var(--scroll-track); }
+/* Preservar as cores de acessibilidade escolhidas pelo sistema operacional. */
+@media (forced-colors: active) { * { scrollbar-color: auto; } }
