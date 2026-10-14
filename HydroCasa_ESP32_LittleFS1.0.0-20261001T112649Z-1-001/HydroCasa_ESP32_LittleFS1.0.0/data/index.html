@@ -31,7 +31,7 @@
     </div>
   </header>
 
-  <nav class="page-nav shell" aria-label="Páginas do HydroCasa"><a href="?" data-page="dashboard">Painel</a><a href="?pagina=consumo" data-page="consumption">Meu consumo</a></nav>
+  <nav class="page-nav shell" aria-label="Páginas do HydroCasa"><a href="?" data-page="dashboard">Painel</a><a href="?pagina=consumo" data-page="consumption"><svg class="ui-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2 7M3 4v7h7M12 7v5l3 2"/></svg>Meu consumo</a></nav>
   <main class="shell" id="dashboard-page">
     <section class="hero">
       <div>
@@ -49,7 +49,7 @@
     <section class="glass-card household-card" aria-labelledby="householdTitle">
       <div class="card-head"><div><span class="eyebrow">PERFIL DA RESIDÊNCIA</span><h2 id="householdTitle">Quantas pessoas moram aqui?</h2><p>O perfil ajusta a comparação. As medições dos sensores continuam iguais.</p></div></div>
       <form id="householdForm">
-        <div class="household-controls"><label for="residentsInput">Moradores</label><div class="stepper"><button type="button" id="residentsMinus" aria-label="Diminuir moradores">−</button><input id="residentsInput" type="number" min="1" max="100" step="1" required inputmode="numeric" placeholder="Ex.: 4"><button type="button" id="residentsPlus" aria-label="Aumentar moradores">+</button></div></div>
+        <div class="household-controls"><label for="residentsInput" class="icon-label"><svg class="ui-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3M16 5a3 3 0 0 1 0 6M17 15a5 5 0 0 1 4 5"/></svg>Moradores</label><div class="stepper"><button type="button" id="residentsMinus" aria-label="Diminuir moradores">−</button><input id="residentsInput" type="number" min="1" max="100" step="1" required inputmode="numeric" placeholder="Ex.: 4"><button type="button" id="residentsPlus" aria-label="Aumentar moradores">+</button></div></div>
         <details class="profile-details"><summary>Referência, abrangência e nomes dos ramais</summary>
           <div class="form-grid">
             <label>Referência por pessoa<select id="referenceMode"><option value="snis">SNIS 2020 — média histórica nacional</option><option value="user">Personalizada — hipótese do usuário</option></select></label>
@@ -70,8 +70,8 @@
 
     <!-- Cartões: título com destaque discreto, valor principal e texto de apoio separados. -->
     <section class="metrics-grid">
-      <article class="metric-card">
-        <span class="metric-label">Volume monitorado hoje</span>
+      <article class="metric-card metric-primary">
+        <span class="metric-label"><svg class="ui-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3C9 7 5 11 5 15a7 7 0 0 0 14 0c0-4-4-8-7-12Z"/></svg>Volume monitorado hoje</span>
         <strong id="todayTotal">—</strong>
         <small id="todayDelta" aria-live="polite">aguardando leituras</small>
       </article>
@@ -86,7 +86,7 @@
         <small><i class="dot d2"></i><span id="flow2">—</span></small>
       </article>
       <article class="metric-card">
-        <span class="metric-label">Status</span>
+        <span class="metric-label"><svg class="ui-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a14 14 0 0 1 18 0M6 12a9 9 0 0 1 12 0M9 16a4 4 0 0 1 6 0"/><circle cx="12" cy="20" r=".5"/></svg>Status</span>
         <strong id="statusText">Monitorando</strong>
         <small id="statusDetail" aria-live="polite">Sistema pronto</small>
       </article>
@@ -244,7 +244,7 @@
       <article class="glass-card"><span>Média por dia com leitura</span><strong id="periodAverage">—</strong><small>Considera apenas dias com dados, inclusive parciais.</small></article>
       <article class="glass-card"><span>Dias com leituras</span><strong id="periodCoverage">—</strong><small id="periodCoverageNote">Dias sem dados não são consumo zero.</small></article>
     </section>
-    <section class="glass-card"><div class="card-head"><div><h2>Evolução por dia</h2><p>Volumes em m³. Azul: ramal 1; violeta: ramal 2. Consulte os valores na tabela.</p></div></div><div id="historyChart" class="history-chart" aria-label="Gráfico diário"></div></section>
+    <section class="glass-card"><div class="card-head"><div><h2>Evolução por dia</h2><p>Volumes em m³. Azul: ramal 1; violeta: ramal 2. Consulte os valores na tabela.</p></div></div><div id="historyEmpty" class="empty-state" hidden><svg class="ui-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2 7M3 4v7h7M12 7v5l3 2"/></svg><strong>Ainda não há leituras neste período</strong><p>Consulte outro período ou acompanhe a conexão dos sensores no Painel.</p></div><div id="historyChart" class="history-chart" aria-label="Gráfico diário"></div></section>
     <section class="glass-card history-table-card"><div class="card-head"><div><h2>Leituras do período</h2><p>Escolha um dia para consultar o perfil, as atividades e a comparação.</p></div></div><div class="history-table-scroll"><table class="history-table"><caption class="sr-only">Volumes por dia e cobertura das leituras</caption><thead><tr><th scope="col">Dia</th><th scope="col">Ramal 1 (m³)</th><th scope="col">Ramal 2 (m³)</th><th scope="col">Total (m³)</th><th scope="col">Cobertura</th><th scope="col">Detalhes</th></tr></thead><tbody id="historyRows"></tbody></table></div></section>
     <section class="glass-card history-details" id="historyDayDetails" hidden aria-labelledby="historyDayTitle"><h2 id="historyDayTitle" tabindex="-1">Detalhes do dia</h2><div id="historyDayBody"></div></section>
   </main>
@@ -326,9 +326,11 @@
         q('periodCoverage').textContent=summary.count+' de '+days.length;
         q('periodCoverageNote').textContent=summary.partial+' dia(s) com coleta parcial; '+(days.length-summary.count)+' sem leituras.';
         q('historyRows').innerHTML=summary.rows.map(({day,h})=>`<tr><th scope="row">${day.split('-').reverse().join('/')}</th><td>${h?M.m3(h.total1):'—'}</td><td>${h?M.m3(h.total2):'—'}</td><td>${h?M.m3(h.total1+h.total2):'—'}</td><td>${h?(h.partial!==false?'Coleta parcial':'Completa'):'Sem dados'}</td><td>${h?'<button type="button" class="ghost-btn" data-history-day="'+day+'" aria-label="Ver detalhes de '+day+'">Ver dia</button>':'—'}</td></tr>`).join('');
+        q('historyEmpty').hidden=summary.count>0;
+        q('historyChart').hidden=summary.count===0;
         draw(summary.rows);
         if(selected&&activeDays.includes(selected)&&saved.history[selected])showDay(selected);else{selected=null;q('historyDayDetails').hidden=true;}
-      }catch(e){q('historyFilterMessage').textContent='Não foi possível consultar o histórico: '+e.message;q('historyFilterMessage').className='form-error';q('historyRows').textContent='';q('historyChart').textContent='Consulta indisponível.';['periodVolume','periodAverage','periodCoverage'].forEach(id=>q(id).textContent='—');q('periodCoverageNote').textContent='';q('historyDayDetails').hidden=true;}
+      }catch(e){q('historyEmpty').hidden=true;q('historyChart').hidden=false;q('historyFilterMessage').textContent='Não foi possível consultar o histórico: '+e.message;q('historyFilterMessage').className='form-error';q('historyRows').textContent='';q('historyChart').textContent='Consulta indisponível.';['periodVolume','periodAverage','periodCoverage'].forEach(id=>q(id).textContent='—');q('periodCoverageNote').textContent='';q('historyDayDetails').hidden=true;}
     }
     function route(focus=false){
       const internal=new URLSearchParams(location.search).get('pagina')==='consumo';
@@ -352,5 +354,24 @@
   })();
   </script>
 
+<script id="visualUnitsScript">
+  // Camada visual: preserva o texto e a precisão dos valores emitidos pelo coletor.
+  // Observar somente os indicadores, sem ler sensores ou escrever no histórico.
+  (()=>{
+    const ids=['todayTotal','sensor1Total','sensor2Total','householdTarget','perPersonValue','rawAnalysis','justifiedValue','contextualValue','periodVolume','periodAverage'];
+    ids.forEach(id=>{
+      const el=document.getElementById(id);if(!el)return;
+      function decorate(){
+        if(el.querySelector('.value-unit'))return;
+        const text=el.textContent,match=text.match(/^(.*?)( m³)$/);
+        el.classList.toggle('value-missing',text.trim()==='—');
+        if(!match)return;
+        const unit=document.createElement('span');unit.className='value-unit';unit.textContent=match[2];
+        el.replaceChildren(document.createTextNode(match[1]),unit);
+      }
+      new MutationObserver(decorate).observe(el,{childList:true,characterData:true,subtree:true});decorate();
+    });
+  })();
+  </script>
 </body>
 </html>
