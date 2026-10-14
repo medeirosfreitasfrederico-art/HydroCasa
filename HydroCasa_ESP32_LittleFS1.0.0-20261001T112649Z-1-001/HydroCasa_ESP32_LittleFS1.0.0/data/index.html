@@ -12,18 +12,19 @@
   <title>HydroCasa | Monitoramento Inteligente de Água</title>
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body id="top">
   <div class="ambient ambient-a"></div>
   <div class="ambient ambient-b"></div>
 
   <header class="topbar">
-    <div class="brand">
+    <!-- Link nativo: retorna ao topo por mouse ou teclado, mesmo sem JavaScript. -->
+    <a class="brand" href="#top" aria-label="HydroCasa — voltar ao topo" title="Voltar ao topo">
       <div class="brand-mark">H₂O</div>
       <div>
         <strong>HydroCasa</strong>
         <span>Water Intelligence System</span>
       </div>
-    </div>
+    </a>
     <div class="header-actions">
       <span id="connectionBadge" class="badge offline">● Offline</span>
       <button id="themeBtn" class="icon-btn" aria-label="Alternar tema">☼</button>
@@ -64,6 +65,7 @@
       <p class="muted-note">Configuração salva neste navegador. Alterações ficam registradas por dia; um dia com perfis diferentes não recebe uma classificação única.</p>
     </section>
 
+    <!-- Cartões: título com destaque discreto, valor principal e texto de apoio separados. -->
     <section class="metrics-grid">
       <article class="metric-card">
         <span class="metric-label">Volume monitorado hoje</span>
