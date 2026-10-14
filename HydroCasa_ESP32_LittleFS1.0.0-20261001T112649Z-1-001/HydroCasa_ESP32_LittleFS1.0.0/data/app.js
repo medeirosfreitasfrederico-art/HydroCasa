@@ -365,7 +365,7 @@ function renderActivityLog(){
   $$('[data-remove-activity]').forEach(b=>b.onclick=()=>{records.splice(Number(b.dataset.removeActivity),1);save();renderActivityLog();updateAnalysis();});
 }
 
-// Check vetorial inspirado na referência: duas metades se unem ao confirmar o salvamento.
+// Check vetorial inteiro: entrada suave de opacidade e escala ao confirmar o salvamento.
 // Recriar os elementos reinicia a animação a cada confirmação, sem temporizadores.
 function profileFeedback(message, saved=false, error=false){
   const el=$("#profileMessage");
@@ -376,7 +376,7 @@ function profileFeedback(message, saved=false, error=false){
     icon.className="profile-success-icon";
     icon.setAttribute("aria-hidden","true");
     const check='<svg viewBox="0 0 32 32" focusable="false"><path d="M8 16.5l5.2 5.2L24 10.8" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-    icon.innerHTML='<span class="success-half success-left">'+check+'</span><span class="success-half success-right">'+check+'</span>';
+    icon.innerHTML=check;
     el.appendChild(icon);
   }
   const text=document.createElement("span");
