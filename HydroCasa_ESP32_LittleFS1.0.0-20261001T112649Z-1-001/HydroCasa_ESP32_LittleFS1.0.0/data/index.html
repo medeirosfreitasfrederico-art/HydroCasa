@@ -44,21 +44,41 @@
       </div>
     </section>
 
+    <section class="glass-card household-card" aria-labelledby="householdTitle">
+      <div class="card-head"><div><span class="eyebrow">PERFIL DA RESIDÊNCIA</span><h2 id="householdTitle">Quantas pessoas moram aqui?</h2><p>O perfil ajusta a comparação. As medições dos sensores continuam iguais.</p></div></div>
+      <form id="householdForm">
+        <div class="household-controls"><label for="residentsInput">Moradores</label><div class="stepper"><button type="button" id="residentsMinus" aria-label="Diminuir moradores">−</button><input id="residentsInput" type="number" min="1" max="100" step="1" required inputmode="numeric" placeholder="Ex.: 4"><button type="button" id="residentsPlus" aria-label="Aumentar moradores">+</button></div><button class="primary-btn" type="submit">Aplicar perfil</button></div>
+        <details class="profile-details"><summary>Referência, abrangência e nomes dos ramais</summary>
+          <div class="form-grid">
+            <label>Referência por pessoa<select id="referenceMode"><option value="snis">SNIS 2020 — média histórica nacional</option><option value="user">Personalizada — hipótese do usuário</option></select></label>
+            <label>Referência (m³/pessoa/dia)<input id="referenceM3" type="number" min="0.000001" max="10" step="any" value="0.1521" required></label>
+            <label>Faixa de comparação (±%)<input id="toleranceInput" type="number" min="0" max="50" step="any" value="10" required><small>Regra do projeto; 10% não é uma tolerância oficial da fonte.</small></label>
+            <label>O que os sensores cobrem?<select id="scopeInput"><option value="branches">Somente os ramais da maquete</option><option value="whole">Toda a residência, sem dupla contagem</option></select><small>Selecione toda a residência apenas se a instalação medir todos os usos.</small></label>
+            <label>Nome do ramal 01<input id="ramal1Input" maxlength="32" value="Ramal 01" required></label>
+            <label>Nome do ramal 02<input id="ramal2Input" maxlength="32" value="Ramal 02" required></label>
+          </div>
+        </details>
+        <p id="profileMessage" role="status"></p>
+      </form>
+      <div id="householdSource" class="source-inline"></div>
+      <p class="muted-note">Configuração salva neste navegador. Alterações ficam registradas por dia; um dia com perfis diferentes não recebe uma classificação única.</p>
+    </section>
+
     <section class="metrics-grid">
       <article class="metric-card">
-        <span class="metric-label">Consumo hoje</span>
-        <strong id="todayTotal">0,00 L</strong>
+        <span class="metric-label">Volume monitorado hoje</span>
+        <strong id="todayTotal">—</strong>
         <small id="todayDelta" aria-live="polite">aguardando leituras</small>
       </article>
       <article class="metric-card">
-        <span class="metric-label">Ramal 01</span>
-        <strong id="sensor1Total">0,00 L</strong>
-        <small><i class="dot d1"></i><span id="flow1">0,00 L/min</span></small>
+        <span class="metric-label" data-ramal="1">Ramal 01</span>
+        <strong id="sensor1Total">—</strong>
+        <small><i class="dot d1"></i><span id="flow1">—</span></small>
       </article>
       <article class="metric-card">
-        <span class="metric-label">Ramal 02</span>
-        <strong id="sensor2Total">0,00 L</strong>
-        <small><i class="dot d2"></i><span id="flow2">0,00 L/min</span></small>
+        <span class="metric-label" data-ramal="2">Ramal 02</span>
+        <strong id="sensor2Total">—</strong>
+        <small><i class="dot d2"></i><span id="flow2">—</span></small>
       </article>
       <article class="metric-card">
         <span class="metric-label">Status</span>
@@ -67,10 +87,17 @@
       </article>
     </section>
 
+    <section class="comparison-grid" aria-label="Comparação por morador">
+      <article class="glass-card"><span>Referência da casa / dia</span><strong id="householdTarget">—</strong><small id="targetDetail">Configure os moradores.</small></article>
+      <article class="glass-card"><span>Volume monitorado / morador</span><strong id="perPersonValue">—</strong><small id="perPersonDetail">Divisão do volume observado; não identifica consumo individual.</small></article>
+      <article class="glass-card"><span>Comparação com a referência</span><strong id="comparisonStatus">Aguardando perfil</strong><small id="comparisonDetail">Sem diagnóstico de desperdício ou vazamento.</small></article>
+    </section>
+
     <nav class="tabs" aria-label="Navegação principal">
       <button class="tab active" data-panel="dashboard">Visão geral</button>
       <button class="tab" data-panel="calendar">Calendário</button>
       <button class="tab" data-panel="analysis">Análise</button>
+      <button class="tab" data-panel="activities">Atividades</button>
       <button class="tab" data-panel="settings">Sistema</button>
     </nav>
 
@@ -108,24 +135,24 @@
           <div class="donut-wrap">
             <div class="donut" id="donut"><div><strong id="ratio1">50%</strong><span>Ramal 01</span></div></div>
           </div>
-          <div class="split-row"><span><i class="dot d1"></i>Ramal 01</span><strong id="split1">0,00 L</strong></div>
-          <div class="split-row"><span><i class="dot d2"></i>Ramal 02</span><strong id="split2">0,00 L</strong></div>
+          <div class="split-row"><span><i class="dot d1"></i>Ramal 01</span><strong id="split1">—</strong></div>
+          <div class="split-row"><span><i class="dot d2"></i>Ramal 02</span><strong id="split2">—</strong></div>
         </article>
       </div>
 
       <div class="lower-grid">
         <article class="glass-card chart-card">
-          <div class="card-head"><div><h3>Consumo recente</h3><p>Estimativa acumulada do dia</p></div><span class="mini-tag">LITROS</span></div>
+          <div class="card-head"><div><h3>Consumo recente</h3><p>Volumes observados nos últimos 7 dias; pode haver coleta parcial.</p></div><span class="mini-tag">m³</span></div>
           <canvas id="dailyChart" height="190"></canvas>
         </article>
 
         <article class="glass-card alert-card" id="alertCard">
-          <div class="card-head"><div><h3>Inteligência de consumo</h3><p>Detecção de comportamento acima do padrão</p></div></div>
+          <div class="card-head"><div><h3>Comparação de consumo</h3><p>Referência proporcional ao perfil informado.</p></div></div>
           <div id="alertContent" class="alert-content neutral">
             <div class="alert-icon">✓</div>
-            <div><strong>Sem anomalias detectadas</strong><p>O sistema está comparando o consumo com o padrão configurado.</p></div>
+            <div><strong>Aguardando dados e configuração</strong><p>A comparação depende da abrangência e da cobertura da coleta.</p></div>
           </div>
-          <button class="secondary-btn" id="openJustify">Justificar consumo</button>
+          <button class="secondary-btn" id="openJustify">Registrar atividade</button>
         </article>
       </div>
     </section>
@@ -152,14 +179,34 @@
         <button class="primary-btn" id="openJustify2">+ Registrar atividade</button>
       </div>
       <div class="analysis-grid">
-        <article class="glass-card big-number"><span>Consumo sem filtro</span><strong id="rawAnalysis">0,00 L</strong><small>Todos os litros medidos pelos sensores.</small></article>
-        <article class="glass-card big-number"><span>Atividades justificadas</span><strong id="justifiedValue">0,00 L</strong><small>Estimativa das atividades selecionadas.</small></article>
-        <article class="glass-card big-number highlight"><span>Consumo contextualizado</span><strong id="contextualValue">0,00 L</strong><small>Leitura visual após aplicar justificativas.</small></article>
+        <article class="glass-card big-number"><span>Volume monitorado</span><strong id="rawAnalysis">—</strong><small>Volume observado nos ramais, em m³.</small></article>
+        <article class="glass-card big-number"><span>Estimativas de atividades</span><strong id="justifiedValue">—</strong><small>Registros informados; não são leituras adicionais dos sensores.</small></article>
+        <article class="glass-card big-number highlight"><span>Volume por morador</span><strong id="contextualValue">—</strong><small>As estimativas não são subtraídas do volume medido.</small></article>
       </div>
       <article class="glass-card report-card">
-        <div class="card-head"><div><h3>Detalhamento por ramal</h3><p>Comparação do período selecionado</p></div></div>
+        <div class="card-head"><div><h3>Detalhamento por ramal</h3><p>Volume observado hoje; os sensores não identificam atividades sozinhos.</p></div></div>
         <div id="analysisBars"></div>
       </article>
+    </section>
+
+    <section id="activities" class="panel">
+      <div class="section-heading"><div><span class="eyebrow">REFERÊNCIAS EXPLICADAS</span><h2>Atividades da casa</h2><p>Compare cenários de uso com fontes verificáveis. Valores educativos, não médias universais.</p></div></div>
+      <article class="glass-card">
+        <form id="activityForm">
+          <div class="form-grid">
+            <label>Atividade<select id="activitySelect"></select></label>
+            <label><span id="quantityLabel">Ocorrências</span><input id="activityQuantity" type="number" min="1" max="100" step="1" value="1" required></label>
+            <label id="minutesLabel">Duração por ocorrência (min)<input id="activityMinutes" type="number" min="0.1" max="240" step="any" value="15"></label>
+            <label id="customActivityLabel" hidden>Referência por ocorrência (m³)<input id="customActivityM3" type="number" min="0.000001" max="1000" step="any"></label>
+            <label>Volume total observado (m³, opcional)<input id="activityObservedM3" type="number" min="0" max="1000" step="any" placeholder="Informe após concluir a atividade"><small>Informação manual para todas as ocorrências calculadas. Não é identificada automaticamente pelos sensores.</small></label>
+          </div>
+          <div id="activitySource" class="source-inline"></div>
+          <div id="activityPreview" class="activity-preview" aria-live="polite"></div>
+          <button type="submit" class="primary-btn">Registrar no dia de hoje</button><p id="activityMessage" role="status"></p>
+        </form>
+      </article>
+      <article class="glass-card report-card"><h3>Registros de hoje</h3><div id="activityLog"></div></article>
+      <div id="activityCatalog" class="reference-grid"></div>
     </section>
 
     <section id="settings" class="panel">
@@ -170,18 +217,20 @@
         <article class="glass-card setting-card"><span>Persistência</span><strong>LittleFS + navegador</strong><p>O ESP32 guarda snapshots e o navegador mantém o histórico visual.</p></article>
         <article class="glass-card setting-card danger"><span>Manutenção</span><strong>Zerar contadores</strong><p>Use somente antes de uma nova demonstração do projeto.</p><button class="danger-btn" id="resetBtn">Zerar ESP32</button></article>
       </div>
+      <article class="glass-card report-card"><h3>Referências e metodologia</h3><div id="methodologyContent"></div></article>
     </section>
   </main>
 
   <div id="modal" class="modal" aria-hidden="true">
     <div class="modal-backdrop"></div>
-    <div class="modal-box" role="dialog" aria-modal="true">
-      <button class="modal-close" id="closeModal">×</button>
+    <div class="modal-box" role="dialog" aria-modal="true" aria-label="Detalhes do HydroCasa">
+      <button class="modal-close" id="closeModal" aria-label="Fechar detalhes">×</button>
       <div id="modalBody"></div>
     </div>
   </div>
 
   <footer><span>HydroCasa</span> • Projeto acadêmico de Engenharia • ESP32 + LittleFS</footer>
+  <script src="consumption.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

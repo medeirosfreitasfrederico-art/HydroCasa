@@ -3,12 +3,14 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const vm=require('node:vm');
 const path=require('node:path');
+const HydroConsumption=require('../HydroCasa_ESP32_LittleFS1.0.0-20261001T112649Z-1-001/HydroCasa_ESP32_LittleFS1.0.0/data/consumption.js');
 const source=fs.readFileSync(path.join(__dirname,'../HydroCasa_ESP32_LittleFS1.0.0-20261001T112649Z-1-001/HydroCasa_ESP32_LittleFS1.0.0/data/app.js'),'utf8');
 function setup(values={}){
   const storage=new Map(Object.entries(values));
   const localStorage={getItem:k=>storage.get(k)??null,setItem:(k,v)=>storage.set(k,v)};
-  const ctx=vm.createContext({localStorage,Date,Math,Number,JSON});
-  vm.runInContext(source.slice(0,source.indexOf('async function poll()'))+'\nglobalThis.api={state,addSnapshot,save};',ctx);
+  const ctx=vm.createContext({HydroConsumption,localStorage,Date,Math,Number,JSON});
+  const profileCode=source.slice(source.indexOf('function applyProfile('),source.indexOf('function activityInput('));
+  vm.runInContext(source.slice(0,source.indexOf('async function poll()'))+profileCode+'\nglobalThis.api={state,addSnapshot,save,applyProfile};',ctx);
   return {...ctx.api,storage,localStorage};
 }
 const day='2026-10-13';
@@ -57,4 +59,25 @@ test('malformed JSON and storage quota failure do not stop in-memory collection'
   const a=setup({hydrocasa_ledger_v2:'{broken',hydrocasa_history:'{broken'});
   a.localStorage.setItem=()=>{throw new Error('quota');};a.addSnapshot(day,sample(0));a.addSnapshot(day,sample(3));
   assert.equal(a.state.history[day].total1,3);assert.equal(a.state.storageError,true);
+});
+
+test('profile changes preserve measured totals and historical residents across reload',()=>{
+  const a=setup(),t=new Date(2026,9,13,12).getTime();
+  a.applyProfile({residents:2,scope:'whole'},t);
+  a.addSnapshot(day,sample(0),t);a.addSnapshot(day,sample(20),t+2000);
+  a.applyProfile({residents:4,scope:'whole'},t+3000);
+  assert.equal(a.state.history[day].total1,20);
+  assert.equal(a.state.history[day].profile.residents,2);
+  assert.equal(a.state.history[day].profileMixed,true);
+  const b=setup(Object.fromEntries(a.storage));
+  assert.equal(b.state.household.residents,4);
+  assert.equal(b.state.history[day].profile.residents,2);
+  b.addSnapshot('2026-10-14',sample(25),t+86400000);
+  assert.equal(b.state.history['2026-10-14'].profile.residents,4);
+});
+test('first profile after collection starts cannot retroactively classify the day',()=>{
+  const a=setup(),t=new Date(2026,9,13,12).getTime();
+  a.addSnapshot(day,sample(0),t);a.applyProfile({residents:3,scope:'whole'},t+1000);
+  assert.equal(a.state.history[day].profileMixed,true);
+  assert.equal(HydroConsumption.compareDay(a.state.history[day],a.state.household).code,'unknown');
 });
