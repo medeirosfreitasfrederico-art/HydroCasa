@@ -34,6 +34,8 @@ const state = {
   storageError: false,
   lastValidAt: null,
   syncError: false,
+  demoMode: false,
+  apiMissing: false,
   household: M.maybeProfile(ledger.household),
   activityRecords: ledger.activityRecords && typeof ledger.activityRecords==="object" ? ledger.activityRecords : {}
 };
@@ -94,7 +96,11 @@ async function requestJson(url, options={}){
   const timeout=setTimeout(()=>controller.abort(),5000);
   try {
     const response=await fetch(url,{...options,cache:"no-store",signal:controller.signal});
-    if(!response.ok) throw new Error(`HTTP ${response.status}`);
+    if(!response.ok) {
+      const error=new Error(`HTTP ${response.status}`);
+      error.status=response.status;
+      throw error;
+    }
     const data=await response.json();
     if(!data || data.ok!==true) throw new Error("Resposta inválida do ESP32");
     return data;
@@ -112,7 +118,19 @@ function validateLive(d){
   return d;
 }
 
+// Illustrative values stay in memory and are never saved as sensor readings.
+const demoDay={total1:110,total2:80,readings:1,partial:true};
+function enableDemo(){
+  state.apiMissing=true;
+  state.demoMode=true;
+  state.connected=false;
+  state.lastValidAt=null;
+  state.live={liters1:0,liters2:0,flow1_lpm:0.003,flow2_lpm:0.002};
+  updateLive();
+}
+
 async function poll(){
+  if(state.apiMissing) return;
   try {
     const d=validateLive(await requestJson("/api/live"));
     const now=Date.now(),day=keyForDate(new Date(now));
@@ -124,6 +142,12 @@ async function poll(){
     await syncToEsp(d,day);
   } catch(e) {
     state.connected=false;
+    if(e.status===404){
+      // Static hosts do not expose the ESP32 firmware routes; stop polling permanently.
+      enableDemo();
+      return;
+    }
+    if(e.name!=="AbortError") console.warn("HydroCasa: consulta temporariamente indisponível:",e.message);
     updateConnection();
   }
 }
@@ -144,7 +168,7 @@ async function runPoll(){
   try { await currentPoll; }
   finally {
     currentPoll=null;
-    if(!resetPending) pollTimer=setTimeout(runPoll,2000);
+    if(!resetPending && !state.apiMissing) pollTimer=setTimeout(runPoll,2000);
   }
 }
 
@@ -152,37 +176,37 @@ function updateConnection(){
   updateHousehold();
   const b=$("#connectionBadge"),hasReading=state.lastValidAt!==null;
   b.className="badge "+(state.connected?"online":"offline");
-  b.textContent=state.connected?"● Online":"● Offline";
-  $("#statusText").textContent=state.connected?"Monitorando":"Sem conexão";
-  $("#statusDetail").textContent=hasReading
-    ? (state.connected?"Última leitura: ":"Dados desatualizados desde ")+new Date(state.lastValidAt).toLocaleTimeString("pt-BR")
+  b.textContent=state.demoMode?"● Demonstração":state.connected?"● Online":"● Offline";
+  $("#statusText").textContent=state.demoMode?"Dados simulados":state.connected?"Monitorando":"Sem conexão";
+  $("#statusDetail").textContent=state.demoMode?"Exemplo ilustrativo — nenhuma leitura real do sensor"
+    :hasReading?(state.connected?"Última leitura: ":"Dados desatualizados desde ")+new Date(state.lastValidAt).toLocaleTimeString("pt-BR")
     : "Aguardando primeira leitura válida";
   const warnings=[];
   if(state.storageError) warnings.push("Falha ao salvar no navegador");
   if(state.syncError) warnings.push("Falha ao salvar no ESP32");
   const h=state.history[todayKey()];
-  $("#todayDelta").textContent=warnings.length?warnings.join(" • ")
+  $("#todayDelta").textContent=state.demoMode?"SIMULAÇÃO • Não representa consumo real":warnings.length?warnings.join(" • ")
     : h && h.readings?"Coleta parcial do dia":"Aguardando leituras";
   const live=$(".live-dot");
-  live.textContent=state.connected?"AO VIVO":"SEM CONEXÃO";
+  live.textContent=state.demoMode?"SIMULADO":state.connected?"AO VIVO":"SEM CONEXÃO";
   if(!state.connected){
     $("#alertContent").className="alert-content neutral";
-    $("#alertContent").textContent="Análise indisponível: aguardando conexão e leitura válida.";
+    $("#alertContent").textContent=state.demoMode?"Modo demonstração: valores ilustrativos, sem coleta ou análise real.":"Análise indisponível: aguardando conexão e leitura válida.";
   }
 }
 
 function updateLive(){
   updateConnection();
   const d=state.live;
-  const h=state.history[todayKey()]||{total1:0,total2:0};
+  const h=state.demoMode?demoDay:(state.history[todayKey()]||{total1:0,total2:0});
   const t=(h.total1||0)+(h.total2||0);
   $("#todayTotal").textContent=h.readings?volume(t):"—";
   $("#sensor1Total").textContent=h.readings?volume(h.total1):"—";
   $("#sensor2Total").textContent=h.readings?volume(h.total2):"—";
   $("#split1").textContent=h.readings?volume(h.total1):"—";
   $("#split2").textContent=h.readings?volume(h.total2):"—";
-  $("#flow1").textContent=state.lastValidAt!==null?volume(d.flow1_lpm)+"/min":"—";
-  $("#flow2").textContent=state.lastValidAt!==null?volume(d.flow2_lpm)+"/min":"—";
+  $("#flow1").textContent=state.demoMode||state.lastValidAt!==null?volume(d.flow1_lpm)+"/min":"—";
+  $("#flow2").textContent=state.demoMode||state.lastValidAt!==null?volume(d.flow2_lpm)+"/min":"—";
   const ratio=t?Math.round((h.total1/t)*100):50;
   $("#ratio1").textContent=t?ratio+"%":"—";
   $("#donut").style.background=!t?"var(--line)":`conic-gradient(var(--primary) 0 ${ratio}%,var(--primary2) ${ratio}% 100%)`;
@@ -202,7 +226,7 @@ function updateChart(){
   const now=new Date(); const vals=[];
   for(let i=6;i>=0;i--){
     const d=new Date(now);d.setDate(now.getDate()-i);const k=keyForDate(d);
-    const x=state.history[k];vals.push(x&&x.readings?(x.total1+x.total2):null);
+    const x=state.history[k];vals.push(state.demoMode?[125,145,130,168,155,180,190][6-i]:(x&&x.readings?(x.total1+x.total2):null));
   }
   const max=Math.max(10,...vals.filter(v=>v!==null));
   ctx.strokeStyle=getComputedStyle(document.body).getPropertyValue("--line");ctx.lineWidth=1;
@@ -468,6 +492,7 @@ $("#themeBtn").onclick=()=>{document.body.classList.toggle("dark");localStorage.
 try { if(localStorage.getItem("hydrocasa_theme")==="dark")document.body.classList.add("dark"); } catch(e) {}
 
 $("#resetBtn").onclick=async()=>{
+  if(state.demoMode){alert("Modo demonstração: não existe ESP32 conectado para zerar.");return;}
   if(resetPending || !confirm("Zerar os contadores do ESP32? O consumo já registrado será preservado.")) return;
   resetPending=true;
   clearTimeout(pollTimer);
@@ -493,5 +518,6 @@ function clock(){
 }
 setInterval(clock,1000);clock();
 setupConsumptionUI();ensureToday();renderCalendar();updateLive();
-runPoll();
+if(location.hostname.endsWith(".vercel.app")) enableDemo();
+else runPoll();
 window.addEventListener("resize",updateChart);
