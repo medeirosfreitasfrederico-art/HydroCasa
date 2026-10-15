@@ -284,3 +284,33 @@ body.dark { --bg: #080e1b; --surface: #111c2e; --surface2: #152238; --line: rgba
   .brand span { font-size: 8px; letter-spacing: .06em; }
   .header-actions { gap: 6px; }
 }
+
+
+/* Tema claro: superfícies sólidas e contraste legível, sem afetar o tema escuro.
+   Lavanda identifica títulos; azul/violeta dos sensores mantêm seu significado. */
+body:not(.dark) {
+  --bg: #f3f5fa; --surface: #ffffff; --surface2: #ffffff;
+  --text: #172033; --muted: #526078; --line: #dce3ee;
+  --card-accent: #6230a5; --card-title-bg: #f4effb; --card-title-border: #e4d9f3;
+  --shadow: 0 4px 16px rgba(23,32,51,.045);
+}
+body:not(.dark) .ambient { opacity: .035; }
+body:not(.dark) .metric-card,
+body:not(.dark) .glass-card { backdrop-filter: none; }
+body:not(.dark) .metric-primary { background: #f4effb; border-color: #dac9ef; }
+body:not(.dark) .metric-primary > strong { color: #172033; }
+body:not(.dark) input,
+body:not(.dark) select { border-color: #aebbcf; background: #ffffff; }
+body:not(.dark) input:focus-visible,
+body:not(.dark) select:focus-visible { border-color: #7c3aed; outline: 2px solid #7c3aed; outline-offset: 2px; }
+body:not(.dark) input:disabled,
+body:not(.dark) select:disabled { opacity: 1; color: #526078; background: #edf0f5; border-color: #c9d2df; }
+/* Erros continuam reconhecíveis, inclusive com as bordas mais fortes dos campos. */
+body:not(.dark) [aria-invalid="true"] { border-color: var(--error-text); background: var(--error-bg); }
+body:not(.dark) .tab { color: #38465d; }
+body:not(.dark) .tab.active { color: #ffffff; background: #6d28d9; }
+body:not(.dark) .history-table thead { background: #edf2fa; }
+body:not(.dark) .history-table thead th { color: #38465d; }
+body:not(.dark) .history-table tbody tr:nth-child(even) { background: #f8fafd; }
+body:not(.dark) .history-table tbody tr:hover,
+body:not(.dark) .history-table tbody tr:focus-within { background: #f0eafa; }
