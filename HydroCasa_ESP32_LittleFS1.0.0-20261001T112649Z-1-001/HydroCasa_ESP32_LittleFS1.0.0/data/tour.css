@@ -10,3 +10,6 @@
 .hydro-tour-actions button{border:1px solid var(--line);padding:9px 12px;border-radius:10px;background:var(--surface);font-size:12px;font-weight:700}.hydro-tour-actions button:last-child{background:var(--primary);color:white}.hydro-tour-actions button:disabled{opacity:.4}
 @keyframes hydroTourIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
 @media(prefers-reduced-motion:reduce){.hydro-tour-dialog:not([hidden]){animation:none}.hydro-tour-progress span,.tour-launch{transition:none}}
+
+/* Apenas o Painel exibe o acionador do tour. */
+.tour-launch-wrap[hidden]{display:none!important}
