@@ -1,0 +1,11 @@
+.tour-launch-wrap{display:flex;justify-content:flex-end;margin-top:12px}.tour-launch{border:1px solid var(--line);border-radius:999px;background:var(--surface);padding:9px 15px;font-weight:700;font-size:12px;color:var(--primary);transition:transform .2s,border-color .2s}.tour-launch:hover{transform:translateY(-2px);border-color:var(--primary)}
+.hydro-tour-backdrop:not([hidden]){position:fixed;inset:0;background:rgba(4,10,25,.68);z-index:100;backdrop-filter:blur(2px)}
+.hydro-tour-focus{position:relative!important;z-index:101!important;outline:3px solid var(--cyan)!important;outline-offset:5px;border-radius:12px}
+.hydro-tour-dialog:not([hidden]){position:fixed;z-index:102;width:min(365px,calc(100vw - 24px));padding:23px;border-radius:19px;background:var(--surface2);color:var(--text);border:1px solid var(--line);box-shadow:0 22px 80px rgba(0,0,0,.32);animation:hydroTourIn .22s ease}
+.hydro-tour-meta,.hydro-tour-actions,.hydro-tour-actions>div{display:flex;align-items:center;justify-content:space-between;gap:9px}
+.hydro-tour-meta span{font-size:10px;letter-spacing:.14em;color:var(--primary);font-weight:800}.hydro-tour-meta button{font-size:25px;border:0;background:transparent}
+.hydro-tour-count{color:var(--muted);font-size:11px;margin:15px 0 6px}.hydro-tour-dialog h2{font-size:20px;margin:4px 0 10px}.hydro-tour-dialog p:not(.hydro-tour-count){font-size:13px;line-height:1.6;color:var(--muted)}
+.hydro-tour-progress{height:5px;background:var(--line);border-radius:999px;margin:20px 0;overflow:hidden}.hydro-tour-progress span{display:block;height:100%;background:linear-gradient(90deg,var(--primary),var(--primary2));transition:width .25s}
+.hydro-tour-actions button{border:1px solid var(--line);padding:9px 12px;border-radius:10px;background:var(--surface);font-size:12px;font-weight:700}.hydro-tour-actions button:last-child{background:var(--primary);color:white}.hydro-tour-actions button:disabled{opacity:.4}
+@keyframes hydroTourIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+@media(prefers-reduced-motion:reduce){.hydro-tour-dialog:not([hidden]){animation:none}.hydro-tour-progress span,.tour-launch{transition:none}}
