@@ -524,3 +524,19 @@ body:not(.dark) .history-table tbody tr:focus-within { background: #f0eafa; }
 .simulator-standalone .simulator-page{display:block!important}
 @media(max-width:850px){.simulator-embed-page iframe{height:1510px}}
 @media(max-width:480px){.simulator-embed-page iframe{height:1800px}}
+
+/* Refinamento visual isolado do simulador */
+.simulator-embed-page iframe{max-width:100%;transition:height .2s ease}
+.simulator-standalone .simulator-page{width:min(1180px,92vw)}
+.simulator-standalone .sim-hero{padding-top:35px}
+.sim-trend{display:inline-flex;align-items:center;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--muted);font-size:12px;font-weight:700;padding:8px 12px;margin-bottom:12px}
+.sim-trend[data-direction=down]{color:#0ca478;border-color:rgba(16,164,119,.3)}
+.sim-trend[data-direction=up]{color:#d47b24;border-color:rgba(212,123,36,.3)}
+.sim-bar-track{height:16px;background:color-mix(in srgb,var(--primary) 9%,var(--line))}
+.sim-bar{transition:width .55s cubic-bezier(.2,.72,.18,1)}
+.sim-stat strong{font-variant-numeric:tabular-nums}
+@keyframes simNumberEnter{from{opacity:.55;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.sim-stat strong.sim-value-change{animation:simNumberEnter .27s ease both}
+.sim-control input[type=range]{min-height:30px}
+@media(max-width:480px){.sim-hero{padding-top:24px}.sim-stat{min-height:145px}.sim-compare{padding:20px}}
+@media(prefers-reduced-motion:reduce){.simulator-embed-page iframe,.sim-bar{transition:none!important}.sim-stat strong.sim-value-change{animation:none!important}}
