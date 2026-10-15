@@ -31,7 +31,7 @@
     </div>
   </header>
 
-  <nav class="page-nav shell" aria-label="Páginas do HydroCasa"><a href="?" data-page="dashboard">Painel</a><a href="?pagina=consumo" data-page="consumption"><svg class="ui-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2 7M3 4v7h7M12 7v5l3 2"/></svg>Meu consumo</a></nav>
+  <nav class="page-nav shell" aria-label="Páginas do HydroCasa"><a href="?" data-page="dashboard">Painel</a><a href="?pagina=consumo" data-page="consumption"><svg class="ui-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2 7M3 4v7h7M12 7v5l3 2"/></svg>Meu consumo</a><a href="?pagina=sobre" data-page="about">Sobre nós</a></nav>
   <main class="shell" id="dashboard-page">
     <section class="hero">
       <div>
@@ -249,6 +249,35 @@
     <section class="glass-card history-details" id="historyDayDetails" hidden aria-labelledby="historyDayTitle"><h2 id="historyDayTitle" tabindex="-1">Detalhes do dia</h2><div id="historyDayBody"></div></section>
   </main>
 
+
+  <!-- Conteúdo institucional baseado no README; objetivos futuros não são resultados comprovados. -->
+  <main class="shell about-page" id="about-page" hidden aria-labelledby="aboutTitle">
+    <header class="about-hero">
+      <span class="eyebrow">FACENS · UPx · SOROCABA · 2026</span>
+      <h1 id="aboutTitle" tabindex="-1">Sobre nós</h1>
+      <p class="about-lead">Tornar o consumo de água visível para ajudar a cuidar de um recurso essencial.</p>
+      <p>Somos a equipe do HydroCasa, um projeto acadêmico desenvolvido na disciplina de Usina de Projetos Experimentais (UPx) da Facens. Unimos sensores, programação e uma interface acessível para explorar como a informação pode apoiar o uso consciente da água nas residências.</p>
+    </header>
+    <section class="about-grid" aria-label="Contexto e propósito">
+      <article class="glass-card"><span class="eyebrow">O DESAFIO</span><h2>Entender o consumo além da conta</h2><p>A conta mensal mostra um total, mas não explica em que momentos a água foi utilizada. A proposta do HydroCasa é aproximar o usuário dessas informações, apresentando os volumes observados nos pontos monitorados.</p></article>
+      <article class="glass-card"><span class="eyebrow">NOSSO OBJETIVO</span><h2>Medir, compreender e agir</h2><p>Desenvolver um protótipo de monitoramento residencial que transforme sinais dos sensores em dados de vazão, volume e histórico. Queremos facilitar a interpretação desses dados e incentivar decisões mais conscientes.</p><p class="muted-note">O projeto é complementar ao acompanhamento do consumo; não substitui o hidrômetro da residência.</p></article>
+    </section>
+    <section class="glass-card about-section" aria-labelledby="aboutHow"><div class="card-head"><div><span class="eyebrow">DA ÁGUA À INFORMAÇÃO</span><h2 id="aboutHow">Como o HydroCasa funciona</h2></div></div>
+      <ol class="about-steps"><li><h3>Passagem da água</h3><p>A água percorre os pontos de medição do protótipo.</p></li><li><h3>Sensores de fluxo</h3><p>Os sensores geram pulsos durante a passagem da água.</p></li><li><h3>Processamento no ESP32</h3><p>O microcontrolador usa os pulsos e a calibração para calcular vazão e volume.</p></li><li><h3>Visualização no painel</h3><p>A interface apresenta as leituras disponíveis e organiza o histórico no navegador.</p></li></ol>
+      <p class="muted-note">A página estar disponível na internet não significa que esteja conectada ao dispositivo. Leituras reais dependem da comunicação com o ESP32.</p>
+    </section>
+    <section class="about-grid about-section" aria-label="Protótipo e recursos">
+      <article class="glass-card"><h2>O protótipo físico</h2><p>A proposta de montagem utiliza uma casa em MDF, um reservatório superior e dois caminhos de água, cada um com um sensor de fluxo. A água percorre os canos e segue para um recipiente de saída.</p><p>Essa estrutura permite demonstrar dois pontos de consumo e comparar as leituras dos sensores em um ambiente controlado.</p><div class="about-tags"><span>ESP32</span><span>Sensores de fluxo</span><span>Wi-Fi</span><span>LittleFS</span></div></article>
+      <article class="glass-card"><h2>O que a interface oferece</h2><ul class="about-list"><li>Volumes em m³ e vazão em m³/min.</li><li>Perfil da residência com quantidade de moradores.</li><li>Histórico por período e por ramal.</li><li>Estimativas de atividades com fontes e condições explícitas.</li><li>Indicação de conexão e das limitações da coleta.</li></ul><p class="muted-note">Os dois sensores não identificam automaticamente atividades ou quem utilizou a água.</p></article>
+    </section>
+    <section class="about-section" aria-labelledby="aboutImpact"><div class="section-heading"><div><span class="eyebrow">PROPÓSITO E SUSTENTABILIDADE</span><h2 id="aboutImpact">Conexão com os ODS</h2></div></div><div class="about-grid">
+      <article class="glass-card"><span class="about-ods">ODS 6</span><h3>Água potável e saneamento</h3><p>O projeto busca apoiar o uso consciente da água por meio da visibilidade do consumo e da compreensão dos dados.</p></article>
+      <article class="glass-card"><span class="about-ods">ODS 9</span><h3>Indústria, inovação e infraestrutura</h3><p>Exploramos a aplicação de sensores e computação embarcada em uma solução de monitoramento residencial.</p></article>
+    </div><p class="muted-note">Essas relações expressam os objetivos do projeto. Ainda não representam uma redução de consumo medida ou certificação de impacto.</p></section>
+    <section class="glass-card about-section" aria-labelledby="aboutTeam"><div class="card-head"><div><span class="eyebrow">QUEM DESENVOLVE</span><h2 id="aboutTeam">Nossa equipe</h2><p>Facens — Centro Universitário Facens · Usina de Projetos Experimentais</p></div></div><ul class="about-team"><li><strong>Frederico de Medeiros Freitas</strong><span>Líder do projeto</span></li><li><strong>Gabriel José Vieira Leme Teles</strong><span>Integrante</span></li><li><strong>Miguel Costa e Souza</strong><span>Integrante</span></li><li><strong>Nicolas Andrade Marinelli</strong><span>Integrante</span></li><li><strong>Ryan Oliveira Leme</strong><span>Integrante</span></li></ul></section>
+    <section class="glass-card about-section" aria-labelledby="aboutTransparency"><span class="eyebrow">TRANSPARÊNCIA</span><h2 id="aboutTransparency">Um projeto em desenvolvimento</h2><p>A precisão das leituras depende da calibração e da instalação dos sensores. O histórico atual depende do navegador, e períodos parciais podem deixar consumo sem registro. As referências apresentadas são comparações contextualizadas, não diagnósticos automáticos de desperdício ou vazamento.</p><p>Entre as próximas etapas estão a validação física, a melhoria da persistência do histórico e a avaliação de novas análises. Recursos como estimativa financeira e detecção automática de vazamentos são possibilidades de evolução, não funcionalidades comprovadas desta versão.</p><details><summary>Conheça o contexto acadêmico e as decisões do projeto</summary><p><strong>Tecnologia e Comportamento na Gestão e Consumo de Água: Desenvolvimento de um Sistema Inteligente de Monitoramento Residencial.</strong> Facens, Sorocaba/SP, 2026.</p><p>O repositório reúne o código, a documentação de consumo e o backlog de melhorias. As fontes de referência das atividades também estão disponíveis na interface.</p></details><a class="secondary-btn about-repository" href="https://github.com/medeirosfreitasfrederico-art/HydroCasa" target="_blank" rel="noopener noreferrer">Conhecer o projeto no GitHub ↗</a></section>
+  </main>
+
   <div id="modal" class="modal" aria-hidden="true">
     <div class="modal-backdrop"></div>
     <div class="modal-box" role="dialog" aria-modal="true" aria-label="Detalhes do HydroCasa">
@@ -333,11 +362,14 @@
       }catch(e){q('historyEmpty').hidden=true;q('historyChart').hidden=false;q('historyFilterMessage').textContent='Não foi possível consultar o histórico: '+e.message;q('historyFilterMessage').className='form-error';q('historyRows').textContent='';q('historyChart').textContent='Consulta indisponível.';['periodVolume','periodAverage','periodCoverage'].forEach(id=>q(id).textContent='—');q('periodCoverageNote').textContent='';q('historyDayDetails').hidden=true;}
     }
     function route(focus=false){
-      const internal=new URLSearchParams(location.search).get('pagina')==='consumo';
-      q('dashboard-page').hidden=internal;q('consumption-page').hidden=!internal;
-      document.querySelectorAll('[data-page]').forEach(link=>{if((link.dataset.page==='consumption')===internal)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');});
-      document.title=internal?'Meu consumo | HydroCasa':'HydroCasa | Monitoramento Inteligente de Água';
-      if(internal){render();if(focus)q('consumptionTitle').focus();}else window.dispatchEvent(new Event('resize'));
+      const param=new URLSearchParams(location.search).get('pagina');
+      const page=param==='consumo'?'consumption':param==='sobre'?'about':'dashboard';
+      ['dashboard','consumption','about'].forEach(id=>q(id+'-page').hidden=id!==page);
+      document.querySelectorAll('[data-page]').forEach(link=>{if(link.dataset.page===page)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');});
+      document.title=page==='about'?'Sobre nós | HydroCasa':page==='consumption'?'Meu consumo | HydroCasa':'HydroCasa | Monitoramento Inteligente de Água';
+      if(page==='consumption'){render();if(focus)q('consumptionTitle').focus();}
+      else if(page==='about'){if(focus)q('aboutTitle').focus();}
+      else window.dispatchEvent(new Event('resize'));
     }
     document.querySelectorAll('[data-page]').forEach(link=>link.addEventListener('click',e=>{
       if(e.button!==0||e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)return;
