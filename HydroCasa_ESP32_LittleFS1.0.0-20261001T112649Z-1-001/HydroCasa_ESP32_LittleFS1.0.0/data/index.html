@@ -32,7 +32,7 @@
   </header>
 
   <nav class="page-nav shell" aria-label="Páginas do HydroCasa"><a href="?" data-page="dashboard">Painel</a><a href="?pagina=consumo" data-page="consumption"><svg class="ui-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2 7M3 4v7h7M12 7v5l3 2"/></svg>Meu consumo</a><a href="?pagina=simulador" data-page="simulator">Simulador</a><a href="?pagina=sobre" data-page="about">Sobre nós</a></nav>
-  <div class="tour-launch-wrap shell"><button id="openHydroTour" class="tour-launch" type="button" aria-haspopup="dialog"><span aria-hidden="true">✦</span> Conhecer o HydroCasa</button></div>
+  <div class="tour-launch-wrap shell" id="tourLaunchWrap" hidden><button id="openHydroTour" class="tour-launch" type="button" aria-haspopup="dialog"><span aria-hidden="true">✦</span> Conhecer o HydroCasa</button></div>
   <main class="shell" id="dashboard-page">
     <section class="hero">
       <div>
@@ -367,6 +367,7 @@
       const param=new URLSearchParams(location.search).get('pagina');
       const page=param==='consumo'?'consumption':param==='simulador'?'simulator':param==='sobre'?'about':'dashboard';
       ['dashboard','consumption','simulator','about'].forEach(id=>q(id+'-page').hidden=id!==page);
+      q('tourLaunchWrap').hidden=page!=='dashboard';
       document.querySelectorAll('[data-page]').forEach(link=>{if(link.dataset.page===page)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');});
       document.title=page==='about'?'Sobre nós | HydroCasa':page==='consumption'?'Meu consumo | HydroCasa':page==='simulator'?'Simulador | HydroCasa':'HydroCasa | Monitoramento Inteligente de Água';
       if(page==='consumption'){render();if(focus)q('consumptionTitle').focus();}
