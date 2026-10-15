@@ -1,0 +1,26 @@
+(()=>{'use strict';
+const trigger=document.getElementById('openHydroTour');if(!trigger)return;
+const steps=[
+ {selector:'.brand',title:'Bem-vindo ao HydroCasa',description:'Conheça as áreas principais da plataforma de monitoramento de água.'},
+ {selector:'#connectionBadge',title:'Estado da conexão',description:'Online indica conexão com o sistema. Offline não significa que os dados do simulador sejam medições.'},
+ {selector:'#dashboard-page .metrics-grid',title:'Painel de consumo',description:'Estes indicadores pertencem ao monitoramento. O tour não cria nem modifica nenhuma leitura.'},
+ {selector:'#dashboard-page .tabs',title:'Explore o painel',description:'Use as abas para consultar a visão geral, o calendário, análises e configurações.'},
+ {selector:'[data-page="consumption"]',title:'Meu consumo',description:'Histórico e informações disponíveis no navegador, separados das simulações.'},
+ {selector:'[data-page="simulator"]',title:'Simulador isolado',description:'Faça hipóteses sobre hábitos de consumo. Esses valores não são enviados ao painel real.'},
+ {selector:'[data-page="about"]',title:'Sobre nós',description:'Conheça a proposta acadêmica e os objetivos do projeto.'}
+];
+let index=0,active=false,previousFocus=null,previousOverflow='',highlighted=null;
+const backdrop=document.createElement('div');backdrop.className='hydro-tour-backdrop';backdrop.hidden=true;
+const dialog=document.createElement('section');dialog.className='hydro-tour-dialog';dialog.setAttribute('role','dialog');dialog.setAttribute('aria-modal','true');dialog.setAttribute('aria-labelledby','hydroTourTitle');dialog.setAttribute('aria-describedby','hydroTourDescription');
+dialog.innerHTML='<div class="hydro-tour-meta"><span>GUIA INTERATIVO</span><button type="button" id="hydroTourClose" aria-label="Fechar tour">×</button></div><p class="hydro-tour-count" id="hydroTourCount"></p><h2 id="hydroTourTitle"></h2><p id="hydroTourDescription"></p><div class="hydro-tour-progress" aria-hidden="true"><span id="hydroTourProgress"></span></div><div class="hydro-tour-actions"><button type="button" id="hydroTourSkip">Pular</button><div><button type="button" id="hydroTourPrevious">Voltar</button><button type="button" id="hydroTourNext">Próximo</button></div></div>';
+dialog.hidden=true;document.body.append(backdrop,dialog);
+const q=id=>dialog.querySelector('#'+id);
+function clearHighlight(){if(highlighted){highlighted.classList.remove('hydro-tour-focus');highlighted=null;}}
+function close(){if(!active)return;active=false;backdrop.hidden=true;dialog.hidden=true;clearHighlight();document.body.style.overflow=previousOverflow;window.removeEventListener('resize',position);window.removeEventListener('scroll',position);document.removeEventListener('keydown',keys,true);(previousFocus?.isConnected?previousFocus:trigger).focus({preventScroll:true});}
+function position(){if(!active||!highlighted)return;const r=highlighted.getBoundingClientRect(),gap=14,m=12,w=dialog.offsetWidth,h=dialog.offsetHeight;let top=r.bottom+gap;if(top+h>innerHeight-m)top=r.top-h-gap;if(top<m)top=Math.max(m,(innerHeight-h)/2);let left=Math.max(m,Math.min(r.left,innerWidth-w-m));dialog.style.top=top+'px';dialog.style.left=left+'px';}
+function show(i){clearHighlight();index=i;const step=steps[index],target=document.querySelector(step.selector);if(!target){if(index+1<steps.length)return show(index+1);close();return;}highlighted=target;highlighted.classList.add('hydro-tour-focus');target.scrollIntoView({block:'center',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});q('hydroTourCount').textContent='Etapa '+(index+1)+' de '+steps.length;q('hydroTourTitle').textContent=step.title;q('hydroTourDescription').textContent=step.description;q('hydroTourProgress').style.width=((index+1)/steps.length*100)+'%';q('hydroTourPrevious').disabled=index===0;q('hydroTourNext').textContent=index===steps.length-1?'Concluir':'Próximo';requestAnimationFrame(()=>{position();q('hydroTourNext').focus({preventScroll:true});});}
+function keys(event){if(!active)return;if(event.key==='Escape'){event.preventDefault();close();}if(event.key==='Tab'){const controls=[...dialog.querySelectorAll('button:not([disabled])')];const first=controls[0],last=controls[controls.length-1];if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}}}
+function start(){if(active)return;previousFocus=document.activeElement;previousOverflow=document.body.style.overflow;document.body.style.overflow='hidden';active=true;backdrop.hidden=false;dialog.hidden=false;document.addEventListener('keydown',keys,true);window.addEventListener('resize',position);window.addEventListener('scroll',position,{passive:true});show(0);}
+trigger.addEventListener('click',start);backdrop.addEventListener('click',close);q('hydroTourClose').addEventListener('click',close);q('hydroTourSkip').addEventListener('click',close);q('hydroTourPrevious').addEventListener('click',()=>{if(index>0)show(index-1)});q('hydroTourNext').addEventListener('click',()=>{if(index+1===steps.length)close();else show(index+1)});
+document.querySelectorAll('[data-page]').forEach(link=>link.addEventListener('click',()=>{if(active)close()}));
+})();
