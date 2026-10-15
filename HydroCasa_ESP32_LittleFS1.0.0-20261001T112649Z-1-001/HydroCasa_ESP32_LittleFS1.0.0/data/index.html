@@ -250,7 +250,9 @@
   </main>
 
 
-<main class="shell simulator-embed-page" id="simulator-page" hidden aria-labelledby="simulatorFrameTitle"><h1 id="simulatorFrameTitle" class="sim-visually-hidden" tabindex="-1">Simulador interativo</h1><iframe id="simulatorFrame" title="Simulador de consumo de água — dados exclusivamente hipotéticos" src="simulador.html" sandbox="allow-scripts" loading="lazy" referrerpolicy="no-referrer"></iframe><p class="sim-isolation-note">Ambiente isolado: nenhum valor deste simulador é utilizado no painel de medições ou salvo no histórico dos sensores.</p></main>
+<main class="shell simulator-embed-page" id="simulator-page" hidden aria-labelledby="simulatorFrameTitle"><h1 id="simulatorFrameTitle" class="sim-visually-hidden" tabindex="-1">Simulador interativo</h1><iframe id="simulatorFrame" title="Simulador de consumo de água — dados exclusivamente hipotéticos" src="simulador.html" sandbox="allow-scripts" loading="lazy" referrerpolicy="no-referrer"></iframe><script id="simulatorThemeBridge">
+(()=>{const frame=document.getElementById('simulatorFrame');const send=()=>{if(frame.contentWindow)frame.contentWindow.postMessage({type:'hydrocasa-simulator-theme',dark:document.body.classList.contains('dark')},'*')};frame.addEventListener('load',send);new MutationObserver(send).observe(document.body,{attributes:true,attributeFilter:['class']});})();
+</script><p class="sim-isolation-note">Ambiente isolado: nenhum valor deste simulador é utilizado no painel de medições ou salvo no histórico dos sensores.</p></main>
   <!-- Conteúdo institucional baseado no README; objetivos futuros não são resultados comprovados. -->
   <main class="shell about-page" id="about-page" hidden aria-labelledby="aboutTitle">
     <!-- Abertura institucional: benefício primeiro, ilustração conceitual sem dados simulados como reais. -->
