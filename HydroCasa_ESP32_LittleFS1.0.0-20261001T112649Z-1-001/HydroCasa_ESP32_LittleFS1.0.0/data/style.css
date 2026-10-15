@@ -499,11 +499,11 @@ body:not(.dark) .history-table tbody tr:focus-within { background: #f0eafa; }
 
 /* Logo enviada pela equipe: enquadramento via CSS mantém o arquivo original.
    No cabeçalho, destacar o símbolo e manter o nome legível ao lado. */
-.brand .brand-logo { display: block; position: relative; overflow: hidden; flex: 0 0 46px; width: 46px; height: 46px; margin: 0; border-radius: 12px; background: #222932; }
-.brand-logo img { position: absolute; width: 184px; max-width: none; height: auto; left: -70px; top: -20px; }
-.brand:hover .brand-logo { box-shadow: 0 0 0 3px var(--card-title-border); }
+.brand .brand-logo { display: block; position: relative; overflow: hidden; flex: 0 0 46px; width: 46px; height: 46px; margin: 0; border-radius: 0; background: transparent; }
+.brand-logo img { display: block; position: static; width: 100%; height: 100%; object-fit: contain; }
+.brand:hover .brand-logo { filter: brightness(1.1); }
 .about-page .about-logo-visual { margin: 0; overflow: hidden; border-radius: 24px; border: 1px solid #414956; background: #222932; box-shadow: 0 24px 48px -30px #171b3560; }
-.about-page .about-logo-visual img { display: block; width: 100%; height: auto; aspect-ratio: 1.2; object-fit: cover; }
+.about-page .about-logo-visual img { display: block; width: 116%; max-width: none; margin-left: -8%; height: auto; aspect-ratio: 1.2; object-fit: cover; }
 .about-page .about-logo-visual figcaption { margin: 0; padding: 0 24px 26px; text-align: center; color: #d2d8e3; font-size: 13px; line-height: 1.6; }
 @media (prefers-reduced-motion: no-preference) {
   #about-page:not([hidden]) .about-logo-visual { animation: hydroLogoEntrance 700ms cubic-bezier(.2,.7,.2,1) both; }
