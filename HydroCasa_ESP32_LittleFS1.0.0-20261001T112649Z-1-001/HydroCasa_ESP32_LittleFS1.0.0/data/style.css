@@ -341,3 +341,51 @@ body:not(.dark) .history-table tbody tr:focus-within { background: #f0eafa; }
 .about-repository { display: inline-flex; margin-top: 16px; align-items: center; color: var(--card-accent); text-decoration: none; }
 @media(max-width:850px) { .about-steps { grid-template-columns: repeat(2,minmax(0,1fr)); } }
 @media(max-width:560px) { .about-grid, .about-team, .about-steps { grid-template-columns: 1fr; } .about-page { padding-top: 24px; } }
+
+
+/* Sobre nós — composição editorial, ritmo de leitura e movimento discreto.
+   Todas as regras ficam restritas à página institucional. */
+.about-page { max-width: 1080px; padding-top: 48px; }
+.about-page .about-hero {
+  max-width: none; display: grid; grid-template-columns: 1fr 1fr;
+  column-gap: 64px; padding: 0 0 44px; margin-bottom: 36px;
+  border-bottom: 1px solid var(--line);
+}
+.about-page .about-hero > .eyebrow { grid-column: 1 / -1; letter-spacing: .12em; }
+.about-page .about-hero h1 { grid-column: 1 / -1; font-size: clamp(40px,6vw,68px); font-weight: 700; line-height: 1.08; margin: 20px 0 28px; }
+.about-page .about-hero .about-lead { margin: 0; font-size: clamp(23px,3vw,32px); font-weight: 550; letter-spacing: -.025em; max-width: 24ch; }
+.about-page .about-hero > p:last-child { margin: 0; font-size: 15px; line-height: 1.9; }
+.about-page .glass-card { border-radius: 16px; padding: 28px; box-shadow: none; }
+.about-page .about-grid { gap: 24px; }
+.about-page .about-section { margin-top: 40px; }
+.about-page h2 { letter-spacing: -.025em; font-size: 24px; font-weight: 650; }
+.about-page .card-head { padding-bottom: 20px; }
+.about-page .about-steps { gap: 28px; margin: 28px 0 20px; }
+.about-page .about-steps li::before { padding: 0 0 12px; border-radius: 0; background: none; font-size: 28px; font-weight: 500; font-variant-numeric: tabular-nums; border-bottom: 2px solid var(--card-title-border); min-width: 48px; }
+.about-page .about-steps h3 { margin: 16px 0 8px; }
+.about-page .about-steps p { font-size: 14px; line-height: 1.75; }
+.about-page .about-tags span { background: transparent; color: var(--muted); border-color: var(--line); font-size: 12px; font-weight: 500; }
+.about-page .about-team { gap: 0 32px; margin: 12px 0 0; }
+.about-page .about-team li { padding: 20px 0; border-bottom: 1px solid var(--line); background: none; border-radius: 0; }
+.about-page .about-team strong { font-weight: 600; }
+.about-page .about-repository { gap: 8px; transition: background-color 180ms ease, border-color 180ms ease; }
+.about-page .about-repository:hover { background: var(--card-title-bg); border-color: var(--card-title-border); }
+.about-page #aboutTransparency { border-left: 3px solid var(--card-title-border); }
+/* Deslocamento curto e sem zoom; cada bloco aparece apenas na primeira entrada. */
+@media (prefers-reduced-motion: no-preference) {
+  .about-page .about-reveal { opacity: 0; transform: translateY(14px); transition: opacity 500ms ease, transform 500ms cubic-bezier(.2,.7,.2,1); }
+  .about-page .about-reveal.about-visible { opacity: 1; transform: none; }
+}
+@media(max-width:850px) {
+  .about-page .about-hero { column-gap: 32px; }
+}
+@media(max-width:560px) {
+  .about-page { padding-top: 28px; }
+  .about-page .about-hero { grid-template-columns: 1fr; gap: 18px; padding-bottom: 28px; margin-bottom: 24px; }
+  .about-page .about-hero h1 { margin: 0; }
+  .about-page .about-hero .about-lead { max-width: none; }
+  .about-page .glass-card { padding: 22px; }
+  .about-page .about-section { margin-top: 28px; }
+  .about-page h2 { font-size: 21px; }
+}
+@media print { .about-page .about-reveal { opacity: 1 !important; transform: none !important; } }
