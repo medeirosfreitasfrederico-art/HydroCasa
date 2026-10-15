@@ -24,3 +24,12 @@ test('invalid readings do not become zero consumption in period statistics',()=>
  const s=summarize({'2026-10-01':{readings:1,total1:-1,total2:2}},['2026-10-01']);
  assert.equal(s.count,0);assert.equal(s.average,null);
 });
+test('about route selects one page and preserves navigation to consumption and dashboard',()=>{
+ const elements=new Map(),links=['dashboard','consumption','about'].map(page=>({dataset:{page},setAttribute(k,v){this[k]=v},removeAttribute(k){delete this[k]}}));
+ const q=id=>{if(!elements.has(id))elements.set(id,{hidden:false,focus(){this.focused=true}});return elements.get(id)};
+ const context=vm.createContext({q,URLSearchParams,location:{search:'?pagina=sobre'},document:{querySelectorAll:()=>links},render:()=>{},window:{dispatchEvent:()=>{}},Event:function(){}});
+ const start=script.indexOf('function route(focus=false)'),end=script.indexOf("document.querySelectorAll('[data-page]').forEach(link=>link.addEventListener",start);
+ vm.runInContext(script.slice(start,end)+'globalThis.route=route;',context);
+ context.route(true);assert.equal(q('about-page').hidden,false);assert.equal(q('dashboard-page').hidden,true);assert.equal(q('consumption-page').hidden,true);assert.equal(context.document.title,'Sobre nós | HydroCasa');
+ for(const [search,page] of [['?pagina=consumo','consumption'],['','dashboard']]){context.location.search=search;context.route();assert.equal(q(page+'-page').hidden,false);assert.equal(q('about-page').hidden,true);}
+});

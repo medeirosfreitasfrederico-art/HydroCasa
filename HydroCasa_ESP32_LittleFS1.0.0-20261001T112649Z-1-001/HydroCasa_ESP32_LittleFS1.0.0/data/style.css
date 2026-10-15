@@ -314,3 +314,30 @@ body:not(.dark) .history-table thead th { color: #38465d; }
 body:not(.dark) .history-table tbody tr:nth-child(even) { background: #f8fafd; }
 body:not(.dark) .history-table tbody tr:hover,
 body:not(.dark) .history-table tbody tr:focus-within { background: #f0eafa; }
+
+
+/* Sobre nós: leitura editorial em blocos, seguindo as superfícies dos dois temas. */
+.page-nav { flex-wrap: wrap; }
+.about-page { padding: 36px 0 12px; }
+.about-hero { max-width: 800px; margin-bottom: 28px; }
+.about-hero h1 { font-size: clamp(32px,5vw,48px); letter-spacing: -.04em; margin: 10px 0 16px; }
+.about-page p, .about-list { font-size: 15px; line-height: 1.8; color: var(--muted); }
+.about-hero .about-lead { font-size: clamp(21px,3vw,28px); line-height: 1.4; font-weight: 650; color: var(--text); }
+.about-page h2 { font-size: 22px; line-height: 1.35; margin: 10px 0 14px; }
+.about-page h3 { font-size: 17px; line-height: 1.4; }
+.about-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 20px; }
+.about-section { margin-top: 24px; }
+.about-steps { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 24px; padding: 0; list-style: none; counter-reset: stage; }
+.about-steps li { counter-increment: stage; min-width: 0; }
+.about-steps li::before { content: counter(stage,decimal-leading-zero); display: inline-block; color: var(--card-accent); background: var(--card-title-bg); border-radius: 10px; padding: 8px 12px; font-weight: 750; }
+.about-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+.about-tags span, .about-ods { display: inline-block; color: var(--card-accent); background: var(--card-title-bg); border: 1px solid var(--card-title-border); border-radius: 8px; padding: 6px 10px; font-size: 13px; font-weight: 650; }
+.about-list { padding-left: 20px; }
+.about-list li { margin-bottom: 8px; }
+.about-team { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
+.about-team li { padding: 16px; background: var(--card-title-bg); border-radius: 12px; }
+.about-team strong { display: block; font-size: 15px; line-height: 1.5; }
+.about-team span { display: block; margin-top: 6px; color: var(--muted); font-size: 13px; }
+.about-repository { display: inline-flex; margin-top: 16px; align-items: center; color: var(--card-accent); text-decoration: none; }
+@media(max-width:850px) { .about-steps { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media(max-width:560px) { .about-grid, .about-team, .about-steps { grid-template-columns: 1fr; } .about-page { padding-top: 24px; } }
