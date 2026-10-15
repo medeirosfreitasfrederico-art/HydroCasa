@@ -250,20 +250,7 @@
   </main>
 
 
-<main class="shell simulator-page" id="simulator-page" hidden>
-<header class="sim-hero"><div><span class="eyebrow">HYDROCASA · LABORATÓRIO INTERATIVO</span><h1 id="simulatorTitle" tabindex="-1">Simule hábitos.<br><em>Compare resultados.</em></h1><p>Experimente mudanças na rotina e visualize o consumo estimado. Sem conexão com sensores.</p></div><span class="sim-pill">◈ DADOS SIMULADOS</span></header>
-<div class="sim-layout"><section class="glass-card sim-controls"><div class="sim-heading"><div><span class="eyebrow">01 · CONFIGURE</span><h2>Seu cenário</h2></div><button class="ghost-btn" id="simReset" type="button">↺ Restaurar</button></div>
-<label class="sim-control">♙ Pessoas na casa <output id="simResidentsValue"></output><input id="simResidents" type="range" min="1" max="10" value="4"></label>
-<label class="sim-control">◷ Minutos por banho <output id="simDurationValue"></output><input id="simDuration" type="range" min="1" max="30" value="10"></label>
-<label class="sim-control">♧ Banhos por pessoa/dia <output id="simShowersValue"></output><input id="simShowers" type="range" min="1" max="4" value="1"></label>
-<label class="sim-control">≋ Vazão estimada <output id="simFlowValue"></output><input id="simFlow" type="range" min="3" max="20" value="9"></label>
-<label class="sim-control">▦ Período <select id="simDays"><option value="7">7 dias</option><option value="30" selected>30 dias</option><option value="365">365 dias</option></select></label>
-<p class="sim-disclaimer">Os parâmetros são hipóteses ajustáveis. Este simulador considera apenas o consumo em banhos.</p></section>
-<section class="sim-results"><div class="sim-stats"><article class="glass-card sim-stat"><span>◉ Consumo diário</span><strong id="simDaily">—</strong><small>Estimativa dos banhos</small></article><article class="glass-card sim-stat sim-highlight"><span>◈ Consumo no período</span><strong id="simTotal">—</strong><small id="simPeriodCaption"></small></article></div>
-<article class="glass-card sim-compare"><div class="sim-heading"><div><span class="eyebrow">02 · EXPLORE</span><h2>Compare cenários</h2></div><span class="mini-tag">ANTES × DEPOIS</span></div><p>Salve seu cenário, altere os controles e compare os resultados.</p>
-<div class="sim-bars"><div><div class="sim-bar-label"><span>Salvo</span><strong id="simSavedLabel">Nenhum</strong></div><div class="sim-bar-track"><div id="simSavedBar" class="sim-bar sim-bar-muted"></div></div></div><div><div class="sim-bar-label"><span>Atual</span><strong id="simCurrentLabel">—</strong></div><div class="sim-bar-track"><div id="simCurrentBar" class="sim-bar"></div></div></div></div>
-<p id="simDifference" class="sim-difference" role="status" tabindex="-1"></p><button id="simSave" type="button" class="primary-btn">Salvar cenário atual</button></article></section></div>
-<article class="glass-card sim-method"><span class="eyebrow">CÁLCULO TRANSPARENTE</span><h2>De onde vêm os resultados?</h2><p><b>Litros/dia = pessoas × banhos por pessoa × duração × vazão.</b> O resultado do período considera a mesma rotina em todos os dias. Estes números são ilustrativos, não são leituras reais nem representam o consumo total da residência.</p></article></main>
+<main class="shell simulator-embed-page" id="simulator-page" hidden aria-labelledby="simulatorFrameTitle"><h1 id="simulatorFrameTitle" class="sim-visually-hidden" tabindex="-1">Simulador interativo</h1><iframe id="simulatorFrame" title="Simulador de consumo de água — dados exclusivamente hipotéticos" src="simulador.html" sandbox="allow-scripts" loading="lazy" referrerpolicy="no-referrer"></iframe><p class="sim-isolation-note">Ambiente isolado: nenhum valor deste simulador é utilizado no painel de medições ou salvo no histórico dos sensores.</p></main>
   <!-- Conteúdo institucional baseado no README; objetivos futuros não são resultados comprovados. -->
   <main class="shell about-page" id="about-page" hidden aria-labelledby="aboutTitle">
     <!-- Abertura institucional: benefício primeiro, ilustração conceitual sem dados simulados como reais. -->
@@ -435,9 +422,6 @@
     });
   })();
   </script>
-<script id="simulatorPageScript">
-(()=>{const el=id=>document.getElementById(id),ids=['simResidents','simDuration','simShowers','simFlow','simDays'],defaults=[4,10,1,9,30];let saved=null;const fmt=n=>n.toLocaleString('pt-BR',{maximumFractionDigits:2}),current=()=>ids.map(id=>+el(id).value),compute=v=>v[0]*v[1]*v[2]*v[3]*v[4];function render(){const v=current(),total=compute(v),daily=total/v[4];['simResidentsValue','simDurationValue','simShowersValue','simFlowValue'].forEach((id,i)=>el(id).textContent=[v[0],v[1]+' min',v[2],v[3]+' L/min'][i]);el('simDaily').textContent=fmt(daily)+' L';el('simTotal').textContent=fmt(total/1000)+' m³';el('simPeriodCaption').textContent=v[4]+' dias';el('simCurrentLabel').textContent=fmt(total/1000)+' m³';const before=saved===null?null:compute([...saved.slice(0,4),v[4]]),max=Math.max(before||0,total,1);el('simSavedLabel').textContent=before===null?'Nenhum':fmt(before/1000)+' m³';el('simSavedBar').style.width=(before===null?0:before/max*100)+'%';el('simCurrentBar').style.width=(total/max*100)+'%';const out=el('simDifference');if(before===null){out.textContent='Salve um cenário para iniciar a comparação.';out.className='sim-difference';}else if(total===before){out.textContent='Nenhuma diferença entre os cenários.';out.className='sim-difference';}else{const delta=(total-before)/before*100;out.textContent=(delta<0?'↓ Redução de ':'↑ Aumento de ')+fmt(Math.abs(delta))+'% ('+fmt(Math.abs(total-before)/1000)+' m³ no período).';out.className='sim-difference '+(delta<0?'sim-good':'sim-warn');}}
-ids.forEach(id=>el(id).addEventListener('input',render));el('simSave').addEventListener('click',()=>{saved=current();render();el('simDifference').focus()});el('simReset').addEventListener('click',()=>{ids.forEach((id,i)=>el(id).value=defaults[i]);saved=null;render()});render()})();
-</script>
+
 </body>
 </html>
