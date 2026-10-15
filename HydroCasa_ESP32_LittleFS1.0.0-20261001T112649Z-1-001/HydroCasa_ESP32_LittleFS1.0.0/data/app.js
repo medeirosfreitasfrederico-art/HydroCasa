@@ -175,7 +175,7 @@ function updateConnection(){
   updateHousehold();
   const b=$("#connectionBadge"),hasReading=state.lastValidAt!==null;
   b.className="badge "+(state.connected?"online":"offline");
-  b.textContent=state.demoMode?"● Sem API":state.connected?"● Online":"● Offline";
+  b.textContent=state.connected?"● Online":"● Offline";
   $("#statusText").textContent=state.demoMode?"Sem dados do sensor":state.connected?"Monitorando":"Sem conexão";
   $("#statusDetail").textContent=state.demoMode?"API indisponível neste servidor — sem medições em tempo real"
     :hasReading?(state.connected?"Última leitura: ":"Dados desatualizados desde ")+new Date(state.lastValidAt).toLocaleTimeString("pt-BR")
