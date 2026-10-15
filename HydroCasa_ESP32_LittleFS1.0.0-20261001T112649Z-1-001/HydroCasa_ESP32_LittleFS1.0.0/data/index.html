@@ -12,6 +12,7 @@
   <title>HydroCasa | Monitoramento Inteligente de Água</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="mobile.css">
+  <link rel="stylesheet" href="hero.css">
 </head>
 <body id="top">
   <div class="ambient ambient-a"></div>
@@ -35,16 +36,31 @@
   <nav class="page-nav shell" aria-label="Páginas do HydroCasa"><a href="?" data-page="dashboard">Painel</a><a href="?pagina=consumo" data-page="consumption"><svg class="ui-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2 7M3 4v7h7M12 7v5l3 2"/></svg>Meu consumo</a><a href="?pagina=simulador" data-page="simulator">Simulador</a><a href="?pagina=sobre" data-page="about">Sobre nós</a></nav>
   <div class="tour-launch-wrap shell" id="tourLaunchWrap" hidden><button id="openHydroTour" class="tour-launch" type="button" aria-haspopup="dialog"><span aria-hidden="true">✦</span> Conhecer o HydroCasa</button></div>
   <main class="shell" id="dashboard-page">
-    <section class="hero">
-      <div>
-        <span class="eyebrow">ESP32 • IoT • LITTLEFS</span>
-        <h1>Controle sua água<br><em>em tempo real.</em></h1>
-        <p>Visualize o caminho da água, compare os dois ramais e transforme cada leitura em informação.</p>
+    <section class="hero hero-premium" aria-labelledby="hydroHeroTitle">
+      <div class="hero-intro">
+        <span class="eyebrow hero-kicker"><span class="hero-kicker-dot" aria-hidden="true"></span> HYDROCASA · INTELIGÊNCIA HÍDRICA</span>
+        <h1 id="hydroHeroTitle">Entenda o consumo.<br><em>Valorize cada gota.</em></h1>
+        <p>Um painel para acompanhar o uso da água, consultar registros disponíveis e interpretar os dados de cada ramal com mais clareza.</p>
+        <div class="hero-benefits" aria-label="O que você encontra aqui">
+          <span><span aria-hidden="true">◈</span> Visão por ramal</span>
+          <span><span aria-hidden="true">◷</span> Histórico de consumo</span>
+          <span><span aria-hidden="true">↗</span> Análise contextual</span>
+        </div>
+        <div class="hero-actions">
+          <a class="hero-cta hero-cta-primary" href="#householdTitle">Explorar painel <span aria-hidden="true">↗</span></a>
+          <a class="hero-cta hero-cta-secondary" href="?pagina=sobre">Conheça o projeto <span aria-hidden="true">→</span></a>
+        </div>
+        <p class="hero-trust-note">Os indicadores do painel dependem de leituras válidas ou registros existentes. Nenhuma informação é simulada nesta página.</p>
       </div>
-      <div class="hero-time">
-        <span>Horário do dispositivo</span>
-        <strong id="clock">--:--:--</strong>
-        <small id="dateLabel">--/--/----</small>
+      <div class="hero-side">
+        <div class="hero-side-heading"><span class="hero-side-symbol" aria-hidden="true">◉</span><span>MONITORAMENTO HYDROCASA</span></div>
+        <div class="hero-watermark" aria-hidden="true">H<span>₂</span>O</div>
+        <div class="hero-time">
+          <span>Horário do dispositivo</span>
+          <strong id="clock">--:--:--</strong>
+          <small id="dateLabel">--/--/----</small>
+        </div>
+        <p class="hero-side-caption">A disponibilidade das leituras é indicada nos cartões do painel.</p>
       </div>
     </section>
 
