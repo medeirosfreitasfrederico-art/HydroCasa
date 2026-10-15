@@ -405,5 +405,22 @@
     });
   })();
   </script>
+<script id="aboutMotionScript">
+  // Efeito exclusivo de Sobre nós: revelar uma vez, sem listeners de rolagem.
+  // Sem suporte ou com movimento reduzido, todo o conteúdo permanece visível.
+  (()=>{
+    const page=document.getElementById('about-page');
+    if(!page||!('IntersectionObserver' in window)||window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    const blocks=page.querySelectorAll('.about-hero, .about-grid > article, .about-section.glass-card, #aboutImpact');
+    const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{
+      if(entry.isIntersecting){entry.target.classList.add('about-visible');observer.unobserve(entry.target);}
+    }),{threshold:0,rootMargin:'0px 0px -24px 0px'});
+    blocks.forEach(block=>{block.classList.add('about-reveal');observer.observe(block);});
+    page.addEventListener('focusin',event=>{
+      const block=event.target.closest('.about-reveal');
+      if(block){block.classList.add('about-visible');observer.unobserve(block);}
+    });
+  })();
+  </script>
 </body>
 </html>
