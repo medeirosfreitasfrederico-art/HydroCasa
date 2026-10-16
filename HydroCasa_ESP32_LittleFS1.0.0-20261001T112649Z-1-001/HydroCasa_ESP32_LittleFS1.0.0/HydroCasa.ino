@@ -17,11 +17,12 @@
 #include <WiFi.h>
 #include <WebServer.h>
 #include <LittleFS.h>
+#include <ESPmDNS.h>
 #include <esp_system.h>
 #include "FlowSample.h"
 
-const char* WIFI_SSID = "SEU_WIFI";
-const char* WIFI_PASS = "SUA_SENHA";
+const char* WIFI_SSID = "Carlinho";
+const char* WIFI_PASS = "33d7972ef0";
 
 #define FLOW1_PIN 25
 #define FLOW2_PIN 26
@@ -245,6 +246,12 @@ void setup() {
     Serial.println("Wi-Fi nao conectado. O site ainda pode ser usado localmente se a rede for corrigida.");
   }
 
+  if (!MDNS.begin("hydrocasa")) {
+  Serial.println("Erro ao iniciar o mDNS!");
+  } else {
+  Serial.println("mDNS iniciado! Pode aceder a http://hydrocasa.local");
+  }
+
   server.on("/api/live", HTTP_GET, handleLive);
   server.on("/api/config", HTTP_GET, handleConfig);
   server.on("/api/daily", HTTP_POST, handleDaily);
@@ -254,9 +261,16 @@ void setup() {
   // LittleFS serve todos os arquivos da pasta data/
   server.serveStatic("/", LittleFS, "/index.html");
   server.serveStatic("/index.html", LittleFS, "/index.html");
+  server.serveStatic("/simulador.html", LittleFS, "/simulador.html");
   server.serveStatic("/style.css", LittleFS, "/style.css");
-  server.serveStatic("/consumption.js", LittleFS, "/consumption.js");
   server.serveStatic("/app.js", LittleFS, "/app.js");
+  server.serveStatic("/consumption.js", LittleFS, "/consumption.js");
+  server.serveStatic("/hydrocasa-symbol.png", LittleFS, "/hydrocasa-symbol.png");
+  server.serveStatic("/hydrocasa-logo.jpeg", LittleFS, "/hydrocasa-logo.jpeg");
+  server.serveStatic("/hero.css", LittleFS, "/hero.css");
+  server.serveStatic("/mobile.css", LittleFS, "/mobile.css");
+  server.serveStatic("/tour.css", LittleFS, "/tour.css");
+  server.serveStatic("/tour.js", LittleFS, "/tour.js");
 
   server.onNotFound([]() {
     server.send(404, "text/plain", "404 - recurso nao encontrado");
