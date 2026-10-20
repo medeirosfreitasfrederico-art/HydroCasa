@@ -52,7 +52,8 @@ function reconcile(demo,active,now){
   item={...a,status:'ativo',criadoEm:now,atualizadoEm:now};list.unshift(item);changed=true;
   if(!demo&&a.nivel==='Acima do padrão'){toast.textContent=a.mensagem;toast.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.hidden=true,6500);}
  }
- for(const item of list){if(item.status!=='resolvido'&&item.status!=='silenciado'&&!found.has(item.id)){
+ for(const item of list){if(item.status==='silenciado'&&item.silenciadoAte&&now>item.silenciadoAte){item.status='ativo';item.silenciadoAte=null;changed=true;}
+  if(item.status!=='resolvido'&&item.status!=='silenciado'&&!found.has(item.id)){
   // Não resolver alerta de sensor quando a ligação estiver interrompida.
   if(item.tipo==='sensor'&&!lastOnline)continue;
   item.status='resolvido';item.atualizadoEm=now;changed=true;
@@ -61,7 +62,9 @@ function reconcile(demo,active,now){
 }
 function render(){
  const demo=document.body.dataset.demoActive==='true',list=(demo?demoHistory:history).slice().sort((a,b)=>b.criadoEm-a.criadoEm);
- const active=list.filter(a=>a.status==='ativo'),isComparable=realData()?.online&&!!realData()?.profile;
+ const snapshot=realData();const day=snapshot?.history?.[snapshot?.today];
+ const comparable=!!(snapshot?.online&&snapshot.profile?.scope==='whole'&&snapshot.profile?.referenceLiters>0&&snapshot.profile?.residents>0&&day?.readings>0&&day.partial===false&&!day.profileMixed);
+ const active=list.filter(a=>a.status==='ativo'&&(!a.silenciadoAte||Date.now()>a.silenciadoAte)),isComparable=comparable;
  const empty=isComparable?'Tudo dentro do padrão registrado.':'Dados insuficientes para comparar.';
  q('#hydroAlertCount').hidden=active.length===0;q('#hydroAlertCount').textContent=String(active.length);
  bell.setAttribute('aria-label','Abrir alertas: '+active.length+' ativo(s)');
@@ -87,7 +90,13 @@ function tick(){
  const active=HydroAlerts.avaliar({...d,online:!demo&&d.online},d.profile,d.activities).filter(x=>x.tipo==='atividade'||(!demo&&d.online));
  // Na demonstração não há avaliação de sensores: nunca transformar suposições em medições.
  if(!demo){reconcile(false,active,Date.now());}
- // Não cria alerta fictício real ao alternar de fonte.
+ // Marcadores apenas visuais nas atividades efetivamente listadas.
+ const alertNames=new Set(history.filter(x=>x.status==='ativo'&&x.tipo==='atividade').map(x=>x.alvo));
+ document.querySelectorAll('#activityLog .activity-entry').forEach(entry=>{
+  const name=entry.querySelector('b')?.textContent;const existing=entry.querySelector('.activity-alert-badge');
+  if(alertNames.has(name)&&!existing){const badge=document.createElement('span');badge.className='activity-alert-badge';badge.textContent='⚠ Atenção';badge.title='Esta atividade tem uma estimativa acima da referência; consulte os alertas.';entry.querySelector('b')?.after(badge);}
+  if(!alertNames.has(name))existing?.remove();
+ });
  render();
 }
 setInterval(tick,3000);tick();
