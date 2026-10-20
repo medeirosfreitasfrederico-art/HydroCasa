@@ -579,3 +579,15 @@ body:not(.dark) .history-table tbody tr:focus-within { background: #f0eafa; }
 #sources-page .sources-research .study-row a{display:inline-block;margin-top:3px;font-weight:750}
 @media(max-width:800px){.getting-started-steps{grid-template-columns:1fr}.getting-started-heading{align-items:flex-start;flex-direction:column}#sources-page .sources-research .study-row dl{grid-template-columns:1fr}}
 @media(max-width:540px){.getting-started{padding:17px}#sources-page .sources-research .study-row{padding:22px 17px}#sources-page .sources-research .study-row::before{position:static;margin-bottom:14px}}
+
+/* Atalhos de navegação: posição prioritária, leitura clara e toque confortável. */
+#dashboard-page .dashboard-shortcuts-area{margin:4px 0 28px;padding:20px 22px 10px;background:var(--surface);border:1px solid var(--line);border-radius:19px;box-shadow:var(--shadow)}
+#dashboard-page .dashboard-shortcuts-area>p{margin:6px 0 15px;font-size:13px;color:var(--muted)}
+#dashboard-page .dashboard-shortcuts{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));width:100%;max-width:none;margin:0 0 10px;padding:6px;gap:8px;background:color-mix(in srgb,var(--primary) 4%,var(--surface));border-radius:14px}
+#dashboard-page .dashboard-shortcuts .tab{display:flex;justify-content:center;align-items:center;white-space:normal;text-align:center;min-height:57px;padding:12px 9px;font-size:14px;line-height:1.3;cursor:pointer;transition:background .16s ease,transform .16s ease}
+#dashboard-page .dashboard-shortcuts .tab:hover{transform:translateY(-1px);background:color-mix(in srgb,var(--primary) 12%,var(--surface))}
+#dashboard-page .dashboard-shortcuts .tab.active{background:linear-gradient(110deg,var(--primary),var(--primary2));color:#fff}
+#dashboard-page .dashboard-shortcuts .tab:focus-visible{outline:3px solid var(--primary);outline-offset:3px}
+@media(max-width:800px){#dashboard-page .dashboard-shortcuts{grid-template-columns:repeat(3,minmax(0,1fr));overflow:visible}#dashboard-page .dashboard-shortcuts .tab{min-height:54px}}
+@media(max-width:540px){#dashboard-page .dashboard-shortcuts-area{padding:17px 13px 7px;margin-bottom:20px}#dashboard-page .dashboard-shortcuts{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}#dashboard-page .dashboard-shortcuts .tab{font-size:13px;min-height:52px}}
+@media(prefers-reduced-motion:reduce){#dashboard-page .dashboard-shortcuts .tab{transition:none}}
