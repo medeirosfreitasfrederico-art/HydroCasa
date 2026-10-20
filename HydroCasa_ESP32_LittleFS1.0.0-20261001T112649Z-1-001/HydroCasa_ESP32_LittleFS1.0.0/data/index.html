@@ -57,7 +57,7 @@
   </div>
   <nav class="page-nav shell" aria-label="Páginas do HydroCasa"><a href="?" data-page="dashboard">Painel</a><a href="?pagina=consumo" data-page="consumption"><svg class="ui-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2 7M3 4v7h7M12 7v5l3 2"/></svg>Meu consumo</a><a href="?pagina=simulador" data-page="simulator">Simulador</a><a href="?pagina=sobre" data-page="about">Sobre nós</a><a href="?pagina=fontes" data-page="sources">Fontes e estudos</a></nav>
   <div class="tour-launch-wrap shell" id="tourLaunchWrap" hidden><button id="openHydroTour" class="tour-launch" type="button" aria-haspopup="dialog"><span aria-hidden="true">✦</span> Conhecer o HydroCasa</button></div>
-  <main class="shell" id="dashboard-page"><div id="demoNotice" class="demo-notice" hidden role="status" aria-live="polite"><span>◈ Demonstração: dados fictícios de banhos. Conecte o ESP32 para ver medições reais.</span><button type="button" id="demoClear">Limpar demonstração</button></div>
+  <main class="shell" id="dashboard-page"><div id="demoNotice" class="demo-notice" hidden role="status" aria-live="polite"><span>◈ Demonstração: dados fictícios de banhos. Conecte o ESP32 para ver medições reais.</span><button type="button" id="demoClear">Limpar demonstração</button><button type="button" id="demoUseReal" hidden>Usar dados do ESP32 agora</button></div>
     <section class="hero hero-premium" aria-labelledby="hydroHeroTitle">
       <div class="hero-intro">
         <span class="eyebrow hero-kicker"><span class="hero-kicker-dot" aria-hidden="true"></span> HYDROCASA · INTELIGÊNCIA HÍDRICA</span>
@@ -207,7 +207,7 @@
       <div class="lower-grid">
         <article class="glass-card chart-card">
           <div class="card-head"><div><h3>Consumo recente</h3><p>Volumes observados nos últimos 7 dias; pode haver coleta parcial.</p></div><span class="mini-tag">m³</span></div>
-          <div id="chartLoadingMessage" class="chart-loading-message" role="status">Aguardando as primeiras leituras do ESP32</div><canvas id="dailyChart" height="190"></canvas>
+          <div id="chartLoadingMessage" class="chart-loading-message" role="status">Aguardando as primeiras leituras do ESP32</div><div id="demoRecentPreview" class="demo-recent-preview" hidden><strong>◈ Demonstração — consumo estimado</strong><p>Banhos por dia: <b data-demo-daily>—</b> · Em 7 dias: <b data-demo-week>—</b></p><p>Projeção ilustrativa, não registrada no calendário ou no histórico real.</p></div><canvas id="dailyChart" height="190"></canvas>
         </article>
 
         <article class="glass-card alert-card" id="alertCard">
