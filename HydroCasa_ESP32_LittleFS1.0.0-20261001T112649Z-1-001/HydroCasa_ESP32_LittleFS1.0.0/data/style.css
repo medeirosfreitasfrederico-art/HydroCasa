@@ -646,3 +646,17 @@ body:not(.dark) .source-inline{border-color:rgba(124,58,237,.18)}
 body:not(.dark) input:focus-visible,
 body:not(.dark) select:focus-visible,
 body:not(.dark) textarea:focus-visible{outline-color:#7c3aed}
+
+/* Calendário: criação e remoção de atividades sem modificar leituras reais. */
+.day.has-activities{border-color:var(--primary2)}
+.day-activity-count{display:block;margin-top:6px;font-size:10px;font-weight:750;color:var(--primary2)}
+.calendar-add-toggle{margin:18px 0 9px;min-height:44px}
+.calendar-add-form{padding:18px;margin:10px 0 18px;background:color-mix(in srgb,var(--primary2) 6%,var(--surface));border:1px solid var(--line);border-radius:14px;display:grid;gap:12px}
+.calendar-add-form[hidden]{display:none}
+.calendar-add-form h4{margin:0 0 4px}
+.calendar-add-form label{display:grid;gap:6px;font-size:13px;font-weight:650}
+.calendar-add-form input,.calendar-add-form select{width:100%;min-height:42px;padding:10px 12px;background:var(--surface2);color:var(--text);border:1px solid var(--line);border-radius:10px}
+.calendar-add-form label[hidden]{display:none}
+.calendar-form-actions{display:flex;flex-wrap:wrap;gap:10px}
+.calendar-add-form :focus-visible,.calendar-add-toggle:focus-visible{outline:3px solid var(--primary);outline-offset:3px}
+@media(prefers-reduced-motion:reduce){.calendar-add-form *{scroll-behavior:auto}}
