@@ -195,7 +195,7 @@ function updateConnection(){
   b.textContent=(key==="online"?"● ":"◌ ")+label;
   $("#statusText").textContent=label;
   $("#statusDetail").textContent=state.demoMode?"API indisponível neste servidor — sem medições em tempo real"
-    :hasReading?(state.connected?"Última leitura: ":"Dados desatualizados desde ")+new Date(state.lastValidAt).toLocaleTimeString("pt-BR")
+    :hasReading?(key==="online"?"Última leitura às ":"Última leitura há "+Math.floor((Date.now()-state.lastValidAt)/1000)+"s · às ")+new Date(state.lastValidAt).toLocaleTimeString("pt-BR")
     : connectionState.reason||"Aguardando primeira leitura válida";
   const warnings=[];
   if(state.storageError) warnings.push("Falha ao salvar no navegador");
@@ -207,7 +207,7 @@ function updateConnection(){
   if(notice&&note&&retry){
     const loading=key==="carregando";
     notice.hidden=key==="online";
-    note.textContent=key==="semDados"?"Sem comunicação com o ESP32 neste endereço.":key==="online"?"Conexão restabelecida.":key==="desatualizados"?"Dados desatualizados. Tentando reconectar…":key==="offline"?"Sem conexão com a maquete. Tentando reconectar…":"Conectando à maquete…";
+    note.textContent=key==="semDados"?"Sem comunicação com o ESP32 neste endereço.":key==="online"?"Conexão restabelecida.":key==="desatualizados"?"Dados desatualizados. Tentando reconectar…":key==="offline"?"Sem conexão com a maquete"+(state.lastValidAt?" desde "+new Date(state.lastValidAt).toLocaleTimeString("pt-BR"):"")+". Verifique energia e Wi-Fi.":"Conectando à maquete…";
     retry.hidden=key==="online"||state.apiMissing;
     retry.disabled=!!currentPoll || !!resetPending;
     if(help&&key==="online")help.open=false;
