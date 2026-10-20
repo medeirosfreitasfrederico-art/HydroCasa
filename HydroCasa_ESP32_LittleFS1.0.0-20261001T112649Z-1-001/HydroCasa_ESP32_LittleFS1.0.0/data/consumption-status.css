@@ -1,0 +1,12 @@
+/* Read-only consumption interpretation card */
+.consumption-status-card{--state:#73859d;display:flex;align-items:center;gap:20px;margin:0 0 24px;padding:23px 25px;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--state);border-radius:var(--radius);box-shadow:var(--shadow)}
+.consumption-status-card[data-status="normal"]{--state:#17a676}
+.consumption-status-card[data-status="attention"]{--state:#d89b31}
+.consumption-status-card[data-status="high"]{--state:#dc5c5c}
+.consumption-status-icon{flex:0 0 48px;width:48px;height:48px;display:grid;place-items:center;border-radius:14px;color:var(--state);font-size:24px;font-weight:800;background:color-mix(in srgb,var(--state) 12%,var(--surface))}
+.consumption-status-copy{min-width:0;flex:1}
+.consumption-status-kicker{color:var(--muted);font-size:10px;letter-spacing:.14em;font-weight:800}
+.consumption-status-copy h2{font-size:clamp(19px,2.2vw,24px);line-height:1.2;margin:6px 0}
+.consumption-status-copy p{font-size:13px;line-height:1.55;color:var(--text);margin:0 0 5px}
+.consumption-status-copy small{display:block;color:var(--muted);font-size:11px;line-height:1.5}
+@media(max-width:540px){.consumption-status-card{gap:13px;padding:17px 15px;align-items:flex-start}.consumption-status-icon{flex-basis:39px;width:39px;height:39px;font-size:21px}.consumption-status-copy h2{font-size:19px}}
