@@ -289,8 +289,11 @@ function renderCalendar(){
     else if(h && h.readings>0) el.classList.add("has-data");
     else if(isPast) el.classList.add("empty");
     if(dd.getTime()===today.getTime()) el.classList.add("today");
+    const count=Array.isArray(state.activityRecords[k])?state.activityRecords[k].length:0;
+    if(count)el.classList.add("has-activities");
     let bottom=isFuture?"Aguardando coleta":h&&h.readings>0?volume(h.total1+h.total2)+(h.partial?" • parcial":""):"Sem informação";
-    el.innerHTML=`<span class="num">${day}</span><span class="day-total">${bottom}</span>`;
+    el.innerHTML=`<span class="num">${day}</span><span class="day-total">${bottom}</span>${count?`<span class="day-activity-count" aria-hidden="true">◈ ${count} atividade${count!==1?"s":""}</span>`:""}`;
+    el.setAttribute("aria-label",`${day} de ${base.toLocaleDateString("pt-BR",{month:"long",year:"numeric"})}: ${bottom}${count?`, ${count} atividade(s) registrada(s)`:""}. Abrir detalhes e atividades.`);
     el.addEventListener("click",()=>openDayModal(d));
     grid.appendChild(el);
   }
@@ -307,7 +310,57 @@ function openDayModal(d){
  } else content+='<p>Sem leituras dos sensores neste dia.</p>';
  content+='<h4>Atividades registradas</h4>';
  content+=records.length?records.map((r,i)=>'<div class="activity-entry"><b>'+escapeHtml(r.name)+'</b><p>'+escapeHtml(r.quantity)+' ocorrência(s)'+(r.minutes?'; '+escapeHtml(r.minutes)+' min':'')+'</p><div class="activity-calendar-actions"><button class="ghost-btn" type="button" data-edit-day-activity="'+i+'">Editar</button><button class="ghost-btn" type="button" data-delete-day-activity="'+i+'">Remover</button></div></div>').join(''):'<p>Nenhuma atividade cadastrada para esta data.</p>';
+ // O registro manual é descritivo e fica exclusivamente em activityRecords[k].
+ // Não grava nem modifica leituras, totais, snapshots ou perfil dos sensores.
+ content+='<button type="button" class="primary-btn calendar-add-toggle" id="calendarAddToggle" aria-expanded="false" aria-controls="calendarAddForm">+ Adicionar atividade neste dia</button>';
+ content+='<form id="calendarAddForm" class="calendar-add-form" hidden><h4>Adicionar atividade</h4>'+
+ '<label for="calendarActivitySelect">Atividade<select id="calendarActivitySelect" name="activity" required>'+M.activities.map(a=>'<option value="'+escapeHtml(a.id)+'">'+escapeHtml(a.name)+'</option>').join('')+'</select></label>'+
+ '<label for="calendarActivityQuantity">Ocorrências<input id="calendarActivityQuantity" name="quantity" type="number" min="1" max="100" step="1" value="1" required></label>'+
+ '<label id="calendarMinutesLabel" for="calendarActivityMinutes" hidden>Duração (minutos)<input id="calendarActivityMinutes" name="minutes" type="number" min="0.1" max="240" step="any"></label>'+
+ '<label id="calendarCustomLabel" for="calendarActivityCustom" hidden>Volume estimado por ocorrência (m³)<input id="calendarActivityCustom" name="custom" type="number" min="0.001" max="1000" step="any"></label>'+
+ '<p class="muted-note">Estimativa de atividade: não altera os volumes medidos pelo ESP32.</p>'+
+ '<div class="calendar-form-actions"><button type="submit" class="primary-btn">Salvar atividade</button><button type="button" class="ghost-btn" id="calendarCancelAdd">Cancelar</button></div><p id="calendarActivityFeedback" role="status" aria-live="polite"></p></form>';
  showModal(content);
+ // Formulário local ao dia escolhido, reutilizando o mesmo catálogo e a função M.estimate.
+ const addForm=$("#calendarAddForm"),addToggle=$("#calendarAddToggle");
+ const syncFields=()=>{
+   const activity=M.activities.find(x=>x.id===addForm.elements.activity.value);
+   const duration=$("#calendarMinutesLabel"),custom=$("#calendarCustomLabel");
+   duration.hidden=!activity?.minutes;addForm.elements.minutes.required=!!activity?.minutes;
+   custom.hidden=activity?.liters!==null;addForm.elements.custom.required=activity?.liters===null;
+   if(activity?.minutes)addForm.elements.minutes.value=activity.minutes;
+ };
+ addToggle.onclick=()=>{addForm.hidden=!addForm.hidden;addToggle.setAttribute("aria-expanded",String(!addForm.hidden));if(!addForm.hidden)addForm.elements.activity.focus();};
+ $("#calendarCancelAdd").onclick=()=>{addForm.hidden=true;addToggle.setAttribute("aria-expanded","false");addToggle.focus();};
+ addForm.elements.activity.onchange=syncFields;syncFields();
+ addForm.onsubmit=event=>{
+   event.preventDefault();
+   try{
+     const activity=M.activities.find(x=>x.id===addForm.elements.activity.value);
+     if(!activity)throw Error("Selecione uma atividade válida.");
+     const params={
+       residents:state.household?.residents,
+       quantity:Number(addForm.elements.quantity.value),
+       minutes:activity.minutes?Number(addForm.elements.minutes.value):undefined,
+       customLiters:activity.liters===null?Number(addForm.elements.custom.value)*1000:undefined
+     };
+     const liters=M.estimate(activity.id,params);
+     if(!Number.isFinite(liters)||liters<0)throw Error("Estimativa inválida.");
+     if(!Array.isArray(state.activityRecords[k]))state.activityRecords[k]=[];
+     state.activityRecords[k].push({
+       name:activity.name,id:activity.id,liters,observed:null,quantity:params.quantity,
+       minutes:activity.minutes?params.minutes:null,
+       residentsUsed:activity.perPerson?params.residents:null,
+       sourceName:M.sources[activity.source].name,sourceId:activity.source,
+       referenceVersion:"2026-10-13",tolerance:state.household?.tolerance??10,
+       comparison:null,at:Date.now()
+     });
+     save();renderCalendar();renderActivityLog();updateAnalysis();openDayModal(d);
+     const feedback=$("#modalBody").querySelector("#calendarAddToggle");
+     feedback?.focus();
+   }catch(error){$("#calendarActivityFeedback").textContent=error.message;}
+ };
+
  $$('[data-delete-day-activity]').forEach(btn=>btn.onclick=()=>{
    const i=Number(btn.dataset.deleteDayActivity);
    if(!Number.isInteger(i)||!records[i]||!confirm('Remover esta atividade? Os dados dos sensores não serão alterados.'))return;
