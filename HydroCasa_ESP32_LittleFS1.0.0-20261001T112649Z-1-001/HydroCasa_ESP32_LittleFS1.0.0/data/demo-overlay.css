@@ -1,0 +1,18 @@
+/* Camada de demonstração: identificação permanente junto aos números ilustrativos. */
+.demo-notice{padding:15px 18px;margin:18px 0;background:color-mix(in srgb,var(--primary2) 11%,var(--surface));border:1px dashed var(--primary2);border-radius:15px;display:flex;gap:14px;align-items:center;justify-content:space-between;font-size:13px}
+.demo-notice[hidden]{display:none}
+.demo-notice button{background:transparent;color:var(--primary2);border:1px solid var(--primary2);border-radius:9px;padding:9px 12px;cursor:pointer}
+.demo-value{display:block;color:var(--primary2);font-size:clamp(17px,2.4vw,25px);font-weight:800;margin:8px 0}
+.demo-value::after{content:'◈ Demonstração';display:block;font-size:10px;font-weight:700;margin-top:5px;letter-spacing:.03em}
+.demo-value[hidden]{display:none}
+.demo-covered{display:none!important}
+body[data-demo-active="true"] #dashboard-page .metric-card,body[data-demo-active="true"] #dashboard-page .comparison-grid .glass-card{border-style:dashed;border-color:var(--primary2)}
+body[data-demo-active="true"] #dashboard-page #donut{opacity:.3}
+body[data-demo-active="true"] #dashboard-page #donut::after{content:'◈ Demonstração sem dados por ramal';display:block;position:absolute;top:100%;left:-30%;width:160%;padding:6px;text-align:center;color:var(--primary2);font-size:10px}
+.demo-dialog-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:1000;display:grid;place-items:center;padding:16px}
+.demo-dialog{width:min(520px,100%);background:var(--surface2);border:1px solid var(--line);border-radius:20px;padding:24px;box-shadow:var(--shadow)}
+.demo-dialog h2{margin-top:0}.demo-dialog p{line-height:1.7}
+.demo-dialog-actions{display:flex;flex-wrap:wrap;gap:12px}
+.demo-dialog button:focus-visible,.demo-notice button:focus-visible{outline:3px solid var(--primary);outline-offset:3px}
+@media(max-width:600px){.demo-notice{flex-direction:column;align-items:flex-start}.demo-dialog-actions{flex-direction:column}}
+@media(prefers-reduced-motion:reduce){.demo-dialog-backdrop *{transition:none!important}}

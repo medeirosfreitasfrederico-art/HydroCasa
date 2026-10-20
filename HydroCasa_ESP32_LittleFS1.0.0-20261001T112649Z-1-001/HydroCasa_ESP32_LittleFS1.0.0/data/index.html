@@ -30,6 +30,7 @@
   <link rel="stylesheet" href="hero.css">
   <link rel="stylesheet" href="consumption-status.css">
   <link rel="stylesheet" href="system-improvements.css">
+  <link rel="stylesheet" href="demo-overlay.css">
 </head>
 <body id="top" data-connection-state="carregando">
   <div class="ambient ambient-a"></div>
@@ -56,7 +57,7 @@
   </div>
   <nav class="page-nav shell" aria-label="Páginas do HydroCasa"><a href="?" data-page="dashboard">Painel</a><a href="?pagina=consumo" data-page="consumption"><svg class="ui-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2 7M3 4v7h7M12 7v5l3 2"/></svg>Meu consumo</a><a href="?pagina=simulador" data-page="simulator">Simulador</a><a href="?pagina=sobre" data-page="about">Sobre nós</a><a href="?pagina=fontes" data-page="sources">Fontes e estudos</a></nav>
   <div class="tour-launch-wrap shell" id="tourLaunchWrap" hidden><button id="openHydroTour" class="tour-launch" type="button" aria-haspopup="dialog"><span aria-hidden="true">✦</span> Conhecer o HydroCasa</button></div>
-  <main class="shell" id="dashboard-page">
+  <main class="shell" id="dashboard-page"><div id="demoNotice" class="demo-notice" hidden role="status" aria-live="polite"><span>◈ Demonstração: dados fictícios de banhos. Conecte o ESP32 para ver medições reais.</span><button type="button" id="demoClear">Limpar demonstração</button></div>
     <section class="hero hero-premium" aria-labelledby="hydroHeroTitle">
       <div class="hero-intro">
         <span class="eyebrow hero-kicker"><span class="hero-kicker-dot" aria-hidden="true"></span> HYDROCASA · INTELIGÊNCIA HÍDRICA</span>
@@ -310,9 +311,9 @@
   </main>
 
 
-<main class="shell simulator-embed-page" id="simulator-page" hidden aria-labelledby="simulatorFrameTitle"><h1 id="simulatorFrameTitle" class="sim-visually-hidden" tabindex="-1">Simulador interativo</h1><iframe id="simulatorFrame" title="Simulador de consumo de água — dados exclusivamente hipotéticos" src="simulador.html" sandbox="allow-scripts" loading="lazy" referrerpolicy="no-referrer"></iframe><script id="simulatorThemeBridge">
+<main class="shell simulator-embed-page" id="simulator-page" hidden aria-labelledby="simulatorFrameTitle"><h1 id="simulatorFrameTitle" class="sim-visually-hidden" tabindex="-1">Simulador interativo</h1><iframe id="simulatorFrame" title="Simulador de consumo de água — dados exclusivamente hipotéticos" src="simulador.html" sandbox="allow-scripts" loading="eager" referrerpolicy="no-referrer"></iframe><script id="simulatorThemeBridge">
 (()=>{const frame=document.getElementById('simulatorFrame');const send=()=>{if(frame.contentWindow)frame.contentWindow.postMessage({type:'hydrocasa-simulator-theme',dark:document.body.classList.contains('dark')},'*')};frame.addEventListener('load',send);new MutationObserver(send).observe(document.body,{attributes:true,attributeFilter:['class']});window.addEventListener('message',event=>{if(event.source!==frame.contentWindow||event.origin!=='null'||event.data?.type!=='hydrocasa-simulator-height')return;const height=event.data.height;if(Number.isInteger(height)&&height>=200&&height<=6000)frame.style.height=height+'px';});})();
-</script><p class="sim-isolation-note">Ambiente isolado: nenhum valor deste simulador é utilizado no painel de medições ou salvo no histórico dos sensores.</p></main>
+</script><p class="sim-isolation-note">Os valores deste simulador podem aparecer como demonstração no Painel, mas nunca são registrados como medições reais.</p></main>
   <!-- Conteúdo institucional baseado no README; objetivos futuros não são resultados comprovados. -->
   <main class="shell about-page" id="about-page" hidden aria-labelledby="aboutTitle">
     <!-- Abertura institucional: benefício primeiro, ilustração conceitual sem dados simulados como reais. -->
@@ -358,6 +359,7 @@ document.addEventListener('click',event=>{
 </script>
   <script src="consumption.js"></script>
 <script src="consumption-status.js" defer></script>
+  <script src="demo-overlay.js" defer></script>
   <script src="app.js"></script>
 
   <script id="consumptionPageScript">
