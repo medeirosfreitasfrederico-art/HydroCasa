@@ -596,3 +596,12 @@ body:not(.dark) .history-table tbody tr:focus-within { background: #f0eafa; }
 #sources-page .sources-research .study-summary{margin:15px 0 16px;max-width:76ch;font-size:14px;line-height:1.75;color:var(--muted)}
 /* Passos da apresentação: leitura confortável também em telas estreitas. */
 .about-page .about-steps li p{line-height:1.75}
+
+/* Atalhos da página Sobre Nós: botões nítidos, acessíveis e responsivos. */
+.about-page .about-index{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:11px;padding:17px;margin:38px 0 28px;border:1px solid var(--line);border-radius:19px;background:var(--surface);box-shadow:var(--shadow)}
+.about-page .about-index a{display:flex;align-items:center;justify-content:center;min-height:52px;padding:12px 10px;text-align:center;text-decoration:none;font-size:14px;font-weight:750;line-height:1.3;color:var(--text);border:1px solid var(--line);border-radius:12px;background:color-mix(in srgb,var(--primary) 5%,var(--surface));transition:transform .18s ease,border-color .18s ease,background .18s ease,box-shadow .18s ease}
+.about-page .about-index a:hover{transform:translateY(-2px);border-color:var(--primary);background:color-mix(in srgb,var(--primary) 13%,var(--surface));box-shadow:0 5px 18px color-mix(in srgb,var(--primary) 10%,transparent)}
+.about-page .about-index a:focus-visible{outline:3px solid var(--primary);outline-offset:3px}
+@media(max-width:800px){.about-page .about-index{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:520px){.about-page .about-index{grid-template-columns:repeat(2,minmax(0,1fr));padding:12px;gap:8px;margin:24px 0}.about-page .about-index a{min-height:49px;font-size:13px}}
+@media(prefers-reduced-motion:reduce){.about-page .about-index a{transition:none}}
