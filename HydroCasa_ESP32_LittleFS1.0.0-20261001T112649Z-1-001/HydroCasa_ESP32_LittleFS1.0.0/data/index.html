@@ -67,6 +67,14 @@
       </div>
     </section>
 
+    <section class="getting-started" aria-labelledby="gettingStartedTitle">
+      <div class="getting-started-heading"><div><span class="eyebrow">PRIMEIROS PASSOS</span><h2 id="gettingStartedTitle">Como usar seu painel</h2><p>Três passos para entender as informações da sua casa.</p></div><a href="?pagina=fontes" class="getting-started-help">Entenda as referências ↗</a></div>
+      <ol class="getting-started-steps">
+        <li><span class="getting-started-number" aria-hidden="true">01</span><div><strong>Configure sua residência</strong><p>Informe os moradores e confirme quais pontos os sensores monitoram.</p><a href="#householdTitle">Configurar perfil →</a></div></li>
+        <li><span class="getting-started-number" aria-hidden="true">02</span><div><strong>Consulte as medições</strong><p>Veja os volumes disponíveis. Se estiver offline, aguarde dados reais.</p><a href="#todayTotal">Ver indicadores →</a></div></li>
+        <li><span class="getting-started-number" aria-hidden="true">03</span><div><strong>Entenda seus hábitos</strong><p>Use o calendário e registre atividades para contextualizar o consumo.</p><button type="button" class="getting-started-action" id="guideOpenCalendar">Abrir calendário →</button></div></li>
+      </ol>
+    </section>
     <section class="glass-card household-card" aria-labelledby="householdTitle">
       <div class="card-head"><div><span class="eyebrow">PERFIL DA RESIDÊNCIA</span><h2 id="householdTitle">Quantas pessoas moram aqui?</h2><p>O perfil ajusta a comparação. As medições dos sensores continuam iguais.</p></div></div>
       <form id="householdForm">
@@ -319,6 +327,7 @@
   </div>
 
   <footer><span>HydroCasa</span> • Projeto acadêmico de Engenharia • ESP32 + LittleFS</footer>
+  <script>document.addEventListener('DOMContentLoaded',()=>{const b=document.getElementById('guideOpenCalendar');if(b)b.addEventListener('click',()=>{document.querySelector('.tab[data-panel="calendar"]')?.click();document.querySelector('.tabs')?.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});});});</script>
   <script src="consumption.js"></script>
 <script src="consumption-status.js" defer></script>
   <script src="app.js"></script>
