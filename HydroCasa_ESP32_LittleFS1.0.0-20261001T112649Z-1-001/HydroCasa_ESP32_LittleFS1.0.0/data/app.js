@@ -269,22 +269,44 @@ function renderCalendar(){
 }
 
 function openDayModal(d){
-  const k=keyForDate(d),h=state.history[k],future=d>new Date();
-  if(future){
-    showModal(`<span class="eyebrow">DIA FUTURO</span><h3>Coleta ainda não disponível</h3><p>O dia ${d.toLocaleDateString("pt-BR")} ainda não chegou. Quando chegar, o sistema poderá registrar as leituras usando o relógio do computador.</p>`);
-    return;
-  }
-  if(!h || !h.readings){
-    showModal(`<span class="eyebrow">HISTÓRICO</span><h3>Nenhuma informação</h3><p>Não houve nenhuma leitura computada em ${d.toLocaleDateString("pt-BR")}.</p>`);
-    return;
-  }
-  const total=h.total1+h.total2,r=total?Math.round(h.total1/total*100):0;
-  const historical=M.compareDay(h,null,{closed:k<todayKey()});
-  showModal(`<span class="eyebrow">RELATÓRIO DIÁRIO</span><h3>${d.toLocaleDateString("pt-BR",{dateStyle:"full"})}</h3>
-    <div class="analysis-grid" style="grid-template-columns:1fr 1fr;margin-top:18px">
-      <div class="glass-card"><span>${escapeHtml((h.profile||M.defaults).ramal1)}</span><strong>${volume(h.total1)}</strong><small>${r}% do total</small></div>
-      <div class="glass-card"><span>${escapeHtml((h.profile||M.defaults).ramal2)}</span><strong>${volume(h.total2)}</strong><small>${total?100-r:0}% do total</small></div>
-    </div><p><b>Total: ${volume(total)}.</b> ${h.partial?"Coleta parcial: pode haver consumo não registrado neste dia.":"Consumo registrado neste dia."}</p><p>${escapeHtml(historical.label)}</p><p>${h.profile?escapeHtml(h.profile.residents)+" morador(es) no perfil registrado; referência diária "+volume(h.profile.residents*h.profile.referenceLiters):"Sem perfil de moradores registrado para este dia."}</p>`);
+ const k=keyForDate(d),h=state.history[k],future=d>new Date(),records=Array.isArray(state.activityRecords[k])?state.activityRecords[k]:[];
+ if(future){showModal('<h3>Data futura</h3><p>A coleta ainda não está disponível.</p>');return;}
+ let content='<span class="eyebrow">CALENDÁRIO</span><h3>'+escapeHtml(d.toLocaleDateString("pt-BR",{dateStyle:"full"}))+'</h3>';
+ if(h&&h.readings){
+   const total=h.total1+h.total2;
+   content+='<p><b>Volume registrado pelos sensores: '+volume(total)+'</b></p><p>'+(h.partial?'Coleta parcial.':'Consumo registrado neste dia.')+'</p>';
+   content+='<p>'+escapeHtml(M.compareDay(h,null,{closed:k<todayKey()}).label)+'</p>';
+ } else content+='<p>Sem leituras dos sensores neste dia.</p>';
+ content+='<h4>Atividades registradas</h4>';
+ content+=records.length?records.map((r,i)=>'<div class="activity-entry"><b>'+escapeHtml(r.name)+'</b><p>'+escapeHtml(r.quantity)+' ocorrência(s)'+(r.minutes?'; '+escapeHtml(r.minutes)+' min':'')+'</p><div class="activity-calendar-actions"><button class="ghost-btn" type="button" data-edit-day-activity="'+i+'">Editar</button><button class="ghost-btn" type="button" data-delete-day-activity="'+i+'">Remover</button></div></div>').join(''):'<p>Nenhuma atividade cadastrada para esta data.</p>';
+ showModal(content);
+ $$('[data-delete-day-activity]').forEach(btn=>btn.onclick=()=>{
+   const i=Number(btn.dataset.deleteDayActivity);
+   if(!Number.isInteger(i)||!records[i]||!confirm('Remover esta atividade? Os dados dos sensores não serão alterados.'))return;
+   records.splice(i,1);save();updateAnalysis();renderActivityLog();openDayModal(d);
+ });
+ $$('[data-edit-day-activity]').forEach(btn=>btn.onclick=()=>{
+   const i=Number(btn.dataset.editDayActivity),record=records[i],activity=record&&M.activities.find(x=>x.id===record.id);
+   if(!activity)return;
+   const holder=btn.closest('.activity-entry');
+   const existing=holder.querySelector('.activity-calendar-form');if(existing){existing.remove();return;}
+   const form=document.createElement('form');form.className='activity-calendar-form';
+   form.innerHTML='<label>Ocorrências <input name="quantity" type="number" min="1" max="100" step="1" required></label>'+(activity.minutes?'<label>Duração (min) <input name="minutes" type="number" min="0.1" max="240" step="any" required></label>':'')+'<button type="submit" class="primary-btn">Salvar alterações</button><p role="status"></p>';
+   form.elements.quantity.value=record.quantity;
+   if(activity.minutes)form.elements.minutes.value=record.minutes||activity.minutes;
+   form.onsubmit=ev=>{
+     ev.preventDefault();
+     try {
+       const quantity=Number(form.elements.quantity.value),minutes=activity.minutes?Number(form.elements.minutes.value):undefined;
+       const liters=M.estimate(activity.id,{residents:record.residentsUsed||state.household?.residents,quantity,minutes,customLiters:activity.liters===null?record.liters/(record.quantity*(record.residentsUsed||1)):undefined});
+       if(!Number.isFinite(liters)||liters<0)throw Error('Estimativa inválida.');
+       record.quantity=quantity;record.minutes=activity.minutes?minutes:null;record.liters=liters;
+       record.observed=null;record.comparison=null;
+       save();updateAnalysis();renderActivityLog();openDayModal(d);
+     }catch(error){form.querySelector('[role="status"]').textContent=error.message;}
+   };
+   holder.appendChild(form);form.elements.quantity.focus();
+ });
 }
 
 function updateAnalysis(){
@@ -348,23 +370,18 @@ function applyProfile(next,now=Date.now()){
 }
 
 function activityInput(){
-  const a=M.activities.find(x=>x.id===$("#activitySelect").value);
-  const params={residents:state.household&&state.household.residents,quantity:Number($("#activityQuantity").value),minutes:Number($("#activityMinutes").value),customLiters:$("#customActivityM3").value===""?NaN:Number($("#customActivityM3").value)*1000};
-  const liters=M.estimate(a.id,params),raw=$("#activityObservedM3").value;
-  const observed=raw===""?null:Number(raw)*1000;
-  if(observed!==null&&(!Number.isFinite(observed)||observed<0||observed>1000000))throw new Error("Volume observado inválido.");
-  return {a,params,liters,observed};
+ const activity=M.activities.find(x=>x.id===$("#activitySelect").value);
+ const params={residents:state.household&&state.household.residents,quantity:Number($("#activityQuantity").value),minutes:Number($("#activityMinutes").value),customLiters:$("#customActivityM3").value===""?NaN:Number($("#customActivityM3").value)*1000};
+ return {a:activity,params,liters:M.estimate(activity.id,params),observed:null};
 }
 
 function updateActivityPreview(){
-  const el=$("#activityPreview");
-  try {
-    const {a,params,liters,observed}=activityInput();
-    const tolerance=state.household?state.household.tolerance:10;
-    const result=observed===null?null:M.classify(observed,liters,tolerance,{complete:true});
-    el.textContent=`Estimativa: ${volume(liters)}. ${params.quantity} ocorrência(s)${a.perPerson?" por morador × "+params.residents+" moradores":" da casa"}${a.minutes?" × "+params.minutes+" min por ocorrência":""}.`+(result?` ${result.label} (volume informado manualmente: ${volume(observed)}; faixa ±${fmt(tolerance)}%).`:" Informe o volume total observado após concluir todas essas ocorrências para comparar.");
-    el.classList.remove("form-error");
-  } catch(e) {el.textContent=e.message;el.classList.add("form-error");}
+ const el=$("#activityPreview");
+ try{
+  const {a,params}=activityInput();
+  el.textContent='Registro descritivo: '+params.quantity+' ocorrência(s)'+(a.minutes?' de '+params.minutes+' min':'')+'. Não altera o volume registrado pelos sensores.';
+  el.classList.remove('form-error');
+ }catch(err){el.textContent=err.message;el.classList.add('form-error');}
 }
 
 function selectActivity(){
@@ -377,14 +394,14 @@ function selectActivity(){
   $("#customActivityLabel").hidden=a.liters!==null;
   $("#customActivityM3").required=a.liters===null;
   $("#customActivityM3").disabled=a.liters!==null;
-  $("#activitySource").innerHTML=activitySourceHtml(a);
+  $("#activitySource").textContent="";
   updateActivityPreview();
 }
 
 function renderActivityLog(){
   const records=Array.isArray(state.activityRecords[todayKey()])?state.activityRecords[todayKey()]:[];
   const legacy=Array.isArray(state.justifications[todayKey()])?state.justifications[todayKey()]:[];
-  $("#activityLog").innerHTML=(records.length?records.map((r,i)=>`<div class="activity-entry"><b>${escapeHtml(r.name)}</b><br>Estimativa: ${volume(r.liters)}. ${r.observed===null?"Sem volume observado informado.":"Volume informado manualmente: "+volume(r.observed)+". "+escapeHtml(r.comparison.label)+"."}<br><small>${r.residentsUsed?escapeHtml(r.residentsUsed)+" morador(es); ":""}${escapeHtml(r.quantity)} ocorrência(s)${r.minutes?"; "+escapeHtml(r.minutes)+" min":""}. Fonte: ${escapeHtml(r.sourceName)}.</small><br><button class="ghost-btn" type="button" data-remove-activity="${i}">Remover registro</button></div>`).join(""):"<p>Nenhuma atividade registrada hoje.</p>")+(legacy.length?`<details><summary>Registros anteriores à atualização (${legacy.length})</summary><p>Preservados como estimativas antigas, sem fonte validada. Não entram na nova comparação.</p>${legacy.map(x=>`<p>${escapeHtml(x.name)}: ${volume(x.liters)}</p>`).join("")}</details>`:"");
+  $("#activityLog").innerHTML=(records.length?records.map((r,i)=>`<div class="activity-entry"><b>${escapeHtml(r.name)}</b><br>Estimativa: ${volume(r.liters)}. <br><small>${r.residentsUsed?escapeHtml(r.residentsUsed)+" morador(es); ":""}${escapeHtml(r.quantity)} ocorrência(s)${r.minutes?"; "+escapeHtml(r.minutes)+" min":""}. Fonte: ${escapeHtml(r.sourceName)}.</small><br><button class="ghost-btn" type="button" data-remove-activity="${i}">Remover registro</button></div>`).join(""):"<p>Nenhuma atividade registrada hoje.</p>")+(legacy.length?`<details><summary>Registros anteriores à atualização (${legacy.length})</summary><p>Preservados como estimativas antigas, sem fonte validada. Não entram na nova comparação.</p>${legacy.map(x=>`<p>${escapeHtml(x.name)}: ${volume(x.liters)}</p>`).join("")}</details>`:"");
   $$('[data-remove-activity]').forEach(b=>b.onclick=()=>{records.splice(Number(b.dataset.removeActivity),1);save();renderActivityLog();updateAnalysis();});
 }
 
@@ -455,8 +472,8 @@ function setupConsumptionUI(){
   for(const [id,delta] of [["residentsMinus",-1],["residentsPlus",1]])$("#"+id).onclick=()=>{const el=$("#residentsInput");el.value=Math.max(1,Math.min(100,(Number(el.value)||0)+delta));profilePending();};
   $("#referenceMode").onchange=()=>{$("#referenceM3").disabled=$("#referenceMode").value==="snis";if($("#referenceM3").disabled)$("#referenceM3").value=.1521;profilePending();};
   $("#activitySelect").innerHTML=M.activities.map(a=>`<option value="${a.id}">${escapeHtml(a.name)}</option>`).join("");
-  $("#activitySelect").onchange=()=>{$("#activityObservedM3").value="";selectActivity();};
-  for(const id of ["activityQuantity","activityMinutes","customActivityM3","activityObservedM3"])$("#"+id).oninput=updateActivityPreview;
+  $("#activitySelect").onchange=selectActivity;
+  for(const id of ["activityQuantity","activityMinutes","customActivityM3"])$("#"+id).oninput=updateActivityPreview;
   $("#activityForm").onsubmit=e=>{
     e.preventDefault();
     try {
@@ -467,8 +484,10 @@ function setupConsumptionUI(){
       $("#activityMessage").textContent=state.storageError?"Registro mantido nesta sessão; falha ao salvar no navegador.":"Atividade registrada. O volume dos sensores não foi alterado.";
     }catch(err){$("#activityMessage").textContent=err.message;}
   };
-  $("#activityCatalog").innerHTML=M.activities.map(a=>`<article class="glass-card"><h3>${escapeHtml(a.name)}</h3><p class="reference-value">${a.liters===null?"Referência manual":volume(a.liters)}</p>${activitySourceHtml(a)}</article>`).join("");
-  $("#methodologyContent").innerHTML=`<p>1 m³ = 1.000 L. Vazão é exibida em m³/min. A precisão exibida não substitui a calibração dos sensores.</p><p>A divisão por moradores é uma média do volume monitorado, sem identificar quem usou a água. Os dois sensores não distinguem atividades automaticamente. Não some ramais em série, pois isso conta a mesma água duas vezes.</p><p>Referências de atividades e referência residencial são comparações alternativas: não são somadas entre si. Estimativas não são subtraídas das medições.</p><p>A faixa inicial de ±10% é uma regra ajustável do projeto, sem caráter normativo. Dias parciais não recebem classificação final abaixo/dentro; a ultrapassagem observada pode ser sinalizada. O histórico atual ainda depende do navegador.</p>${Object.keys(M.sources).map(id=>`<div class="source-inline">${sourceHtml(id)}<p>${escapeHtml(M.sources[id].note)}</p></div>`).join("")}`;
+  
+  $("#methodologyContent").textContent="Consulte a página Fontes e estudos para referências, métodos e documentação.";
+  $("#sourcesPageContent").innerHTML=`<h2>Metodologia e referências</h2><p>1 m³ = 1.000 L. As estimativas não substituem medições dos sensores nem são subtraídas do volume real.</p><p>A média SNIS é histórica, não um limite individual. A margem de comparação é configurável no perfil.</p>`+Object.keys(M.sources).map(id=>`<div class="source-inline"><p>${sourceHtml(id)}</p><p>${escapeHtml(M.sources[id].note)}</p></div>`).join("")+`<h3>Exemplos por atividade</h3>`+M.activities.map(item=>`<div class="source-inline"><b>${escapeHtml(item.name)}</b><p>${escapeHtml(item.conditions)}</p><p>${sourceHtml(item.source)}</p></div>`).join("");
+
   selectActivity();renderActivityLog();updateHousehold();
 }
 
