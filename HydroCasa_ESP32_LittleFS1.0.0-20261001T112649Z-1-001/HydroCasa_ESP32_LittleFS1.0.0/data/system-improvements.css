@@ -1,0 +1,28 @@
+/* Estados e segurança de operação */
+#donut[data-empty="true"]{background:var(--line)!important}
+#donut[data-empty="true"]::before{background:var(--surface2)}
+.technical-area{margin-top:13px;border-top:1px solid var(--line);padding-top:12px}
+.technical-area summary{font-weight:650;cursor:pointer}
+.technical-area summary:focus-visible{outline:3px solid var(--primary);outline-offset:4px}
+#connectionBadge{white-space:nowrap}
+
+.connection-notice{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-top:12px;padding:12px 18px;border:1px solid var(--line);border-radius:14px;background:var(--surface);font-size:13px}
+.connection-notice[hidden]{display:none}
+.connection-controls{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+.connection-controls details summary{cursor:pointer;font-weight:700}
+.connection-controls details p{max-width:340px;line-height:1.5}
+.connection-controls summary:focus-visible{outline:3px solid var(--primary);outline-offset:3px}
+.chart-loading-message{text-align:center;padding:16px;font-size:12px;color:var(--muted);background:var(--surface);border-radius:12px}
+.chart-loading-message[hidden]{display:none}
+body[data-connection-state="carregando"] .metric-card strong:not(#statusText){opacity:.55}
+body[data-connection-state="carregando"] .metric-card{background-image:linear-gradient(105deg,transparent 30%,color-mix(in srgb,var(--muted) 6%,transparent) 45%,transparent 60%);background-size:220% 100%;animation:hydro-loading 1.6s ease-in-out infinite}
+body[data-connection-state="desatualizados"] #flow1,body[data-connection-state="desatualizados"] #flow2,body[data-connection-state="offline"] #flow1,body[data-connection-state="offline"] #flow2{opacity:.55}
+@keyframes hydro-loading{from{background-position:120% 0}to{background-position:-120% 0}}
+.info-tip{position:relative;display:inline-block;margin-left:7px;vertical-align:middle}
+.info-tip summary{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;border:1px solid var(--line);color:var(--primary2);font-size:13px;cursor:pointer;list-style:none}
+.info-tip summary::-webkit-details-marker{display:none}
+.info-tip summary:focus-visible{outline:3px solid var(--primary);outline-offset:3px}
+.info-tip[open]>div{position:absolute;right:0;top:100%;z-index:30;min-width:230px;width:min(310px,78vw);padding:14px;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);color:var(--text);background:var(--surface2);font-size:12px;line-height:1.6}
+.info-tip a{display:block;margin-top:8px;color:var(--primary2);font-weight:700}
+@media(max-width:650px){.connection-notice{align-items:flex-start;flex-direction:column}}
+@media(prefers-reduced-motion:reduce){body[data-connection-state="carregando"] .metric-card{animation:none}}

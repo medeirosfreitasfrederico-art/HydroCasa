@@ -9,6 +9,19 @@
   <meta name="keywords" content="ESP32, consumo de água, sensor de vazão, LittleFS, casa inteligente, engenharia, IoT">
   <meta name="author" content="Projeto HydroCasa">
   <meta name="theme-color" content="#07101f">
+  <link rel="canonical" href="https://hydrocasa.vercel.app/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="HydroCasa">
+  <meta property="og:locale" content="pt_BR">
+  <meta property="og:url" content="https://hydrocasa.vercel.app/">
+  <meta property="og:image" content="https://hydrocasa.vercel.app/hydrocasa-og.svg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="HydroCasa — Entenda o consumo. Valorize cada gota.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="HydroCasa — Monitoramento Inteligente de Água">
+  <meta name="twitter:description" content="Entenda o consumo. Valorize cada gota.">
+  <meta name="twitter:image" content="https://hydrocasa.vercel.app/hydrocasa-og.svg">
   <meta property="og:title" content="HydroCasa — Monitoramento Inteligente de Água">
   <meta property="og:description" content="Painel interativo para visualizar vazão, consumo diário, calendário e alertas.">
   <title>HydroCasa | Monitoramento Inteligente de Água</title>
@@ -16,8 +29,9 @@
   <link rel="stylesheet" href="mobile.css">
   <link rel="stylesheet" href="hero.css">
   <link rel="stylesheet" href="consumption-status.css">
+  <link rel="stylesheet" href="system-improvements.css">
 </head>
-<body id="top">
+<body id="top" data-connection-state="carregando">
   <div class="ambient ambient-a"></div>
   <div class="ambient ambient-b"></div>
 
@@ -27,15 +41,19 @@
       <span class="brand-logo" aria-hidden="true"><img src="hydrocasa-symbol.png" alt="" width="1254" height="1254"></span>
       <div>
         <strong>HydroCasa</strong>
-        <span>Water Intelligence System</span>
+        <span>Sistema de Monitoramento de Água</span>
       </div>
     </a>
     <div class="header-actions">
-      <span id="connectionBadge" class="badge offline">● Offline</span>
+      <span id="connectionBadge" class="badge offline" role="status" aria-live="polite" aria-atomic="true">◌ Conectando…</span>
       <button id="themeBtn" class="icon-btn" aria-label="Alternar tema">☼</button>
     </div>
   </header>
 
+  <div id="connectionNotice" class="connection-notice shell" role="status" aria-live="polite" aria-atomic="true" hidden>
+    <span id="connectionNoticeText">Conectando à maquete…</span>
+    <div class="connection-controls"><button id="retryConnection" type="button" class="ghost-btn" hidden>Tentar agora</button><details><summary>Como resolver</summary><p>Verifique a energia do ESP32, o Wi-Fi, se ambos estão na mesma rede e o endereço IP do equipamento. Em sites HTTPS, um dispositivo HTTP local pode ser bloqueado pelo navegador.</p></details></div>
+  </div>
   <nav class="page-nav shell" aria-label="Páginas do HydroCasa"><a href="?" data-page="dashboard">Painel</a><a href="?pagina=consumo" data-page="consumption"><svg class="ui-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2 7M3 4v7h7M12 7v5l3 2"/></svg>Meu consumo</a><a href="?pagina=simulador" data-page="simulator">Simulador</a><a href="?pagina=sobre" data-page="about">Sobre nós</a><a href="?pagina=fontes" data-page="sources">Fontes e estudos</a></nav>
   <div class="tour-launch-wrap shell" id="tourLaunchWrap" hidden><button id="openHydroTour" class="tour-launch" type="button" aria-haspopup="dialog"><span aria-hidden="true">✦</span> Conhecer o HydroCasa</button></div>
   <main class="shell" id="dashboard-page">
@@ -50,10 +68,10 @@
           <span><span aria-hidden="true">↗</span> Análise contextual</span>
         </div>
         <div class="hero-actions">
-          <a class="hero-cta hero-cta-primary" href="#householdTitle">Explorar painel <span aria-hidden="true">↗</span></a>
-          <a class="hero-cta hero-cta-secondary" href="?pagina=sobre">Conheça o projeto <span aria-hidden="true">→</span></a>
+          <a class="hero-cta hero-cta-primary" href="#todayTotal">Ver indicadores <span aria-hidden="true">↗</span></a>
+          <a class="hero-cta hero-cta-secondary" href="?pagina=sobre">Sobre o projeto <span aria-hidden="true">→</span></a>
         </div>
-        <p class="hero-trust-note">Os indicadores do painel dependem de leituras válidas ou registros existentes. Nenhuma informação é simulada nesta página.</p>
+        <p class="hero-trust-note">Os indicadores do painel dependem de leituras válidas ou registros existentes. Leituras e histórico disponíveis no painel.</p>
       </div>
       <div class="hero-side">
         <div class="hero-side-heading"><span class="hero-side-symbol" aria-hidden="true">◉</span><span>MONITORAMENTO HYDROCASA</span></div>
@@ -79,7 +97,7 @@
       <div class="getting-started-heading"><div><span class="eyebrow">PRIMEIROS PASSOS</span><h2 id="gettingStartedTitle">Como usar seu painel</h2><p>Três passos para entender as informações da sua casa.</p></div><a href="?pagina=fontes" class="getting-started-help">Entenda as referências ↗</a></div>
       <ol class="getting-started-steps">
         <li><span class="getting-started-number" aria-hidden="true">01</span><div><strong>Configure sua residência</strong><p>Informe os moradores e confirme quais pontos os sensores monitoram.</p><a href="#householdTitle">Configurar perfil →</a></div></li>
-        <li><span class="getting-started-number" aria-hidden="true">02</span><div><strong>Consulte as medições</strong><p>Veja os volumes disponíveis. Se estiver offline, aguarde dados reais.</p><a href="#todayTotal">Ver indicadores →</a></div></li>
+        <li><span class="getting-started-number" aria-hidden="true">02</span><div><strong>Consulte as medições</strong><p>Veja os volumes disponíveis. Se estiver offline, aguarde dados reais.</p></div></li>
         <li><span class="getting-started-number" aria-hidden="true">03</span><div><strong>Entenda seus hábitos</strong><p>Use o calendário e registre atividades para contextualizar o consumo.</p><button type="button" class="getting-started-action" id="guideOpenCalendar">Abrir calendário →</button></div></li>
       </ol>
     </section>
@@ -91,7 +109,7 @@
           <div class="form-grid">
             <label>Referência por pessoa<select id="referenceMode"><option value="snis">SNIS 2020 — média histórica nacional</option><option value="user">Personalizada — hipótese do usuário</option></select></label>
             <label>Referência (m³/pessoa/dia)<input id="referenceM3" type="number" min="0.000001" max="10" step="any" value="0.1521" required></label>
-            <label>Faixa de comparação (±%)<input id="toleranceInput" type="number" min="0" max="50" step="any" value="10" required><small>Regra do projeto; 10% não é uma tolerância oficial da fonte.</small></label>
+            <label>Faixa de comparação (±%)<input id="toleranceInput" type="number" min="0" max="50" step="any" value="10" required><small>Margem ajustável do projeto.</small></label>
             <label>O que os sensores cobrem?<select id="scopeInput"><option value="branches">Somente os ramais da maquete</option><option value="whole">Toda a residência, sem dupla contagem</option></select><small>Selecione toda a residência apenas se a instalação medir todos os usos.</small></label>
             <label>Nome do ramal 01<input id="ramal1Input" maxlength="32" value="Ramal 01" required></label>
             <label>Nome do ramal 02<input id="ramal2Input" maxlength="32" value="Ramal 02" required></label>
@@ -140,15 +158,15 @@
 
     <section class="comparison-grid" aria-label="Comparação por morador">
       <article class="glass-card"><span>Referência da casa / dia</span><strong id="householdTarget">—</strong><small id="targetDetail">Configure os moradores.</small></article>
-      <article class="glass-card"><span>Volume monitorado / morador</span><strong id="perPersonValue">—</strong><small id="perPersonDetail">Divisão do volume observado; não identifica consumo individual.</small></article>
-      <article class="glass-card"><span>Comparação com a referência</span><strong id="comparisonStatus">Aguardando perfil</strong><small id="comparisonDetail">Sem diagnóstico de desperdício ou vazamento.</small></article>
+      <article class="glass-card"><span>Volume monitorado / morador</span><strong id="perPersonValue">—</strong><small id="perPersonDetail">Média do volume registrado por morador.</small><details class="info-tip"><summary aria-label="Mais informações sobre consumo por morador" title="Mais informações">ⓘ</summary><div role="tooltip">O volume monitorado dividido pelo número de moradores não informa quanto cada pessoa consumiu. <a href="?pagina=fontes#limitations">Saiba mais</a></div></details></article>
+      <article class="glass-card"><span>Comparação com a referência</span><strong id="comparisonStatus">Aguardando perfil</strong><small id="comparisonDetail">Aguardando referência.</small><details class="info-tip"><summary aria-label="Mais informações sobre a comparação de consumo" title="Mais informações">ⓘ</summary><div role="tooltip">A faixa percentual é uma convenção ajustável do projeto; não comprova desperdício ou vazamento. <a href="?pagina=fontes#limitations">Saiba mais</a></div></details></article>
     </section>
 
 
 
     <section id="dashboard" class="panel active-panel">
       <div class="section-heading">
-        <div><span class="eyebrow">LIVE MONITOR</span><h2>Visão geral</h2></div>
+        <div><span class="eyebrow">MONITORAMENTO</span><h2>Visão geral</h2></div>
         <button class="ghost-btn" id="openLegend">Como funciona</button>
       </div>
 
@@ -178,7 +196,7 @@
         <article class="glass-card">
           <div class="card-head"><div><h3>Distribuição</h3><p>Participação de cada ramal</p></div></div>
           <div class="donut-wrap">
-            <div class="donut" id="donut"><div><strong id="ratio1">50%</strong><span>Ramal 01</span></div></div>
+            <div class="donut" id="donut" data-empty="true"><div><strong id="ratio1">—</strong><span>Ramal 01</span></div></div>
           </div>
           <div class="split-row"><span><i class="dot d1"></i>Ramal 01</span><strong id="split1">—</strong></div>
           <div class="split-row"><span><i class="dot d2"></i>Ramal 02</span><strong id="split2">—</strong></div>
@@ -188,7 +206,7 @@
       <div class="lower-grid">
         <article class="glass-card chart-card">
           <div class="card-head"><div><h3>Consumo recente</h3><p>Volumes observados nos últimos 7 dias; pode haver coleta parcial.</p></div><span class="mini-tag">m³</span></div>
-          <canvas id="dailyChart" height="190"></canvas>
+          <div id="chartLoadingMessage" class="chart-loading-message" role="status">Aguardando as primeiras leituras do ESP32</div><canvas id="dailyChart" height="190"></canvas>
         </article>
 
         <article class="glass-card alert-card" id="alertCard">
@@ -260,15 +278,15 @@
         <article class="glass-card setting-card"><span>Conectividade</span><strong id="ipInfo">Detectando...</strong><p>O endereço IP aparece quando o ESP32 está conectado à mesma rede.</p></article>
         <article class="glass-card setting-card"><span>Calibração</span><strong id="calibrationInfo">450 pulsos/L</strong><p>Valor inicial para sensores YF-S201. Calibre com um recipiente medidor.</p></article>
         <article class="glass-card setting-card"><span>Persistência</span><strong>LittleFS + navegador</strong><p>O ESP32 guarda snapshots e o navegador mantém o histórico visual.</p></article>
-        <article class="glass-card setting-card danger"><span>Manutenção</span><strong>Zerar contadores</strong><p>Use somente antes de uma nova demonstração do projeto.</p><button class="danger-btn" id="resetBtn">Zerar ESP32</button></article>
+        <article class="glass-card setting-card"><span>Manutenção</span><strong>Modo técnico</strong><p>O reset remoto está desabilitado até que o ESP32 exija autenticação no próprio dispositivo.</p><details class="technical-area"><summary>Orientações para administradores</summary><p>O firmware deve exigir autorização em <code>/api/reset</code>. Não coloque PIN nem token no código da página. Consulte a documentação de segurança do repositório.</p></details></article>
       </div>
-      <article class="glass-card report-card"><h3>Referências e metodologia</h3><div id="methodologyContent"></div></article>
+      <article class="glass-card report-card"><h3>Entenda os dados</h3><p>Confira as fontes e limitações da análise.</p><div id="methodologyContent"></div><a href="?pagina=fontes#limitations">Fontes e metodologia →</a></article>
     </section>
   </main>
 
 
 <main class="shell consumption-page" id="sources-page" hidden aria-labelledby="sourcesTitle"><header class="section-heading"><div><span class="eyebrow">TRANSPARÊNCIA</span><h1 id="sourcesTitle" tabindex="-1">Fontes e estudos</h1><p>Referências utilizadas nas comparações e estimativas do HydroCasa. Valores de exemplo não são medições dos sensores.</p></div></header><section class="sources-research" aria-labelledby="aboutResearch"><span class="eyebrow">O QUE SUSTENTA A PROPOSTA</span><h2 id="aboutResearch" tabindex="-1">Pesquisas que orientam o HydroCasa</h2><p class="research-intro">A revisão de literatura do relatório da equipe conecta tecnologia e comportamento. Os resultados abaixo pertencem aos estudos citados e não são promessas de desempenho ou economia do HydroCasa.</p><article class="study-row"><h3>Wang et al. · 2025</h3><p class="study-summary">O estudo realizado na Nova Zelândia associou o uso de aplicativos, informações em tempo real e alertas a uma redução de cerca de 5% no consumo. O resultado inspira a comunicação clara dos dados, mas não representa uma economia comprovada pelo HydroCasa.</p><a href="https://www.sciencedirect.com/science/article/pii/S2214804325000771" target="_blank" rel="noopener noreferrer">Consultar estudo ↗</a></article><article class="study-row"><h3>Rupiper et al. · 2024</h3><p class="study-summary">Em um experimento na Califórnia, a economia observada esteve ligada principalmente à redução de vazamentos. A pesquisa indica possibilidades para alertas futuros, sem significar que o HydroCasa já detecte vazamentos automaticamente.</p><a href="https://doi.org/10.1088/1748-9326/ad7bce" target="_blank" rel="noopener noreferrer">Consultar estudo ↗</a></article><article class="study-row"><h3>Alves, Manera e Campos · 2019</h3><p class="study-summary">O trabalho apresenta uma solução de monitoramento residencial com sensores sem fio de baixo custo e relata erro inferior a 5% no sistema estudado. O HydroCasa precisa de calibração e testes próprios para avaliar sua precisão.</p><a href="https://www.scielo.br/j/ambiagua/a/Lq3MpKpYvRcvvCPJ8PWj9qC/" target="_blank" rel="noopener noreferrer">Consultar estudo ↗</a></article><article class="study-row"><h3>Michels Americo e Izidoro · 2022</h3><p class="study-summary">Os autores descrevem a construção e avaliação de um sistema de monitoramento usando sensor de fluxo, Wi-Fi e aplicação móvel. O estudo contribui como referência para uma arquitetura acessível e para a importância da validação prática.</p><a href="https://revistavincci.satc.edu.br/index.php/Revista-Vincci/article/view/272" target="_blank" rel="noopener noreferrer">Consultar estudo ↗</a></article><p class="muted-note">A versão do relatório fornecida ainda não apresenta resultados próprios de validação física ou economia de água.</p></section>
-<section class="glass-card" id="sourcesPageContent" aria-label="Referências bibliográficas"></section></main>
+<section class="glass-card" id="limitations" aria-labelledby="limitationsTitle"><h2 id="limitationsTitle">Limitações e metodologia</h2><p>Os volumes monitorados dependem da cobertura e da calibração dos sensores. Dividir o consumo por moradores não identifica o uso individual. A tolerância configurável é uma regra do projeto, não uma norma oficial. As estimativas de atividades são educativas e não substituem leituras reais. Sem dados suficientes não é possível determinar desperdício ou detectar vazamentos automaticamente.</p></section><section class="glass-card" id="sourcesPageContent" aria-label="Referências bibliográficas"></section></main>
   <!-- Página interna: mantém o painel montado para não interromper sua coleta.
        O endereço usa a rota existente; não requer alterações no firmware. -->
   <main class="shell consumption-page" id="consumption-page" hidden>
@@ -330,6 +348,14 @@
 
   <footer><span>HydroCasa</span> • Projeto acadêmico de Engenharia • ESP32 + LittleFS</footer>
   <script>document.addEventListener('DOMContentLoaded',()=>{const b=document.getElementById('guideOpenCalendar');if(b)b.addEventListener('click',()=>{document.querySelector('.tab[data-panel="calendar"]')?.click();document.querySelector('.tabs')?.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});});});</script>
+  <script>
+document.addEventListener('keydown',event=>{
+ if(event.key==='Escape')document.querySelectorAll('.info-tip[open]').forEach(el=>el.open=false);
+});
+document.addEventListener('click',event=>{
+ document.querySelectorAll('.info-tip[open]').forEach(el=>{if(!el.contains(event.target))el.open=false;});
+});
+</script>
   <script src="consumption.js"></script>
 <script src="consumption-status.js" defer></script>
   <script src="app.js"></script>
