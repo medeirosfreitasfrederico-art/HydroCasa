@@ -15,6 +15,7 @@
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="mobile.css">
   <link rel="stylesheet" href="hero.css">
+  <link rel="stylesheet" href="consumption-status.css">
 </head>
 <body id="top">
   <div class="ambient ambient-a"></div>
@@ -88,6 +89,15 @@
       <p class="muted-note">Configuração salva neste navegador. Alterações ficam registradas por dia; um dia com perfis diferentes não recebe uma classificação única.</p>
     </section>
 
+    <section class="consumption-status-card" id="consumptionStatusCard" data-status="unknown" aria-labelledby="consumptionStatusTitle">
+      <span class="consumption-status-icon" id="consumptionStatusIcon" aria-hidden="true">—</span>
+      <div class="consumption-status-copy">
+        <span class="consumption-status-kicker">SITUAÇÃO DO CONSUMO</span>
+        <h2 id="consumptionStatusTitle">Aguardando dados</h2>
+        <p id="consumptionStatusMessage">O indicador será exibido quando houver medições suficientes para uma comparação válida.</p>
+        <small id="consumptionStatusContext">Referência e período ainda não disponíveis.</small>
+      </div>
+    </section>
     <!-- Cartões: título com destaque discreto, valor principal e texto de apoio separados. -->
     <section class="metrics-grid">
       <article class="metric-card metric-primary">
@@ -309,6 +319,7 @@
 
   <footer><span>HydroCasa</span> • Projeto acadêmico de Engenharia • ESP32 + LittleFS</footer>
   <script src="consumption.js"></script>
+<script src="consumption-status.js" defer></script>
   <script src="app.js"></script>
 
   <script id="consumptionPageScript">
