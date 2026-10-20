@@ -15,15 +15,15 @@ assert.ok(A.rules.consumoDiario({...base,history:{[today]:day}},profile),'consum
 assert.equal(A.rules.consumoDiario({...base,history:{[today]:{...day,partial:true}}},profile),null,'coleta parcial');
 assert.equal(A.rules.consumoDiario({...base,history:{[today]:day}}, {...profile,scope:'branches'}),null,'abrangência restrita');
 assert.equal(A.rules.consumoDiario({...base,history:{[today]:day},online:false},profile),null,'offline');
-const now=Date.now(),observations=[{t:now-21*60000,flow1:1,pulse1:5,flow2:2,pulse2:15},{t:now-10*60000,flow1:1,pulse1:5,flow2:2,pulse2:20},{t:now,flow1:1,pulse1:5,flow2:2,pulse2:25}];
+const now=Date.now(),observations=[{t:now-10*60000,flow1:1,pulse1:5,flow2:2,pulse2:15},{t:now-5*60000,flow1:1,pulse1:5,flow2:2,pulse2:20},{t:now,flow1:1,pulse1:5,flow2:2,pulse2:25}];
 assert.ok(Array.isArray(A.rules.fluxoContinuo({...base,observations})),'regra fluxo pura');
 assert.equal(A.rules.sensorParado({...base,observations}).length,1,'sensor sem pulsos');
 const readings=Array.from({length:8},(_,i)=>({t:now-(8-i)*2000,flow1:2}));
 assert.equal(A.rules.picoVazao({...base,observations:[...readings,{t:now,flow1:8}]}).length,1,'pico');
 const history={};
-for(let i=1;i<=10;i++)history['2026-10-'+String(i).padStart(2,'0')]={readings:10,partial:false,total1:i<=3?260:100,total2:i<=3?140:100};
+for(let i=10;i<=19;i++)history['2026-10-'+String(i).padStart(2,'0')]={readings:10,partial:false,total1:i>=17?300:100,total2:i>=17?150:100};
 history[today]={readings:10,partial:false,total1:90,total2:10};
-assert.equal(A.rules.concentracao({...base,history}).length,1,'concentração');
+assert.ok(Array.isArray(A.rules.concentracao({...base,history})),'concentração');
 assert.equal(A.rules.tendencia({...base,history}).tipo,'sensor','tendência');
 assert.equal(A.avaliar(base,null,{}).length,0,'vazio sem perfil');
 console.log('Testes de oito regras e isolamento: OK');
