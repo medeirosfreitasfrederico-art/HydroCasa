@@ -170,7 +170,9 @@ async function syncToEsp(d,day){
 let pollTimer=null,currentPoll=null,resetPending=false,failures=0;
 const connectionState={status:"carregando",lastValidAt:null,reason:"",reconnecting:false};
 const connectionLabels={carregando:"Conectando à maquete…",online:"Online",desatualizados:"Dados desatualizados",offline:"Offline",semDados:"Sem dados ainda"};
-function setConnectionStatus(status,reason=""){connectionState.status=status;connectionState.reason=reason;connectionState.lastValidAt=state.lastValidAt;}
+function setConnectionStatus(status,reason=""){connectionState.status=status;connectionState.reason=reason;connectionState.lastValidAt=state.lastValidAt;
+  document.body.dataset.connectionState=status;
+}
 
 async function runPoll(){
   if(resetPending) return;
@@ -188,6 +190,7 @@ function updateConnection(){
   const stale=hasReading && Date.now()-state.lastValidAt>15000;
   const key=state.demoMode?"semDados":state.connected?(stale?"desatualizados":"online"):connectionState.status;
   const label=connectionLabels[key]||"Offline";
+  document.body.dataset.connectionState=key;
   b.className="badge "+(key==="online"?"online":"offline");
   b.textContent=(key==="online"?"● ":"◌ ")+label;
   $("#statusText").textContent=label;
@@ -228,8 +231,8 @@ function updateLive(){
   $("#sensor2Total").textContent=h.readings?volume(h.total2):"—";
   $("#split1").textContent=h.readings?volume(h.total1):"—";
   $("#split2").textContent=h.readings?volume(h.total2):"—";
-  $("#flow1").textContent=state.connected&&state.lastValidAt!==null?volume(d.flow1_lpm)+"/min":"—";
-  $("#flow2").textContent=state.connected&&state.lastValidAt!==null?volume(d.flow2_lpm)+"/min":"—";
+  $("#flow1").textContent=state.lastValidAt!==null?volume(d.flow1_lpm)+"/min":"—";
+  $("#flow2").textContent=state.lastValidAt!==null?volume(d.flow2_lpm)+"/min":"—";
   const ratio=t>0&&h.readings?Math.round((h.total1/t)*100):null;
   $("#ratio1").textContent=ratio!==null?ratio+"%":"—";
   $("#donut").dataset.empty=ratio===null?"true":"false";
@@ -267,7 +270,7 @@ function updateAlert(){
   const result=M.compareDay(h,state.household,{connected:state.connected});
   const card=$("#alertContent");
   card.className="alert-content "+(result.code==="above"?"warning":"neutral");
-  card.textContent=result.label+". Consulte o perfil e a metodologia; esta comparação não confirma desperdício ou vazamento.";
+  card.textContent=result.label+".";
 }
 
 function renderCalendar(){
@@ -362,7 +365,7 @@ function updateHousehold(){
   const result=M.compareDay(h,p,{connected:state.connected});
   $("#comparisonStatus").textContent=result.label;
   $("#comparisonStatus").className=result.code==="above"?"comparison-above":"";
-  $("#comparisonDetail").textContent=result.percent!==undefined?`${fmt(Math.abs(result.percent))}% ${result.percent<0?"abaixo":"acima"} da referência central. Volume observado, sem projeção do restante do dia.`:"Sem conclusão de economia em dias parciais ou ramais que não cobrem toda a casa.";
+  $("#comparisonDetail").textContent=result.percent!==undefined?`${fmt(Math.abs(result.percent))}% ${result.percent<0?"abaixo":"acima"} da referência central. Volume observado, sem projeção do restante do dia.`:"Comparação indisponível.";
   const names=p||M.defaults;
   $$('[data-ramal]').forEach(el=>el.textContent=names['ramal'+el.dataset.ramal]);
   const source=p?p.referenceMode:$("#referenceMode").value;
