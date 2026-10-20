@@ -39,6 +39,8 @@ const overlay=document.createElement('div');overlay.className='ux-drawer';overla
 document.body.append(overlay);
 const helpBody=overlay.querySelector('.ux-help-body');
 helpBody.append(guide.querySelector('.getting-started-steps').cloneNode(true));
+const drawerCalendar=helpBody.querySelector('#guideOpenCalendar');
+if(drawerCalendar){drawerCalendar.removeAttribute('id');drawerCalendar.onclick=()=>{closeHelp();navigate('calendar',true,true);};}
 let previous=null;
 function closeHelp(){overlay.hidden=true;previous?.focus();}
 help.onclick=()=>{previous=document.activeElement;overlay.hidden=false;overlay.querySelector('button').focus();};
