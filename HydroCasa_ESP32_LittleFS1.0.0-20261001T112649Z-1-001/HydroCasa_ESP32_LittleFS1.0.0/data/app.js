@@ -472,8 +472,8 @@ function setupConsumptionUI(){
   for(const [id,delta] of [["residentsMinus",-1],["residentsPlus",1]])$("#"+id).onclick=()=>{const el=$("#residentsInput");el.value=Math.max(1,Math.min(100,(Number(el.value)||0)+delta));profilePending();};
   $("#referenceMode").onchange=()=>{$("#referenceM3").disabled=$("#referenceMode").value==="snis";if($("#referenceM3").disabled)$("#referenceM3").value=.1521;profilePending();};
   $("#activitySelect").innerHTML=M.activities.map(a=>`<option value="${a.id}">${escapeHtml(a.name)}</option>`).join("");
-  $("#activitySelect").onchange=()=>{$("#activityObservedM3").value="";selectActivity();};
-  for(const id of ["activityQuantity","activityMinutes","customActivityM3","activityObservedM3"])$("#"+id).oninput=updateActivityPreview;
+  $("#activitySelect").onchange=selectActivity;
+  for(const id of ["activityQuantity","activityMinutes","customActivityM3"])$("#"+id).oninput=updateActivityPreview;
   $("#activityForm").onsubmit=e=>{
     e.preventDefault();
     try {
