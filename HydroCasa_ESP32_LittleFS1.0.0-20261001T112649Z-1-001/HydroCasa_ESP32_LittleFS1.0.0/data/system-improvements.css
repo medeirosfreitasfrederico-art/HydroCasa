@@ -1,0 +1,7 @@
+/* Estados e segurança de operação */
+#donut[data-empty="true"]{background:var(--line)!important}
+#donut[data-empty="true"]::before{background:var(--surface2)}
+.technical-area{margin-top:13px;border-top:1px solid var(--line);padding-top:12px}
+.technical-area summary{font-weight:650;cursor:pointer}
+.technical-area summary:focus-visible{outline:3px solid var(--primary);outline-offset:4px}
+#connectionBadge{white-space:nowrap}
