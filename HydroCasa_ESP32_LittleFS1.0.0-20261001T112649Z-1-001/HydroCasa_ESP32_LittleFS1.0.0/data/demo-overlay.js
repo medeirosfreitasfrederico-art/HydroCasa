@@ -5,7 +5,7 @@ const KEY='hydrocasa:simulacao';
 const $=id=>document.getElementById(id);
 const frame=$('simulatorFrame'),notice=$('demoNotice'),clear=$('demoClear');
 const limits=[[1,10],[1,30],[1,4],[3,20],[7,365]];
-let simulation=null,source='nenhuma',hadReal=false,prompted=false,dialog=null;
+let simulation=null,source='nenhuma',hadReal=false,prompted=false,dialog=null,blockedAfterClear=false;
 const valid=v=>Array.isArray(v)&&v.length===5&&v.every((n,i)=>typeof n==='number'&&Number.isFinite(n)&&n>=limits[i][0]&&n<=limits[i][1])&&[7,30,365].includes(v[4]);
 function hasRealHistory(){
  try{
@@ -29,7 +29,20 @@ function update(){
   for(const [id,fn] of map){const p=overlays.get(id);if(!p)continue;p.shown.textContent=fn(v);p.shown.hidden=false;p.node.classList.add('demo-covered');}
   $('demoNotice')?.setAttribute('data-volume',String(perDay));
  }else for(const {node,shown} of overlays.values()){node.classList.remove('demo-covered');shown.hidden=true;}
- const chart=$('dailyChart');if(chart)chart.parentElement.classList.toggle('demo-chart-empty',useDemo);
+ const chart=$('dailyChart');
+ if(chart)chart.parentElement.classList.toggle('demo-chart-empty',useDemo);
+ const estimated=$('demoRecentPreview');
+ if(estimated){
+  estimated.hidden=!useDemo;
+  if(useDemo){
+   const daily=simulation[0]*simulation[1]*simulation[2]*simulation[3];
+   estimated.querySelector('[data-demo-daily]').textContent=fmt(daily);
+   estimated.querySelector('[data-demo-week]').textContent=fmt(daily*7);
+  }
+ }
+ const demoLink=$('demoUseReal');
+ if(demoLink)demoLink.hidden=!(simulation&&real);
+
 }
 function store(v){
  simulation=v;
@@ -38,6 +51,7 @@ function store(v){
 }
 function erase(){
  simulation=null;
+ blockedAfterClear=true;
  try{sessionStorage.removeItem(KEY);}catch{}
  update();
  frame?.contentWindow?.postMessage({type:'hydrocasa-demo-clear-inputs'},'*');
@@ -61,11 +75,13 @@ function watch(){const real=hasRealHistory()||isRealOnline();if(real&&!hadReal&&
 window.addEventListener('message',event=>{
  if(event.source!==frame?.contentWindow||event.origin!=='null'||!event.data||typeof event.data!=='object')return;
  if(event.data.type==='hydrocasa-demo-clear'){erase();return;}
- if(event.data.type!=='hydrocasa-demo-values'||!valid(event.data.v))return;
+ if(event.data.type!=='hydrocasa-demo-values'||!valid(event.data.v)||blockedAfterClear)return;
  // Dados hipotéticos não atravessam a fronteira do histórico real.
  store(event.data.v);
 });
 clear?.addEventListener('click',erase);
+$('demoUseReal')?.addEventListener('click',()=>erase());
+frame?.addEventListener('load',()=>{blockedAfterClear=false;});
 new MutationObserver(watch).observe(document.body,{attributes:true,attributeFilter:['data-connection-state']});
 window.addEventListener('storage',watch);
 setInterval(watch,1500);
