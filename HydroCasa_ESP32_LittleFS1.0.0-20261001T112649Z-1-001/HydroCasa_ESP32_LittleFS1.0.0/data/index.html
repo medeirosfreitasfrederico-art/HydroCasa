@@ -9,6 +9,19 @@
   <meta name="keywords" content="ESP32, consumo de água, sensor de vazão, LittleFS, casa inteligente, engenharia, IoT">
   <meta name="author" content="Projeto HydroCasa">
   <meta name="theme-color" content="#07101f">
+  <link rel="canonical" href="https://hydrocasa.vercel.app/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="HydroCasa">
+  <meta property="og:locale" content="pt_BR">
+  <meta property="og:url" content="https://hydrocasa.vercel.app/">
+  <meta property="og:image" content="https://hydrocasa.vercel.app/hydrocasa-og.svg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="HydroCasa — Entenda o consumo. Valorize cada gota.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="HydroCasa — Monitoramento Inteligente de Água">
+  <meta name="twitter:description" content="Entenda o consumo. Valorize cada gota.">
+  <meta name="twitter:image" content="https://hydrocasa.vercel.app/hydrocasa-og.svg">
   <meta property="og:title" content="HydroCasa — Monitoramento Inteligente de Água">
   <meta property="og:description" content="Painel interativo para visualizar vazão, consumo diário, calendário e alertas.">
   <title>HydroCasa | Monitoramento Inteligente de Água</title>
@@ -16,6 +29,7 @@
   <link rel="stylesheet" href="mobile.css">
   <link rel="stylesheet" href="hero.css">
   <link rel="stylesheet" href="consumption-status.css">
+  <link rel="stylesheet" href="system-improvements.css">
 </head>
 <body id="top">
   <div class="ambient ambient-a"></div>
@@ -31,7 +45,7 @@
       </div>
     </a>
     <div class="header-actions">
-      <span id="connectionBadge" class="badge offline">● Offline</span>
+      <span id="connectionBadge" class="badge offline" role="status" aria-live="polite" aria-atomic="true">◌ Conectando…</span>
       <button id="themeBtn" class="icon-btn" aria-label="Alternar tema">☼</button>
     </div>
   </header>
@@ -50,10 +64,10 @@
           <span><span aria-hidden="true">↗</span> Análise contextual</span>
         </div>
         <div class="hero-actions">
-          <a class="hero-cta hero-cta-primary" href="#householdTitle">Explorar painel <span aria-hidden="true">↗</span></a>
-          <a class="hero-cta hero-cta-secondary" href="?pagina=sobre">Conheça o projeto <span aria-hidden="true">→</span></a>
+          <a class="hero-cta hero-cta-primary" href="#householdTitle">Ver indicadores <span aria-hidden="true">↗</span></a>
+          <a class="hero-cta hero-cta-secondary" href="?pagina=sobre">Sobre o projeto <span aria-hidden="true">→</span></a>
         </div>
-        <p class="hero-trust-note">Os indicadores do painel dependem de leituras válidas ou registros existentes. Nenhuma informação é simulada nesta página.</p>
+        <p class="hero-trust-note">Os indicadores do painel dependem de leituras válidas ou registros existentes. Consulte apenas medições disponíveis.</p>
       </div>
       <div class="hero-side">
         <div class="hero-side-heading"><span class="hero-side-symbol" aria-hidden="true">◉</span><span>MONITORAMENTO HYDROCASA</span></div>
@@ -178,7 +192,7 @@
         <article class="glass-card">
           <div class="card-head"><div><h3>Distribuição</h3><p>Participação de cada ramal</p></div></div>
           <div class="donut-wrap">
-            <div class="donut" id="donut"><div><strong id="ratio1">50%</strong><span>Ramal 01</span></div></div>
+            <div class="donut" id="donut" data-empty="true"><div><strong id="ratio1">—</strong><span>Ramal 01</span></div></div>
           </div>
           <div class="split-row"><span><i class="dot d1"></i>Ramal 01</span><strong id="split1">—</strong></div>
           <div class="split-row"><span><i class="dot d2"></i>Ramal 02</span><strong id="split2">—</strong></div>
@@ -260,7 +274,7 @@
         <article class="glass-card setting-card"><span>Conectividade</span><strong id="ipInfo">Detectando...</strong><p>O endereço IP aparece quando o ESP32 está conectado à mesma rede.</p></article>
         <article class="glass-card setting-card"><span>Calibração</span><strong id="calibrationInfo">450 pulsos/L</strong><p>Valor inicial para sensores YF-S201. Calibre com um recipiente medidor.</p></article>
         <article class="glass-card setting-card"><span>Persistência</span><strong>LittleFS + navegador</strong><p>O ESP32 guarda snapshots e o navegador mantém o histórico visual.</p></article>
-        <article class="glass-card setting-card danger"><span>Manutenção</span><strong>Zerar contadores</strong><p>Use somente antes de uma nova demonstração do projeto.</p><button class="danger-btn" id="resetBtn">Zerar ESP32</button></article>
+        <article class="glass-card setting-card"><span>Manutenção</span><strong>Modo técnico</strong><p>O reset remoto está desabilitado até que o ESP32 exija autenticação no próprio dispositivo.</p><details class="technical-area"><summary>Orientações para administradores</summary><p>O firmware deve exigir autorização em <code>/api/reset</code>. Não coloque PIN nem token no código da página. Consulte a documentação de segurança do repositório.</p></details></article>
       </div>
       <article class="glass-card report-card"><h3>Referências e metodologia</h3><div id="methodologyContent"></div></article>
     </section>
