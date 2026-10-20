@@ -21,3 +21,5 @@
 .alerts-toast{position:fixed;right:18px;bottom:18px;z-index:160;max-width:min(380px,calc(100vw - 36px));border:1px solid var(--danger);padding:15px;border-radius:12px;background:var(--surface2);box-shadow:var(--shadow);font-size:13px}
 .alerts-drawer button:focus-visible,.alert-bell:focus-visible{outline:3px solid var(--primary2);outline-offset:3px}
 @media(prefers-reduced-motion:reduce){.alerts-toast,.alerts-drawer{transition:none!important}}
+
+.activity-alert-badge{display:inline-block;margin-left:8px;padding:3px 7px;border-radius:8px;background:color-mix(in srgb,var(--primary2) 12%,var(--surface));color:var(--primary2);border:1px solid var(--primary2);font-size:11px;font-weight:700}
