@@ -124,6 +124,7 @@ function enableDemo(){
   state.demoMode=true;
   state.connected=false;
   state.lastValidAt=null;
+  setConnectionStatus("semDados","A API do ESP32 não está disponível neste endereço.");
   state.live={liters1:0,liters2:0,flow1_lpm:0,flow2_lpm:0};
   updateLive();
 }
@@ -136,11 +137,15 @@ async function poll(){
     state.connected=true;
     state.live=d;
     state.lastValidAt=now;
+    failures=0;
+    setConnectionStatus("online");
     addSnapshot(day,d,now);
     updateLive();
     await syncToEsp(d,day);
   } catch(e) {
     state.connected=false;
+    failures++;
+    setConnectionStatus(failures>=3?"offline":state.lastValidAt?"desatualizados":"carregando",e.name==="AbortError"?"O ESP32 não respondeu a tempo.":navigator.onLine===false?"O navegador está sem conexão.":"Não foi possível consultar o ESP32.");
     if(e.status===404){
       // Static hosts do not expose the ESP32 firmware routes; stop polling permanently.
       enableDemo();
@@ -160,26 +165,33 @@ async function syncToEsp(d,day){
   updateConnection();
 }
 
-let pollTimer=null,currentPoll=null,resetPending=false;
+let pollTimer=null,currentPoll=null,resetPending=false,failures=0;
+const connectionState={status:"carregando",lastValidAt:null,reason:"",reconnecting:false};
+const connectionLabels={carregando:"Conectando à maquete…",online:"Online",desatualizados:"Dados desatualizados",offline:"Offline",semDados:"Sem dados ainda"};
+function setConnectionStatus(status,reason=""){connectionState.status=status;connectionState.reason=reason;connectionState.lastValidAt=state.lastValidAt;}
+
 async function runPoll(){
   if(resetPending) return;
   currentPoll=poll();
   try { await currentPoll; }
   finally {
     currentPoll=null;
-    if(!resetPending && !state.apiMissing) pollTimer=setTimeout(runPoll,2000);
+    if(!resetPending && !state.apiMissing) pollTimer=setTimeout(runPoll,failures?Math.min(30000,2000*Math.pow(2,Math.min(failures-1,4))):2000);
   }
 }
 
 function updateConnection(){
   updateHousehold();
   const b=$("#connectionBadge"),hasReading=state.lastValidAt!==null;
-  b.className="badge "+(state.connected?"online":"offline");
-  b.textContent=state.connected?"● Online":"● Offline";
-  $("#statusText").textContent=state.demoMode?"Sem dados do sensor":state.connected?"Monitorando":"Sem conexão";
+  const stale=hasReading && Date.now()-state.lastValidAt>15000;
+  const key=state.demoMode?"semDados":state.connected?(stale?"desatualizados":"online"):connectionState.status;
+  const label=connectionLabels[key]||"Offline";
+  b.className="badge "+(key==="online"?"online":"offline");
+  b.textContent=(key==="online"?"● ":"◌ ")+label;
+  $("#statusText").textContent=label;
   $("#statusDetail").textContent=state.demoMode?"API indisponível neste servidor — sem medições em tempo real"
     :hasReading?(state.connected?"Última leitura: ":"Dados desatualizados desde ")+new Date(state.lastValidAt).toLocaleTimeString("pt-BR")
-    : "Aguardando primeira leitura válida";
+    : connectionState.reason||"Aguardando primeira leitura válida";
   const warnings=[];
   if(state.storageError) warnings.push("Falha ao salvar no navegador");
   if(state.syncError) warnings.push("Falha ao salvar no ESP32");
@@ -206,9 +218,10 @@ function updateLive(){
   $("#split2").textContent=h.readings?volume(h.total2):"—";
   $("#flow1").textContent=state.connected&&state.lastValidAt!==null?volume(d.flow1_lpm)+"/min":"—";
   $("#flow2").textContent=state.connected&&state.lastValidAt!==null?volume(d.flow2_lpm)+"/min":"—";
-  const ratio=t?Math.round((h.total1/t)*100):50;
-  $("#ratio1").textContent=t?ratio+"%":"—";
-  $("#donut").style.background=!t?"var(--line)":`conic-gradient(var(--primary) 0 ${ratio}%,var(--primary2) ${ratio}% 100%)`;
+  const ratio=t>0&&h.readings?Math.round((h.total1/t)*100):null;
+  $("#ratio1").textContent=ratio!==null?ratio+"%":"—";
+  $("#donut").dataset.empty=ratio===null?"true":"false";
+  $("#donut").style.background=ratio===null?"var(--line)":`conic-gradient(var(--primary) 0 ${ratio}%,var(--primary2) ${ratio}% 100%)`;
   updateChart();
   if(state.connected) updateAlert(t);
   updateAnalysis();
@@ -509,27 +522,8 @@ $("#prevMonth").onclick=()=>{state.monthOffset--;renderCalendar()};$("#nextMonth
 $("#themeBtn").onclick=()=>{document.body.classList.toggle("dark");localStorage.setItem("hydrocasa_theme",document.body.classList.contains("dark")?"dark":"light");updateChart()};
 try { if(localStorage.getItem("hydrocasa_theme")==="dark")document.body.classList.add("dark"); } catch(e) {}
 
-$("#resetBtn").onclick=async()=>{
-  if(state.demoMode){alert("API do ESP32 indisponível neste servidor.");return;}
-  if(resetPending || !confirm("Zerar os contadores do ESP32? O consumo já registrado será preservado.")) return;
-  resetPending=true;
-  clearTimeout(pollTimer);
-  $("#resetBtn").disabled=true;
-  try {
-    // Finish the in-flight reading before resetting, avoiding out-of-order snapshots.
-    if(currentPoll) await currentPoll;
-    await requestJson("/api/reset",{method:"POST"});
-    state.connected=false;
-    updateConnection();
-    alert("Contadores zerados. Aguardando nova leitura; histórico preservado.");
-  } catch(e) {
-    alert("Não foi possível confirmar o reset. Verifique a conexão antes de tentar novamente.");
-  } finally {
-    resetPending=false;
-    $("#resetBtn").disabled=false;
-    pollTimer=setTimeout(runPoll,0);
-  }
-};
+// Remote reset is deliberately unavailable to public clients.
+// Firmware must require server-side authorization before this action can be reintroduced.
 
 function clock(){
   const d=new Date();$("#clock").textContent=d.toLocaleTimeString("pt-BR");$("#dateLabel").textContent=d.toLocaleDateString("pt-BR",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});
