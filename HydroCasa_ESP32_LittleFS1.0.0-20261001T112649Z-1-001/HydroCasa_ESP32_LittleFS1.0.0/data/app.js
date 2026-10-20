@@ -133,12 +133,14 @@ async function poll(){
   if(state.apiMissing) return;
   try {
     const d=validateLive(await requestJson("/api/live"));
+    const recovered=failures>=3;
     const now=Date.now(),day=keyForDate(new Date(now));
     state.connected=true;
     state.live=d;
     state.lastValidAt=now;
     failures=0;
     setConnectionStatus("online");
+    if(recovered) { const n=$("#connectionNoticeText"); if(n)n.textContent="Conexão restabelecida."; }
     addSnapshot(day,d,now);
     updateLive();
     await syncToEsp(d,day);
@@ -198,9 +200,19 @@ function updateConnection(){
   const h=state.history[todayKey()];
   $("#todayDelta").textContent=state.demoMode?"Sem conexão com o sensor • Exibição apenas de registros existentes":warnings.length?warnings.join(" • ")
     : h && h.readings?"Coleta parcial do dia":"Aguardando leituras";
+  const notice=$("#connectionNotice"),note=$("#connectionNoticeText"),retry=$("#retryConnection"),help=notice?.querySelector("details");
+  if(notice&&note&&retry){
+    const loading=key==="carregando";
+    notice.hidden=key==="online";
+    note.textContent=key==="semDados"?"Sem comunicação com o ESP32 neste endereço.":key==="online"?"Conexão restabelecida.":key==="desatualizados"?"Dados desatualizados. Tentando reconectar…":key==="offline"?"Sem conexão com a maquete. Tentando reconectar…":"Conectando à maquete…";
+    retry.hidden=key==="online"||state.apiMissing;
+    retry.disabled=!!currentPoll || !!resetPending;
+    if(help&&key==="online")help.open=false;
+  }
+  const chartMsg=$("#chartLoadingMessage");if(chartMsg)chartMsg.hidden=!!(h&&h.readings);
   const live=$(".live-dot");
-  live.textContent=state.connected?"AO VIVO":"SEM CONEXÃO";
-  if(!state.connected){
+  live.textContent=key==="online"?"AO VIVO":key==="carregando"?"CONECTANDO":key==="desatualizados"?"DADOS ANTIGOS":key==="semDados"?"SEM DADOS":"OFFLINE";
+  if(key!=="online"){
     $("#alertContent").className="alert-content neutral";
     $("#alertContent").textContent="Análise indisponível: aguardando conexão e leitura válida.";
   }
@@ -533,3 +545,10 @@ setupConsumptionUI();ensureToday();renderCalendar();updateLive();
 if(location.hostname.endsWith(".vercel.app")) enableDemo();
 else runPoll();
 window.addEventListener("resize",updateChart);
+$("#retryConnection").addEventListener("click",()=>{
+ if(state.apiMissing || currentPoll || resetPending)return;
+ clearTimeout(pollTimer);runPoll();
+});
+window.addEventListener("online",()=>{if(!state.apiMissing && !currentPoll){clearTimeout(pollTimer);runPoll();}});
+window.addEventListener("offline",()=>{connectionState.reason="O navegador está sem internet.";updateConnection();});
+setInterval(()=>{if(!document.hidden)updateConnection();},1000);
