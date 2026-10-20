@@ -31,7 +31,7 @@
   <link rel="stylesheet" href="consumption-status.css">
   <link rel="stylesheet" href="system-improvements.css">
 </head>
-<body id="top">
+<body id="top" data-connection-state="carregando">
   <div class="ambient ambient-a"></div>
   <div class="ambient ambient-b"></div>
 
@@ -41,7 +41,7 @@
       <span class="brand-logo" aria-hidden="true"><img src="hydrocasa-symbol.png" alt="" width="1254" height="1254"></span>
       <div>
         <strong>HydroCasa</strong>
-        <span>Water Intelligence System</span>
+        <span>Sistema de Monitoramento de Água</span>
       </div>
     </a>
     <div class="header-actions">
@@ -68,7 +68,7 @@
           <span><span aria-hidden="true">↗</span> Análise contextual</span>
         </div>
         <div class="hero-actions">
-          <a class="hero-cta hero-cta-primary" href="#householdTitle">Ver indicadores <span aria-hidden="true">↗</span></a>
+          <a class="hero-cta hero-cta-primary" href="#todayTotal">Ver indicadores <span aria-hidden="true">↗</span></a>
           <a class="hero-cta hero-cta-secondary" href="?pagina=sobre">Sobre o projeto <span aria-hidden="true">→</span></a>
         </div>
         <p class="hero-trust-note">Os indicadores do painel dependem de leituras válidas ou registros existentes. Leituras e histórico disponíveis no painel.</p>
@@ -348,6 +348,14 @@
 
   <footer><span>HydroCasa</span> • Projeto acadêmico de Engenharia • ESP32 + LittleFS</footer>
   <script>document.addEventListener('DOMContentLoaded',()=>{const b=document.getElementById('guideOpenCalendar');if(b)b.addEventListener('click',()=>{document.querySelector('.tab[data-panel="calendar"]')?.click();document.querySelector('.tabs')?.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});});});</script>
+  <script>
+document.addEventListener('keydown',event=>{
+ if(event.key==='Escape')document.querySelectorAll('.info-tip[open]').forEach(el=>el.open=false);
+});
+document.addEventListener('click',event=>{
+ document.querySelectorAll('.info-tip[open]').forEach(el=>{if(!el.contains(event.target))el.open=false;});
+});
+</script>
   <script src="consumption.js"></script>
 <script src="consumption-status.js" defer></script>
   <script src="app.js"></script>
