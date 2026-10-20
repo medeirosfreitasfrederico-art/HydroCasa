@@ -591,3 +591,8 @@ body:not(.dark) .history-table tbody tr:focus-within { background: #f0eafa; }
 @media(max-width:800px){#dashboard-page .dashboard-shortcuts{grid-template-columns:repeat(3,minmax(0,1fr));overflow:visible}#dashboard-page .dashboard-shortcuts .tab{min-height:54px}}
 @media(max-width:540px){#dashboard-page .dashboard-shortcuts-area{padding:17px 13px 7px;margin-bottom:20px}#dashboard-page .dashboard-shortcuts{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}#dashboard-page .dashboard-shortcuts .tab{font-size:13px;min-height:52px}}
 @media(prefers-reduced-motion:reduce){#dashboard-page .dashboard-shortcuts .tab{transition:none}}
+
+/* Estudos: resumo único, sem os três destaques anteriores. */
+#sources-page .sources-research .study-summary{margin:15px 0 16px;max-width:76ch;font-size:14px;line-height:1.75;color:var(--muted)}
+/* Passos da apresentação: leitura confortável também em telas estreitas. */
+.about-page .about-steps li p{line-height:1.75}
