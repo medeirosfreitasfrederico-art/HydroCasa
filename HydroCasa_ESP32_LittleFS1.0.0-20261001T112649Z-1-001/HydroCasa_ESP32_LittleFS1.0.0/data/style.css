@@ -552,3 +552,30 @@ body:not(.dark) .history-table tbody tr:focus-within { background: #f0eafa; }
 #sources-page .study-row dd{margin:0;font-size:14px;line-height:1.7;color:var(--muted)}
 #sources-page .study-row a{color:var(--card-accent);font-size:13px;text-underline-offset:4px}
 @media(max-width:700px){#sources-page .study-row dl{grid-template-columns:1fr;gap:14px}}
+
+/* Introductory flow and legible research cards; limited to these sections */
+.getting-started{margin:0 0 28px;padding:25px;border:1px solid var(--line);border-radius:20px;background:var(--surface);box-shadow:var(--shadow)}
+.getting-started-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px}
+.getting-started-heading h2{font-size:clamp(21px,3vw,28px);margin:7px 0}
+.getting-started-heading p{margin:0;color:var(--muted);font-size:13px}
+.getting-started-help{font-size:12px;font-weight:700;color:var(--primary);text-underline-offset:4px}
+.getting-started-steps{list-style:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:0;padding:0}
+.getting-started-steps li{display:flex;align-items:flex-start;gap:12px;padding:19px 16px;border:1px solid var(--line);background:color-mix(in srgb,var(--primary) 3%,var(--surface));border-radius:15px}
+.getting-started-number{display:grid;place-items:center;width:35px;height:35px;flex:none;border-radius:11px;background:color-mix(in srgb,var(--primary) 13%,var(--surface));color:var(--primary);font-weight:850;font-size:12px}
+.getting-started-steps strong{display:block;font-size:14px;margin:2px 0 8px}
+.getting-started-steps p{margin:0 0 13px;color:var(--muted);font-size:12px;line-height:1.6}
+.getting-started-steps a,.getting-started-action{color:var(--primary);text-decoration:none;font-size:12px;font-weight:750}
+.getting-started-action{border:0;background:none;padding:0;cursor:pointer;font-family:inherit}
+.getting-started a:focus-visible,.getting-started button:focus-visible{outline:2px solid var(--primary);outline-offset:4px;border-radius:4px}
+#sources-page .sources-research{counter-reset:study;max-width:100%}
+#sources-page .sources-research .research-intro{max-width:75ch}
+#sources-page .sources-research .study-row{position:relative;counter-increment:study;display:block;margin:15px 0;padding:25px 25px 25px 87px;border:1px solid var(--line);border-radius:17px;background:var(--surface);box-shadow:var(--shadow)}
+#sources-page .sources-research .study-row::before{content:counter(study,decimal-leading-zero);position:absolute;left:23px;top:24px;width:42px;height:42px;display:grid;place-items:center;border-radius:12px;background:color-mix(in srgb,var(--primary) 13%,var(--surface));color:var(--primary);font-size:13px;font-weight:850}
+#sources-page .sources-research .study-row h3{font-size:19px;letter-spacing:-.025em}
+#sources-page .sources-research .study-row dl{gap:12px;margin:18px 0}
+#sources-page .sources-research .study-row dl>div{background:color-mix(in srgb,var(--primary) 3%,var(--surface));padding:14px;border-radius:11px;border:1px solid var(--line)}
+#sources-page .sources-research .study-row dt{font-weight:800;letter-spacing:.02em}
+#sources-page .sources-research .study-row dd{line-height:1.55;font-size:13px}
+#sources-page .sources-research .study-row a{display:inline-block;margin-top:3px;font-weight:750}
+@media(max-width:800px){.getting-started-steps{grid-template-columns:1fr}.getting-started-heading{align-items:flex-start;flex-direction:column}#sources-page .sources-research .study-row dl{grid-template-columns:1fr}}
+@media(max-width:540px){.getting-started{padding:17px}#sources-page .sources-research .study-row{padding:22px 17px}#sources-page .sources-research .study-row::before{position:static;margin-bottom:14px}}
