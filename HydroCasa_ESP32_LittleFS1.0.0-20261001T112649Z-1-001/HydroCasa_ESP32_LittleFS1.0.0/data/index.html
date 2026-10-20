@@ -30,6 +30,7 @@
   <link rel="stylesheet" href="hero.css">
   <link rel="stylesheet" href="consumption-status.css">
   <link rel="stylesheet" href="system-improvements.css">
+  <link rel="stylesheet" href="dashboard-ux.css">
   <link rel="stylesheet" href="demo-overlay.css">
 </head>
 <body id="top" data-connection-state="carregando">
@@ -46,8 +47,8 @@
       </div>
     </a>
     <div class="header-actions">
-      <span id="connectionBadge" class="badge offline" role="status" aria-live="polite" aria-atomic="true">◌ Conectando…</span>
-      <button id="themeBtn" class="icon-btn" aria-label="Alternar tema">☼</button>
+      <span title="Estado da conexão com o ESP32; abra Sistema para verificar a rede." id="connectionBadge" class="badge offline" role="status" aria-live="polite" aria-atomic="true">◌ Conectando…</span>
+      <button id="themeBtn" class="icon-btn" aria-label="Ativar modo escuro" aria-pressed="false" title="Alternar tema">☼</button>
     </div>
   </header>
 
@@ -78,7 +79,7 @@
         <div class="hero-side-heading"><span class="hero-side-symbol" aria-hidden="true">◉</span><span>MONITORAMENTO HYDROCASA</span></div>
         <div class="hero-watermark hero-logo-mark" aria-hidden="true"><img src="hydrocasa-symbol.png" alt="" width="1254" height="1254"></div>
         <div class="hero-time">
-          <span>Horário do dispositivo</span>
+          <span>Horário do seu computador</span>
           <strong id="clock">--:--:--</strong>
           <small id="dateLabel">--/--/----</small>
         </div>
@@ -152,13 +153,13 @@
       </article>
       <article class="metric-card">
         <span class="metric-label"><svg class="ui-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a14 14 0 0 1 18 0M6 12a9 9 0 0 1 12 0M9 16a4 4 0 0 1 6 0"/><circle cx="12" cy="20" r=".5"/></svg>Status</span>
-        <strong id="statusText">Monitorando</strong>
-        <small id="statusDetail" aria-live="polite">Sistema pronto</small>
+        <strong id="statusText">Conectando</strong>
+        <small id="statusDetail" aria-live="polite">Aguardando conexão</small>
       </article>
     </section>
 
     <section class="comparison-grid" aria-label="Comparação por morador">
-      <article class="glass-card"><span>Referência da casa / dia</span><strong id="householdTarget">—</strong><small id="targetDetail">Configure os moradores.</small></article>
+      <article class="glass-card"><span>Referência ilustrativa / dia</span><strong id="householdTarget">—</strong><small id="targetDetail">Configure os moradores.</small></article>
       <article class="glass-card"><span>Volume monitorado / morador</span><strong id="perPersonValue">—</strong><small id="perPersonDetail">Média do volume registrado por morador.</small><details class="info-tip"><summary aria-label="Mais informações sobre consumo por morador" title="Mais informações">ⓘ</summary><div role="tooltip">O volume monitorado dividido pelo número de moradores não informa quanto cada pessoa consumiu. <a href="?pagina=fontes#limitations">Saiba mais</a></div></details></article>
       <article class="glass-card"><span>Comparação com a referência</span><strong id="comparisonStatus">Aguardando perfil</strong><small id="comparisonDetail">Aguardando referência.</small><details class="info-tip"><summary aria-label="Mais informações sobre a comparação de consumo" title="Mais informações">ⓘ</summary><div role="tooltip">A faixa percentual é uma convenção ajustável do projeto; não comprova desperdício ou vazamento. <a href="?pagina=fontes#limitations">Saiba mais</a></div></details></article>
     </section>
@@ -211,7 +212,7 @@
         </article>
 
         <article class="glass-card alert-card" id="alertCard">
-          <div class="card-head"><div><h3>Comparação de consumo</h3><p>Referência proporcional ao perfil informado.</p></div></div>
+          <div class="card-head"><div><h3>Comparação de consumo</h3><p>Comparação ilustrativa para a residência; não indica a precisão da maquete.</p></div></div>
           <div id="alertContent" class="alert-content neutral">
             <div class="alert-icon">✓</div>
             <div><strong>Aguardando dados e configuração</strong><p>A comparação depende da abrangência e da cobertura da coleta.</p></div>
@@ -361,6 +362,7 @@ document.addEventListener('click',event=>{
 <script src="consumption-status.js" defer></script>
   <script src="demo-overlay.js" defer></script>
   <script src="app.js"></script>
+  <script src="dashboard-ux.js" defer></script>
 
   <script id="consumptionPageScript">
   // Navegação interna por URL: não recriar app.js, não duplicar polling e nunca escrever no ledger.

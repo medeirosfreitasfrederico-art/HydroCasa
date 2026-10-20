@@ -1,0 +1,28 @@
+/* Navegação e contraste: apresentação apenas. */
+#dashboard-page .dashboard-shortcuts-area{position:sticky;top:76px;z-index:15;background:var(--surface2);backdrop-filter:blur(20px);scroll-margin-top:95px}
+.dashboard-shortcuts .tab[aria-selected="true"]{outline:2px solid var(--primary2);outline-offset:-2px;box-shadow:inset 0 -4px 0 var(--cyan)}
+.dashboard-shortcuts .tab:focus-visible,.ux-help:focus-visible,.ux-dismiss:focus-visible,.ux-personalize summary:focus-visible{outline:3px solid var(--primary2);outline-offset:3px}
+.ux-help{float:right;margin:0 0 12px;min-height:42px}
+.ux-dismiss{white-space:nowrap;min-height:42px}
+#dashboard-page .ux-hero-compact{padding:12px 0 18px;grid-template-columns:1fr auto}
+#dashboard-page .ux-hero-compact h1{font-size:clamp(21px,3vw,29px);margin:5px 0}
+#dashboard-page .ux-hero-compact .hero-benefits,#dashboard-page .ux-hero-compact .hero-side,#dashboard-page .ux-hero-compact .hero-intro>p,#dashboard-page .ux-hero-compact .hero-trust-note{display:none}
+#dashboard-page .ux-hero-compact .hero-actions{margin:0}
+#dashboard-page .ux-hero-compact .hero-cta{min-height:39px}
+#dashboard-page .panel{scroll-margin-top:215px}
+#dashboard-page .ux-personalize{margin-bottom:18px;border:1px solid var(--line);border-radius:16px;background:var(--surface);padding:8px 15px}
+#dashboard-page .ux-personalize[hidden]{display:none}
+#dashboard-page .ux-personalize>summary{cursor:pointer;font-weight:750;padding:10px;color:var(--primary2)}
+#dashboard-page .ux-personalize .household-card{margin:8px 0 0}
+#dashboard-page .metrics-grid[hidden],#dashboard-page .comparison-grid[hidden],#dashboard-page .getting-started[hidden]{display:none}
+.ux-drawer[hidden]{display:none}
+.ux-drawer{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.62);display:flex;justify-content:flex-end}
+.ux-drawer-content{width:min(500px,100%);height:100%;overflow:auto;padding:30px;background:var(--surface2);box-shadow:var(--shadow)}
+.ux-help-close{float:right;border:1px solid var(--line);border-radius:9px;background:var(--surface);min-width:42px;min-height:42px;font-size:26px}
+.ux-drawer .getting-started-steps{display:grid;grid-template-columns:1fr}
+.ux-drawer button:focus-visible,.ux-drawer a:focus-visible{outline:3px solid var(--primary2);outline-offset:3px}
+.pipe-diagram.ux-no-live{filter:grayscale(1);opacity:.52}
+body:not([data-connection-state="online"]) .pipe-diagram *{animation-play-state:paused!important}
+#donut[data-ux-empty="true"]{background:var(--line)!important}
+@media(max-width:850px){#dashboard-page .dashboard-shortcuts-area{top:68px}#dashboard-page .dashboard-shortcuts{display:flex;overflow-x:auto;flex-wrap:nowrap;scroll-snap-type:x proximity}#dashboard-page .dashboard-shortcuts .tab{flex:0 0 auto;min-width:116px;scroll-snap-align:start}#dashboard-page .panel{scroll-margin-top:190px}}
+@media(prefers-reduced-motion:reduce){.pipe-diagram *{animation:none!important}html{scroll-behavior:auto}}
