@@ -36,7 +36,7 @@
     </div>
   </header>
 
-  <nav class="page-nav shell" aria-label="Páginas do HydroCasa"><a href="?" data-page="dashboard">Painel</a><a href="?pagina=consumo" data-page="consumption"><svg class="ui-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2 7M3 4v7h7M12 7v5l3 2"/></svg>Meu consumo</a><a href="?pagina=simulador" data-page="simulator">Simulador</a><a href="?pagina=sobre" data-page="about">Sobre nós</a></nav>
+  <nav class="page-nav shell" aria-label="Páginas do HydroCasa"><a href="?" data-page="dashboard">Painel</a><a href="?pagina=consumo" data-page="consumption"><svg class="ui-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2 7M3 4v7h7M12 7v5l3 2"/></svg>Meu consumo</a><a href="?pagina=simulador" data-page="simulator">Simulador</a><a href="?pagina=sobre" data-page="about">Sobre nós</a><a href="?pagina=fontes" data-page="sources">Fontes e estudos</a></nav>
   <div class="tour-launch-wrap shell" id="tourLaunchWrap" hidden><button id="openHydroTour" class="tour-launch" type="button" aria-haspopup="dialog"><span aria-hidden="true">✦</span> Conhecer o HydroCasa</button></div>
   <main class="shell" id="dashboard-page">
     <section class="hero hero-premium" aria-labelledby="hydroHeroTitle">
@@ -85,7 +85,7 @@
         <div class="profile-actions"><button class="primary-btn" type="submit">Aplicar perfil</button><p id="profileMessage" role="status"></p></div>
         <p id="profileDayNotice" class="muted-note" hidden></p>
       </form>
-      <div id="householdSource" class="source-inline"></div>
+      <div id="householdSource" class="source-inline" hidden></div>
       <p class="muted-note">Configuração salva neste navegador. Alterações ficam registradas por dia; um dia com perfis diferentes não recebe uma classificação única.</p>
     </section>
 
@@ -233,15 +233,15 @@
             <label><span id="quantityLabel">Ocorrências</span><input id="activityQuantity" type="number" min="1" max="100" step="1" value="1" required></label>
             <label id="minutesLabel">Duração por ocorrência (min)<input id="activityMinutes" type="number" min="0.1" max="240" step="any" value="15"></label>
             <label id="customActivityLabel" hidden>Referência por ocorrência (m³)<input id="customActivityM3" type="number" min="0.000001" max="1000" step="any"></label>
-            <label>Volume total observado (m³, opcional)<input id="activityObservedM3" type="number" min="0" max="1000" step="any" placeholder="Informe após concluir a atividade"><small>Informação manual para todas as ocorrências calculadas. Não é identificada automaticamente pelos sensores.</small></label>
+            
           </div>
-          <div id="activitySource" class="source-inline"></div>
+          <div id="activitySource" class="source-inline" hidden></div>
           <div id="activityPreview" class="activity-preview" aria-live="polite"></div>
           <button type="submit" class="primary-btn">Registrar no dia de hoje</button><p id="activityMessage" role="status"></p>
         </form>
       </article>
       <article class="glass-card report-card"><h3>Registros de hoje</h3><div id="activityLog"></div></article>
-      <div id="activityCatalog" class="reference-grid"></div>
+      
     </section>
 
     <section id="settings" class="panel">
@@ -257,6 +257,7 @@
   </main>
 
 
+<main class="shell consumption-page" id="sources-page" hidden aria-labelledby="sourcesTitle"><header class="section-heading"><div><span class="eyebrow">TRANSPARÊNCIA</span><h1 id="sourcesTitle" tabindex="-1">Fontes e estudos</h1><p>Referências utilizadas nas comparações e estimativas do HydroCasa. Valores de exemplo não são medições dos sensores.</p></div></header><section class="glass-card" id="sourcesPageContent" aria-label="Referências bibliográficas"></section></main>
   <!-- Página interna: mantém o painel montado para não interromper sua coleta.
        O endereço usa a rota existente; não requer alterações no firmware. -->
   <main class="shell consumption-page" id="consumption-page" hidden>
@@ -395,14 +396,15 @@
     }
     function route(focus=false){
       const param=new URLSearchParams(location.search).get('pagina');
-      const page=param==='consumo'?'consumption':param==='simulador'?'simulator':param==='sobre'?'about':'dashboard';
-      ['dashboard','consumption','simulator','about'].forEach(id=>q(id+'-page').hidden=id!==page);
+      const page=param==='consumo'?'consumption':param==='simulador'?'simulator':param==='sobre'?'about':param==='fontes'?'sources':'dashboard';
+      ['dashboard','consumption','simulator','about','sources'].forEach(id=>q(id+'-page').hidden=id!==page);
       q('tourLaunchWrap').hidden=page!=='dashboard';
       document.querySelectorAll('[data-page]').forEach(link=>{if(link.dataset.page===page)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');});
-      document.title=page==='about'?'Sobre nós | HydroCasa':page==='consumption'?'Meu consumo | HydroCasa':page==='simulator'?'Simulador | HydroCasa':'HydroCasa | Monitoramento Inteligente de Água';
+      document.title=page==='about'?'Sobre nós | HydroCasa':page==='consumption'?'Meu consumo | HydroCasa':page==='simulator'?'Simulador | HydroCasa':page==='sources'?'Fontes e estudos | HydroCasa':'HydroCasa | Monitoramento Inteligente de Água';
       if(page==='consumption'){render();if(focus)q('consumptionTitle').focus();}
       else if(page==='about'){if(focus)q('aboutTitle').focus();}
-      else if(page==='simulator'){if(focus)q('simulatorTitle').focus();}
+      else if(page==='simulator'){if(focus)q('simulatorFrameTitle').focus();}
+      else if(page==='sources'){if(focus)q('sourcesTitle').focus();}
       else window.dispatchEvent(new Event('resize'));
     }
     document.querySelectorAll('[data-page]').forEach(link=>link.addEventListener('click',e=>{
