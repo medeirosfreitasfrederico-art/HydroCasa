@@ -158,3 +158,12 @@ body.dark #themeBtn .theme-moon-symbol{display:inline}
 .hydro-footer-brand strong{font-size:17px;line-height:1.2;font-weight:800}
 .hydro-footer-brand span{color:var(--muted);font-size:12px;line-height:1.45}
 @media(max-width:540px){.hydro-site-footer{margin-top:22px;padding:18px 12px}.hydro-footer-brand img{width:36px;height:36px}.hydro-footer-brand strong{font-size:15px}}
+
+/* Reforço pontual do footer global: logomarca e nome legíveis em todas as rotas. */
+#hydroSiteFooter{display:flex!important;align-items:center;justify-content:center;width:100%;min-height:112px;margin:28px 0 0;padding:24px 18px;border-top:1px solid var(--line);background:var(--surface);color:var(--text)}
+#hydroSiteFooter .hydro-footer-content{display:flex;align-items:center;justify-content:center;gap:15px;max-width:100%}
+#hydroSiteFooter .hydro-footer-logo{display:block;width:56px;height:56px;flex:none;object-fit:contain}
+#hydroSiteFooter .hydro-footer-copy{display:flex;flex-direction:column;gap:5px;text-align:left}
+#hydroSiteFooter .hydro-footer-copy strong{font-size:20px;font-weight:800;line-height:1.15}
+#hydroSiteFooter .hydro-footer-copy span{font-size:13px;line-height:1.4;color:var(--muted)}
+@media(max-width:540px){#hydroSiteFooter{min-height:94px;padding:18px 12px}#hydroSiteFooter .hydro-footer-logo{width:44px;height:44px}#hydroSiteFooter .hydro-footer-copy strong{font-size:17px}#hydroSiteFooter .hydro-footer-copy span{font-size:12px}}
