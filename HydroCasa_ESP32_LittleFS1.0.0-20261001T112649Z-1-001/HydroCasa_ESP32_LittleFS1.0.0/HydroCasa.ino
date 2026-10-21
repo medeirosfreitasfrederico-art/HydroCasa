@@ -32,8 +32,10 @@ const char* WIFI_PASS = "33d7972ef0";
 volatile uint32_t pulses1 = 0;
 volatile uint32_t pulses2 = 0;
 
-const float PULSES_PER_LITER_1 = 450.0f;
-const float PULSES_PER_LITER_2 = 450.0f;
+const float TEST_MULTIPLIER = 150.0f;
+
+const float PULSES_PER_LITER_1 = 450.0f / TEST_MULTIPLIER;
+const float PULSES_PER_LITER_2 = 450.0f / TEST_MULTIPLIER;
 
 WebServer server(80);
 
@@ -251,14 +253,6 @@ void setup() {
   } else {
   Serial.println("mDNS iniciado! Pode aceder a http://hydrocasa.local");
   }
-
-    File root = LittleFS.open("/");
-  File f = root.openNextFile();
-  while (f) {
-    Serial.printf("%s  %u bytes\n", f.name(), (unsigned)f.size());
-    f = root.openNextFile();
-  }
-  Serial.printf("Total: %u  Usado: %u\n", (unsigned)LittleFS.totalBytes(), (unsigned)LittleFS.usedBytes());
 
   server.on("/api/live", HTTP_GET, handleLive);
   server.on("/api/config", HTTP_GET, handleConfig);
