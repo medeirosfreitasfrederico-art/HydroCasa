@@ -130,3 +130,12 @@ body:not([data-connection-state="online"]) .pipe-diagram *{animation-play-state:
 #dashboard-page .dashboard-shortcuts-area .dashboard-shortcuts .tab{min-height:44px;padding:9px 8px;font-size:13px;line-height:1.25;font-weight:650}
 @media(max-width:850px){#dashboard-page .dashboard-shortcuts-area{padding:12px 13px 11px;column-gap:8px}#dashboard-page .dashboard-shortcuts-area>.dashboard-shortcuts{overflow-x:auto}}
 @media(max-width:540px){#dashboard-page .dashboard-shortcuts-area>.eyebrow{font-size:11px}#dashboard-page .dashboard-shortcuts-area>p{font-size:12px;margin-bottom:9px}#dashboard-page .dashboard-shortcuts-area>.ux-help{padding:7px 9px;font-size:12px;min-height:38px}#dashboard-page .dashboard-shortcuts-area .dashboard-shortcuts .tab{min-height:42px;padding:8px 10px;font-size:13px}}
+
+/* Ícones personalizados do perfil e alerta, derivados das imagens enviadas. */
+#hydroProfileBtn,#hydroAlertBell{display:inline-flex;align-items:center;justify-content:center;gap:4px;min-width:44px;min-height:44px;color:var(--text)}
+.hydro-header-icon{display:inline-block;flex:none;width:21px;height:21px;background-color:currentColor;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-position:center;mask-position:center;-webkit-mask-size:contain;mask-size:contain}
+.hydro-header-icon-profile{-webkit-mask-image:url('icon-perfil.svg');mask-image:url('icon-perfil.svg')}
+.hydro-header-icon-alert{-webkit-mask-image:url('icon-alerta.svg');mask-image:url('icon-alerta.svg')}
+#hydroProfileBtn:hover,#hydroAlertBell:hover{color:var(--primary2);background:color-mix(in srgb,var(--primary) 10%,var(--surface))}
+#hydroProfileBtn:focus-visible,#hydroAlertBell:focus-visible{outline:3px solid var(--primary2);outline-offset:3px}
+@media(max-width:640px){.hydro-header-icon{width:20px;height:20px}}
