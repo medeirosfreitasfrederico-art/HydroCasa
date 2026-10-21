@@ -45,3 +45,13 @@
 #dashboard-page .alerts-inline-actions button:focus-visible,#dashboard-page .alerts-heading button:focus-visible{outline:3px solid var(--primary2);outline-offset:2px}
 #dashboard-page .alerts-inline-empty{padding:12px 14px;border:1px solid var(--line);border-radius:10px;font-size:13px;margin:0}
 @media(max-width:600px){#dashboard-page .alerts-overview{padding:14px 12px}#dashboard-page .alerts-inline-item{padding:10px;grid-template-columns:30px minmax(0,1fr)}#dashboard-page .alerts-inline-icon{width:28px;height:28px}}
+
+.alerts-state-line{margin:7px 0 12px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font-size:13px;line-height:1.5;color:var(--text)}
+.alerts-guidance{font-size:12px!important;line-height:1.5;margin:6px 0!important;color:var(--muted)}
+.alerts-guidance strong{color:var(--text)}
+.alerts-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:16px 0}
+.alerts-filters label{display:grid;gap:5px;font-size:12px;font-weight:700}
+.alerts-filters select{min-height:44px;min-width:0;width:100%;padding:8px;border:1px solid var(--line);border-radius:9px;color:var(--text);background:var(--surface)}
+.alerts-filters select:focus-visible{outline:3px solid var(--primary2);outline-offset:2px}
+.alerts-inline-item .alerts-inline-icon{font-weight:800}
+@media(max-width:540px){.alerts-filters{grid-template-columns:1fr}}
