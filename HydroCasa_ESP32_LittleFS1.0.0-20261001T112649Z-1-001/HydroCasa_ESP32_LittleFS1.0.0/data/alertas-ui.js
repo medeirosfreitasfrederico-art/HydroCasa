@@ -8,7 +8,7 @@ let history=[],demoHistory=[],observations=[],lastCursor='',focusBefore=null,dia
 const safeRead=(storage,k)=>{try{let v=JSON.parse(storage.getItem(k)||'[]');return Array.isArray(v)?v.filter(x=>x&&typeof x.id==='string').slice(0,250):[]}catch{return []}};
 history=safeRead(localStorage,key);demoHistory=safeRead(sessionStorage,demoKey);
 const persist=demo=>{try{(demo?sessionStorage:localStorage).setItem(demo?demoKey:key,JSON.stringify((demo?demoHistory:history).slice(0,250)))}catch{}};
-const bell=document.createElement('button');bell.id='hydroAlertBell';bell.type='button';bell.className='icon-btn alert-bell';bell.setAttribute('aria-haspopup','dialog');bell.setAttribute('aria-label','Abrir alertas');bell.innerHTML='<span aria-hidden="true">♧</span><span id="hydroAlertCount" class="alert-count" hidden>0</span>';
+const bell=document.createElement('button');bell.id='hydroAlertBell';bell.type='button';bell.className='icon-btn alert-bell';bell.setAttribute('aria-haspopup','dialog');bell.setAttribute('aria-label','Abrir alertas');bell.innerHTML='<span class="hydro-header-icon hydro-header-icon-alert" aria-hidden="true"></span><span id="hydroAlertCount" class="alert-count" hidden>0</span>';
 q('.header-actions')?.insertBefore(bell,q('#themeBtn'));
 const card=document.createElement('section');card.className='glass-card alerts-overview';card.id='alertsOverview';card.setAttribute('aria-labelledby','alertsOverviewTitle');
 card.innerHTML='<div class="alerts-heading"><h3 id="alertsOverviewTitle">Alertas ativos</h3><button type="button" class="ghost-btn" data-open-alerts>Ver todos</button></div><div id="alertsTopList" role="status" aria-live="polite">Dados insuficientes para comparar.</div>';
