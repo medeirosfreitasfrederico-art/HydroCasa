@@ -1,0 +1,20 @@
+/* Temporary view-only fixtures, activated only without actual ESP32 readings. */
+body:not(.hydro-view-fixtures) .fixture-view-value,body:not(.hydro-view-fixtures) .fixture-bars,
+body:not(.hydro-view-fixtures) .fixture-chart,body:not(.hydro-view-fixtures) .fixture-calendar-grid,
+body:not(.hydro-view-fixtures) .fixture-history-rows,body:not(.hydro-view-fixtures) .fixture-day-details{display:none!important}
+body.hydro-view-fixtures .fixture-view-original{display:none!important}
+.fixture-view-value{display:inline!important;font:inherit;color:inherit}
+body.hydro-view-fixtures #dailyChart,body.hydro-view-fixtures #analysisBars>*:not(.fixture-bars),
+body.hydro-view-fixtures #historyChart>*:not(.fixture-history-chart),
+body.hydro-view-fixtures #calendarGrid,body.hydro-view-fixtures #historyRows{display:none!important}
+body.hydro-view-fixtures #chartLoadingMessage,body.hydro-view-fixtures #historyEmpty{display:none!important}
+.fixture-chart{display:flex;align-items:end;gap:10px;min-height:190px;padding:17px 9px 5px;border-radius:10px;background:color-mix(in srgb,var(--primary) 3%,var(--surface));overflow-x:auto}
+.fixture-chart-col{display:flex;flex:1 0 48px;align-items:center;flex-direction:column;justify-content:flex-end;min-width:48px;height:165px;gap:5px;text-align:center}
+.fixture-chart-col strong{font-size:10px;white-space:nowrap}.fixture-chart-col i{display:block;width:65%;height:var(--fixture-h);min-height:5px;border-radius:6px 6px 0 0;background:linear-gradient(160deg,#4389ee,#8958e9)}.fixture-chart-col small{font-size:11px;color:var(--muted)}
+.fixture-bars{display:grid;gap:12px;padding:16px}.fixture-bars>div{display:grid;grid-template-columns:1fr auto;gap:8px}.fixture-bars i{grid-column:1/-1;display:block;width:var(--fixture-bar);height:13px;background:linear-gradient(90deg,#4389ee,#8958e9);border-radius:10px}.fixture-bars span,.fixture-bars strong{font-size:13px}
+.fixture-calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;padding:7px}
+.fixture-calendar-grid>span{display:flex;flex-direction:column;min-height:55px;padding:7px;border-radius:8px;background:var(--surface);border:1px solid var(--line)}
+.fixture-calendar-grid .fixture-day-has-data{background:color-mix(in srgb,#4389ee 15%,var(--surface));border-color:color-mix(in srgb,#4389ee 40%,var(--line))}
+.fixture-calendar-grid b{font-size:12px}.fixture-calendar-grid small{margin-top:5px;font-size:10px;color:var(--muted)}
+.fixture-day-details{margin-top:10px;padding:14px;border:1px solid var(--line);border-radius:10px}
+@media(max-width:550px){.fixture-calendar-grid{gap:2px}.fixture-calendar-grid>span{min-height:38px;padding:4px}.fixture-calendar-grid small{font-size:8px}}
