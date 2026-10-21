@@ -3,10 +3,12 @@ const trigger=document.getElementById('openHydroTour');if(!trigger)return;
 const steps=[
  {selector:'.brand',title:'Bem-vindo ao HydroCasa',description:'Conheça as áreas principais da plataforma de monitoramento de água.'},
  {selector:'#connectionBadge',title:'Estado da conexão',description:'Online indica conexão com o sistema. Offline não significa que os dados do simulador sejam medições.'},
+ {selector:'#dashboard-page .hero-premium',title:'O que é o HydroCasa',description:'Esta é uma maquete acadêmica: os sensores enviam medições ao ESP32 e o painel apresenta os resultados.'},
  {selector:'#dashboard-page .metrics-grid',title:'Painel de consumo',description:'Estes indicadores pertencem ao monitoramento. O tour não cria nem modifica nenhuma leitura.'},
+ {selector:'#tourLaunchWrap',title:'Tour guiado',description:'Você pode iniciar este passo a passo novamente sempre que quiser.'},
  {selector:'#dashboard-page .tabs',title:'Explore o painel',description:'Use as abas para consultar a visão geral, o calendário, análises e configurações.'},
  {selector:'[data-page="consumption"]',title:'Meu consumo',description:'Acompanhe o histórico e as informações disponíveis no navegador.'},
- {selector:'[data-page="simulator"]',title:'Simulador isolado',description:'Faça hipóteses sobre hábitos de consumo. Esses valores não são enviados ao painel real.'},
+ {selector:'[data-page="simulator"]',title:'Simulador',description:'Escolha o tipo de vazão do chuveiro, ajuste os hábitos e compare estimativas fictícias. Nenhuma dessas informações altera as leituras reais.'},
  {selector:'[data-page="about"]',title:'Sobre nós',description:'Conheça a proposta acadêmica e os objetivos do projeto.'}
 ];
 let index=0,active=false,previousFocus=null,previousOverflow='',highlighted=null;
