@@ -4,6 +4,8 @@
 const q=s=>document.querySelector(s),key='hydrocasa:alertas',demoKey='hydrocasa:alertas:demonstracao';
 const fmtDate=t=>new Date(t).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'});
 const levels={'Informativo':'ℹ','Atenção':'⚠','Acima do padrão':'▲'};
+const guidance={sensor:['O sensor pode ter parado de enviar leituras.','Verifique energia, cabo e conexão do ESP32.'],atividade:['Uma atividade registrada ultrapassou a referência configurada.','Confira duração e quantidade informadas no registro.'],consumo:['O volume registrado está acima da referência configurada.','Confira o perfil da residência e os hábitos do período.'],fluxo:['Foi detectado um comportamento de fluxo que merece verificação.','Verifique torneiras, chuveiros e possíveis vazamentos.']};
+const why=a=>guidance[a.tipo]||['Uma condição do monitoramento merece sua atenção.','Confira as leituras, as conexões e as configurações do painel.'];
 let history=[],demoHistory=[],observations=[],lastCursor='',focusBefore=null,dialogOpen=false,lastOnline=false;
 const safeRead=(storage,k)=>{try{let v=JSON.parse(storage.getItem(k)||'[]');return Array.isArray(v)?v.filter(x=>x&&typeof x.id==='string').slice(0,250):[]}catch{return []}};
 history=safeRead(localStorage,key);demoHistory=safeRead(sessionStorage,demoKey);
@@ -16,8 +18,11 @@ const quickAccess=q('#dashboard-page .dashboard-shortcuts-area');
 if(quickAccess)quickAccess.after(card);
 else {const dashboard=q('#dashboard .section-heading');if(dashboard)dashboard.after(card);}
 card.setAttribute('aria-label','Situação e avisos do monitoramento');
+const stateLine=document.createElement('p');stateLine.className='alerts-state-line';stateLine.setAttribute('role','status');stateLine.setAttribute('aria-live','polite');card.querySelector('.alerts-heading').after(stateLine);
+const filters=document.createElement('form');filters.className='alerts-filters';filters.setAttribute('aria-label','Filtros do histórico de alertas');
+filters.innerHTML='<label>Período <select id="alertPeriod"><option value="all">Todo o histórico</option><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option></select></label><label>Gravidade <select id="alertSeverity"><option value="all">Todas</option><option value="Acima do padrão">Acima do padrão</option><option value="Atenção">Atenção</option><option value="Informativo">Informativo</option></select></label><label>Situação <select id="alertState"><option value="all">Todas</option><option value="ativo">Ativos</option><option value="lido">Lidos</option><option value="silenciado">Silenciados</option><option value="resolvido">Resolvidos</option></select></label>';
 const backdrop=document.createElement('div');backdrop.className='alerts-backdrop';backdrop.hidden=true;
-backdrop.innerHTML='<section class="alerts-drawer" role="dialog" aria-modal="true" aria-labelledby="alertsDrawerTitle"><header><h2 id="alertsDrawerTitle">Alertas do HydroCasa</h2><button type="button" class="icon-btn" id="alertsClose" aria-label="Fechar alertas">×</button></header><div id="alertsList" class="alerts-list"></div></section>';document.body.append(backdrop);
+backdrop.innerHTML='<section class="alerts-drawer" role="dialog" aria-modal="true" aria-labelledby="alertsDrawerTitle"><header><h2 id="alertsDrawerTitle">Alertas do HydroCasa</h2><button type="button" class="icon-btn" id="alertsClose" aria-label="Fechar alertas">×</button></header><div id="alertsList" class="alerts-list"></div></section>';document.body.append(backdrop);q('#alertsList')?.before(filters);filters.addEventListener('change',render);
 const toast=document.createElement('div');toast.className='alerts-toast';toast.hidden=true;toast.setAttribute('role','status');toast.setAttribute('aria-live','polite');document.body.append(toast);let toastTimer=null;
 function close(){backdrop.hidden=true;dialogOpen=false;focusBefore?.focus?.();}
 function open(){focusBefore=document.activeElement;backdrop.hidden=false;dialogOpen=true;render();q('#alertsClose')?.focus();}
@@ -68,14 +73,17 @@ function render(){
  const snapshot=realData();const day=snapshot?.history?.[snapshot?.today];
  const comparable=!!(snapshot?.online&&snapshot.profile?.scope==='whole'&&snapshot.profile?.referenceLiters>0&&snapshot.profile?.residents>0&&day?.readings>0&&day.partial===false&&!day.profileMixed);
  const active=list.filter(a=>a.status==='ativo'&&(!a.silenciadoAte||Date.now()>a.silenciadoAte)),isComparable=comparable;
- const empty=isComparable?'Tudo dentro do padrão registrado.':'Dados insuficientes para comparar.';
+ const empty=isComparable?'Nenhum problema detectado nas condições avaliadas.':'Ainda não há informações suficientes para avaliar o consumo.';
+ stateLine.textContent=!snapshot?.online?'Sensor offline — verifique a conexão do ESP32.':!day?.readings?'Conectado, mas ainda sem leituras suficientes.':active.length?'Atenção: há '+active.length+' ocorrência(s) que precisam de verificação.':isComparable?'Consumo dentro dos parâmetros configurados.':'Leituras disponíveis; comparação ainda indisponível.';
  q('#hydroAlertCount').hidden=active.length===0;q('#hydroAlertCount').textContent=String(active.length);
  bell.setAttribute('aria-label','Abrir alertas: '+active.length+' ativo(s)');
  const preview=q('#alertsTopList');
  const priority={'Acima do padrão':0,'Atenção':1,'Informativo':2};
  const ordered=active.slice().sort((a,b)=>(priority[a.nivel]??3)-(priority[b.nivel]??3)||b.criadoEm-a.criadoEm);
  preview.innerHTML=ordered.length?ordered.map(x=>'<article class="alerts-inline-item" data-level="'+esc(x.nivel)+'"><div class="alerts-inline-icon" aria-hidden="true">'+(levels[x.nivel]||'ℹ')+'</div><div class="alerts-inline-body"><div class="alerts-inline-meta"><strong>'+esc(x.nivel)+'</strong><time>'+fmtDate(x.criadoEm)+'</time></div><p>'+esc(x.mensagem)+'</p><div class="alerts-inline-actions"><button type="button" data-alert-action="detail" data-alert-id="'+esc(x.id)+'">Ver detalhes</button><button type="button" data-alert-action="read" data-alert-id="'+esc(x.id)+'">Entendi</button><button type="button" data-alert-action="mute" data-alert-id="'+esc(x.id)+'">Silenciar hoje</button></div></div></article>').join(''):'<p class="alerts-inline-empty">'+esc(empty)+'</p>';
- const box=q('#alertsList');box.innerHTML=list.length?list.map(x=>'<article class="alert-entry" data-level="'+esc(x.nivel)+'"><span class="alert-level">'+(levels[x.nivel]||'ℹ')+' '+esc(x.nivel)+(demo?' · Demonstração':'')+'</span><p>'+esc(x.mensagem)+'</p><small>'+fmtDate(x.criadoEm)+' · '+esc(x.status)+'</small><div class="alert-actions">'+(x.status==='ativo'?'<button type="button" data-alert-action="read" data-alert-id="'+esc(x.id)+'">Entendi</button><button type="button" data-alert-action="mute" data-alert-id="'+esc(x.id)+'">Silenciar por hoje</button>':'')+'<button type="button" data-alert-action="detail" data-alert-id="'+esc(x.id)+'">Ver detalhe</button></div></article>').join(''):'<p>'+empty+'</p>';
+ const period=q('#alertPeriod')?.value||'all',severity=q('#alertSeverity')?.value||'all',status=q('#alertState')?.value||'all';
+ const filtered=list.filter(x=>(period==='all'||Date.now()-x.criadoEm<=Number(period)*86400000)&&(severity==='all'||x.nivel===severity)&&(status==='all'||x.status===status));
+ const box=q('#alertsList');box.innerHTML=filtered.length?filtered.map(x=>'<article class="alert-entry" data-level="'+esc(x.nivel)+'"><span class="alert-level">'+(levels[x.nivel]||'ℹ')+' '+esc(x.nivel)+(demo?' · Demonstração':'')+'</span><p>'+esc(x.mensagem)+'</p><small>'+fmtDate(x.criadoEm)+' · '+esc(x.status)+'</small><div class="alert-actions">'+(x.status==='ativo'?'<button type="button" data-alert-action="read" data-alert-id="'+esc(x.id)+'">Entendi</button><button type="button" data-alert-action="mute" data-alert-id="'+esc(x.id)+'">Silenciar por hoje</button>':'')+'<button type="button" data-alert-action="detail" data-alert-id="'+esc(x.id)+'">Ver detalhe</button></div></article>').join(''):'<p>'+empty+'</p>';
 }
 function handleAlertAction(e){
  const btn=e.target.closest('button[data-alert-action]');if(!btn)return;
