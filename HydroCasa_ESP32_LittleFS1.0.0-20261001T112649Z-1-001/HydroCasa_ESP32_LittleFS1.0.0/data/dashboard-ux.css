@@ -149,3 +149,12 @@ body.dark #themeBtn .theme-moon-symbol{display:inline}
 
 /* Ocultação reversível solicitada: Caminho da água e Distribuição, apenas na Visão geral. */
 #dashboard-page #dashboard > .dashboard-grid{display:none!important}
+
+/* Rodapé institucional único para todas as páginas. */
+.hydro-site-footer{display:flex;align-items:center;justify-content:center;margin:32px auto 0;padding:22px 16px;border-top:1px solid var(--line);color:var(--text);background:var(--surface)}
+.hydro-footer-brand{display:flex;align-items:center;justify-content:center;gap:12px;max-width:100%;text-align:left}
+.hydro-footer-brand img{width:42px;height:42px;object-fit:contain;flex:none}
+.hydro-footer-brand div{display:flex;flex-direction:column;gap:2px}
+.hydro-footer-brand strong{font-size:17px;line-height:1.2;font-weight:800}
+.hydro-footer-brand span{color:var(--muted);font-size:12px;line-height:1.45}
+@media(max-width:540px){.hydro-site-footer{margin-top:22px;padding:18px 12px}.hydro-footer-brand img{width:36px;height:36px}.hydro-footer-brand strong{font-size:15px}}
