@@ -112,3 +112,11 @@ body:not([data-connection-state="online"]) .pipe-diagram *{animation-play-state:
 
 /* Esconde apenas o acionador duplicado inferior; mantém seu ID para o tour existente. */
 #tourLaunchWrap{display:none!important}
+
+/* Botões do hero: sobre o projeto em destaque e tour secundário com estilo consistente. */
+#dashboard-page .hero.hero-premium .hero-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+#dashboard-page .hero.hero-premium .hero-about-link.hero-cta-primary{color:#fff;text-decoration:none;background:linear-gradient(115deg,var(--primary),var(--primary2));border:0;border-radius:13px;padding:12px 19px;min-height:46px;font-size:13px;font-weight:750;box-shadow:0 10px 27px color-mix(in srgb,var(--primary) 20%,transparent)}
+#dashboard-page .hero.hero-premium .hero-tour-button{display:inline-flex!important;align-items:center;justify-content:center;min-height:46px;padding:12px 19px;border-radius:13px;border:1px solid var(--primary2);background:color-mix(in srgb,var(--primary) 10%,var(--surface));color:var(--text);font-size:13px;font-weight:750;cursor:pointer}
+#dashboard-page .hero.hero-premium .hero-tour-button:hover{background:color-mix(in srgb,var(--primary) 19%,var(--surface))}
+#dashboard-page .hero.hero-premium .hero-tour-button:focus-visible,#dashboard-page .hero.hero-premium .hero-about-link:focus-visible{outline:3px solid var(--cyan);outline-offset:3px}
+@media(max-width:650px){#dashboard-page .hero.hero-premium .hero-tour-button{width:auto;max-width:100%;text-align:center}}
