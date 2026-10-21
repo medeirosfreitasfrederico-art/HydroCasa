@@ -252,6 +252,14 @@ void setup() {
   Serial.println("mDNS iniciado! Pode aceder a http://hydrocasa.local");
   }
 
+    File root = LittleFS.open("/");
+  File f = root.openNextFile();
+  while (f) {
+    Serial.printf("%s  %u bytes\n", f.name(), (unsigned)f.size());
+    f = root.openNextFile();
+  }
+  Serial.printf("Total: %u  Usado: %u\n", (unsigned)LittleFS.totalBytes(), (unsigned)LittleFS.usedBytes());
+
   server.on("/api/live", HTTP_GET, handleLive);
   server.on("/api/config", HTTP_GET, handleConfig);
   server.on("/api/daily", HTTP_POST, handleDaily);
@@ -284,6 +292,9 @@ void setup() {
   server.serveStatic("/icon-perfil.svg", LittleFS, "/icon-perfil.svg");
   server.serveStatic("/visual-fixtures-temporary.css", LittleFS, "/visual-fixtures-temporary.css");
   server.serveStatic("/visual-fixtures-temporary.js", LittleFS, "/visual-fixtures-temporary.js");
+  server.serveStatic("/consumption-status.css", LittleFS, "/consumption-status.css");
+  server.serveStatic("/consumption-status.js", LittleFS, "/consumption-status.js");
+  server.serveStatic("/alertas-config.js", LittleFS, "/alertas-config.js");
 
   server.onNotFound([]() {
     server.send(404, "text/plain", "404 - recurso nao encontrado");
