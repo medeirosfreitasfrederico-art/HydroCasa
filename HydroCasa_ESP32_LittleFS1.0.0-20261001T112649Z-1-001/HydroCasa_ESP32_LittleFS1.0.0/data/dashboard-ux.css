@@ -146,3 +146,6 @@ body:not([data-connection-state="online"]) .pipe-diagram *{animation-play-state:
 body.dark #themeBtn .theme-sun-symbol{display:none}
 body.dark #themeBtn .theme-moon-symbol{display:inline}
 #themeBtn .theme-sun-symbol,#themeBtn .theme-moon-symbol{font-size:21px;line-height:1}
+
+/* Ocultação reversível solicitada: Caminho da água e Distribuição, apenas na Visão geral. */
+#dashboard-page #dashboard > .dashboard-grid{display:none!important}
