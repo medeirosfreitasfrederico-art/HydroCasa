@@ -31,6 +31,7 @@
   <link rel="stylesheet" href="consumption-status.css">
   <link rel="stylesheet" href="system-improvements.css">
   <link rel="stylesheet" href="dashboard-ux.css">
+  <link rel="stylesheet" href="simulacao-teste.css">
   <link rel="stylesheet" href="alertas.css">
   <link rel="stylesheet" href="demo-overlay.css">
 </head>
@@ -68,7 +69,7 @@
         </div>
         <div class="hero-actions">
           <a class="hero-cta hero-cta-primary" href="#todayTotal" id="heroPrimaryLink">Ver painel <span aria-hidden="true">↗</span></a>
-          <a class="hero-about-link" href="?pagina=sobre">Sobre o projeto →</a>
+          <a class="hero-about-link" href="?pagina=sobre">Sobre o projeto →</a><button type="button" class="hero-tour-button" id="heroTourButton">✦ Fazer tour guiado</button>
         </div>
         
       </div>
@@ -369,6 +370,7 @@ document.addEventListener('click',event=>{
   <script src="alertas.js"></script>
   <script src="alertas-ui.js" defer></script>
   <script src="dashboard-ux.js" defer></script>
+  <script src="simulacao-teste.js" defer></script>
 
   <script id="consumptionPageScript">
   // Navegação interna por URL: não recriar app.js, não duplicar polling e nunca escrever no ledger.
