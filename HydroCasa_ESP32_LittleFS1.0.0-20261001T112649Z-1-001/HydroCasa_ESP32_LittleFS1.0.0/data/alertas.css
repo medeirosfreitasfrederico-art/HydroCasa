@@ -23,3 +23,25 @@
 @media(prefers-reduced-motion:reduce){.alerts-toast,.alerts-drawer{transition:none!important}}
 
 .activity-alert-badge{display:inline-block;margin-left:8px;padding:3px 7px;border-radius:8px;background:color-mix(in srgb,var(--primary2) 12%,var(--surface));color:var(--primary2);border:1px solid var(--primary2);font-size:11px;font-weight:700}
+
+/* Alertas visíveis e sequenciais na Visão geral */
+#dashboard-page .alerts-overview{margin:12px 0 20px;padding:18px 20px;scroll-margin-top:160px}
+#dashboard-page .alerts-heading{align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:12px}
+#dashboard-page .alerts-heading h3{font-size:clamp(17px,1.7vw,21px);line-height:1.25;margin:3px 0}
+#dashboard-page .alerts-kicker{font-size:11px;font-weight:800;letter-spacing:.09em;color:var(--primary2)}
+#dashboard-page .alerts-subtitle{font-size:13px;color:var(--muted);margin:4px 0;line-height:1.45}
+#dashboard-page .alerts-heading [data-open-alerts]{min-height:40px;font-size:13px}
+#dashboard-page .alerts-inline-list{display:grid;gap:9px}
+#dashboard-page .alerts-inline-item{display:grid;grid-template-columns:36px minmax(0,1fr);gap:10px;border:1px solid var(--line);border-left:4px solid var(--primary2);border-radius:12px;background:var(--surface2);padding:12px 13px}
+#dashboard-page .alerts-inline-item[data-level="Acima do padrão"]{border-left-color:var(--danger)}
+#dashboard-page .alerts-inline-item[data-level="Atenção"]{border-left-color:#c78a32}
+#dashboard-page .alerts-inline-icon{display:grid;place-items:center;width:32px;height:32px;border-radius:9px;background:color-mix(in srgb,var(--primary2) 12%,var(--surface));font-size:17px}
+#dashboard-page .alerts-inline-meta{display:flex;justify-content:space-between;gap:10px;align-items:baseline;flex-wrap:wrap}
+#dashboard-page .alerts-inline-meta strong{font-size:13px}
+#dashboard-page .alerts-inline-meta time{font-size:11px;color:var(--muted)}
+#dashboard-page .alerts-inline-body p{font-size:13px;line-height:1.5;margin:7px 0}
+#dashboard-page .alerts-inline-actions{display:flex;flex-wrap:wrap;gap:7px}
+#dashboard-page .alerts-inline-actions button{min-height:36px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--text);cursor:pointer;font-size:12px}
+#dashboard-page .alerts-inline-actions button:focus-visible,#dashboard-page .alerts-heading button:focus-visible{outline:3px solid var(--primary2);outline-offset:2px}
+#dashboard-page .alerts-inline-empty{padding:12px 14px;border:1px solid var(--line);border-radius:10px;font-size:13px;margin:0}
+@media(max-width:600px){#dashboard-page .alerts-overview{padding:14px 12px}#dashboard-page .alerts-inline-item{padding:10px;grid-template-columns:30px minmax(0,1fr)}#dashboard-page .alerts-inline-icon{width:28px;height:28px}}
