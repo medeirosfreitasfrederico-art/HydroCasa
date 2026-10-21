@@ -49,6 +49,7 @@
     </a>
     <div class="header-actions">
       <span title="Estado da conexão com o ESP32; abra Sistema para verificar a rede." id="connectionBadge" class="badge offline" role="status" aria-live="polite" aria-atomic="true">◌ Conectando…</span>
+      <button id="hydroProfileBtn" class="icon-btn" type="button" aria-label="Consultar perfil da residência" aria-haspopup="dialog" title="Perfil da residência">♙</button>
       <button id="themeBtn" class="icon-btn" aria-label="Ativar modo escuro" aria-pressed="false" title="Alternar tema">☼</button>
     </div>
   </header>
@@ -72,10 +73,7 @@
         
       </div>
       <div class="hero-side">
-        <div class="hero-side-heading"><span class="hero-side-symbol" aria-hidden="true">◉</span><span>MONITORAMENTO HYDROCASA</span></div><!-- TODO: adicionar hydrocasa-produto.webp e hydrocasa-produto.jpg nesta pasta estática. -->
-<figure class="hero-maquette-photo" id="heroMaquettePhoto">
-<picture id="heroProductPicture" hidden><source srcset="hydrocasa-produto.webp" type="image/webp"><img src="hydrocasa-produto.jpg" width="1600" height="900" loading="eager" fetchpriority="high" decoding="async" alt="Imagem conceitual do sensor HydroCasa instalado em tubulação residencial"></picture>
-<figcaption id="heroPhotoPlaceholder">Foto da maquete — imagem em preparação</figcaption></figure>
+        <div class="hero-side-heading"><span class="hero-side-symbol" aria-hidden="true">◉</span><span>MONITORAMENTO HYDROCASA</span></div>
         <div class="hero-watermark hero-logo-mark" aria-hidden="true"><img src="hydrocasa-symbol.png" alt="" width="1254" height="1254"></div>
         <div class="hero-time">
           <span>Horário do seu computador</span>
@@ -90,7 +88,7 @@
     <div class="connection-controls"><button id="retryConnection" type="button" class="ghost-btn" hidden>Tentar agora</button><details><summary>Como resolver</summary><p>Verifique a energia do ESP32, o Wi-Fi, se ambos estão na mesma rede e o endereço IP do equipamento. Em sites HTTPS, um dispositivo HTTP local pode ser bloqueado pelo navegador.</p></details></div>
   </div>
     <div id="demoNotice" class="demo-notice" hidden role="status" aria-live="polite"><span>◈ Demonstração: dados fictícios de banhos. Conecte o ESP32 para ver medições reais.</span><button type="button" id="demoClear">Limpar demonstração</button><button type="button" id="demoUseReal" hidden>Usar dados do ESP32 agora</button></div>
-  <div class="tour-launch-wrap shell hero-tour-access" id="tourLaunchWrap" hidden><button id="openHydroTour" class="tour-launch" type="button" aria-haspopup="dialog"><span aria-hidden="true">✦</span> Conhecer o HydroCasa</button></div>
+  <div class="tour-launch-wrap shell tour-inline-access" id="tourLaunchWrap" hidden><button id="openHydroTour" class="tour-launch" type="button" aria-haspopup="dialog"><span aria-hidden="true">✦</span> Conhecer o HydroCasa</button></div>
     <div class="dashboard-shortcuts-area"><span class="eyebrow">ACESSO RÁPIDO</span><p>Escolha o que deseja consultar no painel.</p>    <nav class="tabs dashboard-shortcuts" aria-label="Seções do painel">
       <button class="tab active" data-panel="dashboard">Visão geral</button>
       <button class="tab" data-panel="calendar">Calendário</button>
