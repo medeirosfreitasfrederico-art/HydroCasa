@@ -109,3 +109,6 @@ body:not([data-connection-state="online"]) .pipe-diagram *{animation-play-state:
 #dashboard-page .ux-resident-entry[hidden]{display:none}
 #dashboard-page .ux-personalize .household-card{scroll-margin-top:160px}
 @media(max-width:650px){#dashboard-page .hero.hero-premium{padding:12px 0 18px;gap:12px}#dashboard-page .hero.hero-premium h1{font-size:clamp(27px,8vw,34px);margin:10px 0}#dashboard-page .hero.hero-premium .hero-context{font-size:13px;line-height:1.45;margin:0 0 8px}#dashboard-page .hero.hero-premium .hero-process{font-size:11px;margin:8px 0 10px}#dashboard-page .hero.hero-premium .hero-side{min-height:0}#dashboard-page .ux-personalize{margin-bottom:13px}}
+
+/* Esconde apenas o acionador duplicado inferior; mantém seu ID para o tour existente. */
+#tourLaunchWrap{display:none!important}
