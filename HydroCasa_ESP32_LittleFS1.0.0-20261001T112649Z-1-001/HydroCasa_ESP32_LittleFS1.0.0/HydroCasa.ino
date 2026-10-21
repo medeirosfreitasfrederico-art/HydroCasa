@@ -271,6 +271,19 @@ void setup() {
   server.serveStatic("/mobile.css", LittleFS, "/mobile.css");
   server.serveStatic("/tour.css", LittleFS, "/tour.css");
   server.serveStatic("/tour.js", LittleFS, "/tour.js");
+  server.serveStatic("/alertas.js", LittleFS, "/alertas.js");
+  server.serveStatic("/alertas-ui.js", LittleFS, "/alertas-ui.js");
+  server.serveStatic("/alertas.css", LittleFS, "/alertas.css");
+  server.serveStatic("/dashboard-ux.js", LittleFS, "/dashboard-ux.js");
+  server.serveStatic("/dashboard-ux.css", LittleFS, "/dashboard-ux.css");
+  server.serveStatic("/system-improvements.css", LittleFS, "/system-improvements.css");
+  server.serveStatic("/demo-overlay.css", LittleFS, "/demo-overlay.css");
+  server.serveStatic("/demo-overlay.js", LittleFS, "/demo-overlay.js");
+  server.serveStatic("/hydrocasa-og.svg", LittleFS, "/hydrocasa-og.svg");
+  server.serveStatic("/icon-alerta.svg", LittleFS, "/icon-alerta.svg");
+  server.serveStatic("/icon-perfil.svg", LittleFS, "/icon-perfil.svg");
+  server.serveStatic("/visual-fixtures-temporary.css", LittleFS, "/visual-fixtures-temporary.css");
+  server.serveStatic("/visual-fixtures-temporary.js", LittleFS, "/visual-fixtures-temporary.js");
 
   server.onNotFound([]() {
     server.send(404, "text/plain", "404 - recurso nao encontrado");
