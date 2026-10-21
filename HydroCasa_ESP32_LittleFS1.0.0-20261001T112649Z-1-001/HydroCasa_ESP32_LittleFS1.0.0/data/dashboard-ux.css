@@ -26,3 +26,40 @@ body:not([data-connection-state="online"]) .pipe-diagram *{animation-play-state:
 #donut[data-ux-empty="true"]{background:var(--line)!important}
 @media(max-width:850px){#dashboard-page .dashboard-shortcuts-area{top:68px}#dashboard-page .dashboard-shortcuts{display:flex;overflow-x:auto;flex-wrap:nowrap;scroll-snap-type:x proximity}#dashboard-page .dashboard-shortcuts .tab{flex:0 0 auto;min-width:116px;scroll-snap-align:start}#dashboard-page .panel{scroll-margin-top:190px}}
 @media(prefers-reduced-motion:reduce){.pipe-diagram *{animation:none!important}html{scroll-behavior:auto}}
+
+/* Primeira visita: contexto direto, diagrama leve e CTA único. */
+.hero-context{max-width:56ch;font-size:clamp(13px,1.5vw,16px);line-height:1.4}
+.hero-academic{font-size:12px!important;color:var(--muted);margin:5px 0 9px!important}
+.hero-process{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:11px 0;color:var(--text);font-size:12px;font-weight:700}
+.hero-process span:nth-child(even){color:var(--primary2);font-size:17px}
+.hero-about-link{display:inline-flex;align-items:center;min-height:44px;padding:6px 2px;color:var(--primary2);font-weight:650;text-decoration:underline;text-underline-offset:3px}
+.hero-maquette-photo{margin:8px 0 0;width:100%;max-height:145px;overflow:hidden;border-radius:12px;border:1px solid var(--line)}
+.hero-maquette-photo img{width:100%;max-height:145px;object-fit:cover;display:block}
+.hero-maquette-photo figcaption{padding:12px;font-size:12px;color:var(--muted)}
+.hero-maquette-photo:has(img[hidden]){display:none}
+#dashboard-page .hero .hero-benefits[hidden]{display:none}
+#dashboard-page .hero .hero-actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+#dashboard-page .hero .hero-cta-primary{min-height:44px}
+#dashboard-page .metrics-grid{scroll-margin-top:195px}
+#dashboard-page .dashboard-shortcuts .tab{min-height:44px;font-weight:600}
+#dashboard-page .dashboard-shortcuts .tab[aria-selected="true"]{font-weight:800}
+#dashboard-page .ux-personalize>summary{min-height:44px;display:flex;align-items:center}
+#dashboard-page .ux-hero-compact .hero-process,#dashboard-page .ux-hero-compact .hero-academic{display:none}
+@media(max-width:650px){
+ #dashboard-page .hero.hero-premium{display:block;padding:10px 0 12px;margin:0}
+ #dashboard-page .hero h1{font-size:clamp(23px,7vw,30px);line-height:1.12;margin:7px 0}
+ #dashboard-page .hero .hero-kicker{font-size:9px;letter-spacing:.07em}
+ #dashboard-page .hero .hero-intro>p{margin:7px 0}
+ #dashboard-page .hero .hero-side{display:none}
+ #dashboard-page .hero .hero-actions{margin:8px 0}
+ #dashboard-page .hero .hero-cta-primary{font-size:13px;padding:10px 15px}
+ #dashboard-page .dashboard-shortcuts-area{padding:10px 12px;margin:4px 0 10px;top:62px}
+ #dashboard-page .dashboard-shortcuts-area>p{display:none}
+ #dashboard-page .dashboard-shortcuts-area .eyebrow{font-size:9px}
+ #dashboard-page .ux-hero-compact .hero-cta{display:none}
+ #dashboard-page .getting-started{margin-top:8px}
+ #dashboard-page .panel{scroll-margin-top:150px}
+ #dashboard-page .metrics-grid{scroll-margin-top:150px}
+}
+@media(max-width:380px){#dashboard-page .hero .hero-context{font-size:12px}#dashboard-page .hero .hero-process{margin:7px 0;font-size:11px}}
+@media(prefers-reduced-motion:reduce){#dashboard-page .hero *,#dashboard-page .tab{transition:none!important;animation:none!important}}
