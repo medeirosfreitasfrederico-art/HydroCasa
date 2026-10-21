@@ -44,7 +44,7 @@ const helpBody=overlay.querySelector('.ux-help-body');
 const tourWrap=q('#tourLaunchWrap'),tourTrigger=q('#openHydroTour');
 if(tourWrap&&tourTrigger){tourWrap.classList.add('ux-tour-help');tourTrigger.textContent='✦ Fazer tour guiado';helpBody.append(tourWrap);tourTrigger.addEventListener('click',()=>closeHelp());}
 const photo=q('#heroProductPicture'),placeholder=q('#heroPhotoPlaceholder');
-if(photo){const img=photo.querySelector('img');img.addEventListener('load',()=>{photo.hidden=false;placeholder.hidden=true;});img.addEventListener('error',()=>{photo.hidden=true;placeholder.hidden=false;});}
+if(photo){const img=photo.querySelector('img');const loaded=()=>{photo.hidden=false;placeholder.hidden=true;};const failed=()=>{photo.hidden=true;placeholder.hidden=false;};img.addEventListener('load',loaded);img.addEventListener('error',failed);if(img.complete){if(img.naturalWidth>0)loaded();else failed();}}
 helpBody.append(guide.querySelector('.getting-started-steps').cloneNode(true));
 const drawerProfile=helpBody.querySelector('#guideConfigureProfile');if(drawerProfile){drawerProfile.removeAttribute('id');drawerProfile.addEventListener('click',()=>{closeHelp();navigate('dashboard',true,true);personalize.open=true;});}
 const profileLink=q('#guideConfigureProfile');if(profileLink)profileLink.onclick=()=>{personalize.open=true;};
