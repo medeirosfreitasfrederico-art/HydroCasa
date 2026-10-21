@@ -111,7 +111,25 @@ tabs.forEach(t=>t.addEventListener('click',()=>{if(!fromHistory)navigate(t.datas
 const hashToId={'#visao-geral':'dashboard','#calendario':'calendar','#analise':'analysis','#atividades':'activities','#sistema':'settings'};
 function routeHash(){const id=hashToId[location.hash.toLowerCase()]||'dashboard';fromHistory=true;if(tabActive()!==id){tabs.find(t=>t.dataset.panel===id)?.click();}apply(id,location.hash.length>0);fromHistory=false;}
 window.addEventListener('popstate',routeHash);window.addEventListener('hashchange',routeHash);
-routeHash();apply(hashToId[location.hash.toLowerCase()]||'dashboard');
+// Carregamentos e F5 sempre iniciam no cabeçalho, sem rolar para a aba.
+const initialTab=hashToId[location.hash.toLowerCase()]||'dashboard';
+fromHistory=true;
+if(tabActive()!==initialTab)tabs.find(t=>t.dataset.panel===initialTab)?.click();
+apply(initialTab,false);
+fromHistory=false;
+try{history.scrollRestoration='manual';}catch{}
+const scrollToPageTop=()=>window.scrollTo({top:0,left:0,behavior:'instant'});
+scrollToPageTop();
+window.addEventListener('load',scrollToPageTop,{once:true});
+window.addEventListener('pageshow',scrollToPageTop);
+document.querySelectorAll('a[href="#top"],[aria-label*="voltar ao topo" i]').forEach(link=>{
+ link.addEventListener('click',event=>{
+  event.preventDefault();
+  const url=new URL(location.href);url.hash='top';
+  history.replaceState(history.state,'',url);
+  scrollToPageTop();
+ });
+});
 q('#heroPrimaryLink')?.addEventListener('click',e=>{e.preventDefault();navigate('dashboard',false,false);q('.metrics-grid')?.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});});
 function repaint(){
  const live=document.body.dataset.connectionState==='online';
