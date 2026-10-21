@@ -92,3 +92,20 @@ body:not([data-connection-state="online"]) .pipe-diagram *{animation-play-state:
 .ux-profile-list{display:grid;grid-template-columns:minmax(130px,1fr) 1fr;gap:10px 15px;margin:20px 0}.ux-profile-list dt{color:var(--muted)}.ux-profile-list dd{margin:0;font-weight:650;overflow-wrap:anywhere}
 #hydroProfileBtn{min-width:44px;min-height:44px}#hydroProfileBtn:focus-visible{outline:3px solid var(--primary2);outline-offset:3px}
 @media(max-width:650px){#dashboard-page .hero.hero-premium .hero-side{display:flex!important;margin-top:4px}#dashboard-page .hero.hero-premium .hero-watermark{min-height:70px}#dashboard-page .hero.hero-premium .hero-logo-mark img{max-width:70px}#dashboard-page .hero.hero-premium .hero-side-heading,#dashboard-page .hero.hero-premium .hero-time,#dashboard-page .hero.hero-premium .hero-side-caption{display:none}}
+
+/* Correção: texto inicial continua visível depois da primeira navegação. */
+#dashboard-page .hero.hero-premium{align-items:center;gap:clamp(20px,3vw,40px);padding:18px 0 24px}
+#dashboard-page .hero.hero-premium .hero-intro{align-self:center;min-width:0}
+#dashboard-page .hero.hero-premium h1{font-size:clamp(30px,3.2vw,45px);line-height:1.12;letter-spacing:-.035em;margin:12px 0 15px;max-width:700px}
+#dashboard-page .hero.hero-premium .hero-context{display:block!important;font-size:clamp(14px,1.2vw,16px);line-height:1.55;margin:0 0 12px;max-width:61ch;color:var(--text)}
+#dashboard-page .hero.hero-premium .hero-academic{display:none}
+#dashboard-page .hero.hero-premium .hero-process{display:flex!important;gap:10px;margin:10px 0 16px}
+#dashboard-page .hero.hero-premium .hero-actions{margin:8px 0;align-items:center}
+#dashboard-page .hero.hero-premium .hero-about-link{font-size:13px}
+#dashboard-page .hero.hero-premium .hero-side{min-height:300px}
+#dashboard-page .ux-personalize{scroll-margin-top:160px;margin:8px 0 22px}
+#dashboard-page .ux-personalize[open]>summary{margin-bottom:6px}
+#dashboard-page .ux-resident-entry{min-height:44px;margin:0 0 7px;font-size:14px;font-weight:700}
+#dashboard-page .ux-resident-entry[hidden]{display:none}
+#dashboard-page .ux-personalize .household-card{scroll-margin-top:160px}
+@media(max-width:650px){#dashboard-page .hero.hero-premium{padding:12px 0 18px;gap:12px}#dashboard-page .hero.hero-premium h1{font-size:clamp(27px,8vw,34px);margin:10px 0}#dashboard-page .hero.hero-premium .hero-context{font-size:13px;line-height:1.45;margin:0 0 8px}#dashboard-page .hero.hero-premium .hero-process{font-size:11px;margin:8px 0 10px}#dashboard-page .hero.hero-premium .hero-side{min-height:0}#dashboard-page .ux-personalize{margin-bottom:13px}}
