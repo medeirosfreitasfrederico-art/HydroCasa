@@ -11,8 +11,11 @@ const persist=demo=>{try{(demo?sessionStorage:localStorage).setItem(demo?demoKey
 const bell=document.createElement('button');bell.id='hydroAlertBell';bell.type='button';bell.className='icon-btn alert-bell';bell.setAttribute('aria-haspopup','dialog');bell.setAttribute('aria-label','Abrir alertas');bell.innerHTML='<span class="hydro-header-icon hydro-header-icon-alert" aria-hidden="true"></span><span id="hydroAlertCount" class="alert-count" hidden>0</span>';
 q('.header-actions')?.insertBefore(bell,q('#themeBtn'));
 const card=document.createElement('section');card.className='glass-card alerts-overview';card.id='alertsOverview';card.setAttribute('aria-labelledby','alertsOverviewTitle');
-card.innerHTML='<div class="alerts-heading"><h3 id="alertsOverviewTitle">Alertas ativos</h3><button type="button" class="ghost-btn" data-open-alerts>Ver todos</button></div><div id="alertsTopList" role="status" aria-live="polite">Dados insuficientes para comparar.</div>';
-const dashboard=q('#dashboard .section-heading');if(dashboard)dashboard.after(card);
+card.innerHTML='<div class="alerts-heading"><div><span class="alerts-kicker">ACOMPANHAMENTO</span><h3 id="alertsOverviewTitle">Alertas e orientações</h3><p class="alerts-subtitle">Ocorrências ordenadas por prioridade, sem precisar abrir outra janela.</p></div><button type="button" class="ghost-btn" data-open-alerts>Histórico de alertas</button></div><div id="alertsTopList" class="alerts-inline-list" role="region" aria-label="Alertas atuais">Dados insuficientes para comparar.</div>';
+const quickAccess=q('#dashboard-page .dashboard-shortcuts-area');
+if(quickAccess)quickAccess.after(card);
+else {const dashboard=q('#dashboard .section-heading');if(dashboard)dashboard.after(card);}
+card.setAttribute('aria-label','Situação e avisos do monitoramento');
 const backdrop=document.createElement('div');backdrop.className='alerts-backdrop';backdrop.hidden=true;
 backdrop.innerHTML='<section class="alerts-drawer" role="dialog" aria-modal="true" aria-labelledby="alertsDrawerTitle"><header><h2 id="alertsDrawerTitle">Alertas do HydroCasa</h2><button type="button" class="icon-btn" id="alertsClose" aria-label="Fechar alertas">×</button></header><div id="alertsList" class="alerts-list"></div></section>';document.body.append(backdrop);
 const toast=document.createElement('div');toast.className='alerts-toast';toast.hidden=true;toast.setAttribute('role','status');toast.setAttribute('aria-live','polite');document.body.append(toast);let toastTimer=null;
@@ -69,10 +72,12 @@ function render(){
  q('#hydroAlertCount').hidden=active.length===0;q('#hydroAlertCount').textContent=String(active.length);
  bell.setAttribute('aria-label','Abrir alertas: '+active.length+' ativo(s)');
  const preview=q('#alertsTopList');
- preview.innerHTML=active.length?active.slice(0,3).map(x=>'<p><span aria-hidden="true">'+(levels[x.nivel]||'ℹ')+'</span> <b>'+esc(x.nivel)+'</b> · '+esc(x.mensagem)+'</p>').join(''):'<p>'+empty+'</p>';
+ const priority={'Acima do padrão':0,'Atenção':1,'Informativo':2};
+ const ordered=active.slice().sort((a,b)=>(priority[a.nivel]??3)-(priority[b.nivel]??3)||b.criadoEm-a.criadoEm);
+ preview.innerHTML=ordered.length?ordered.map(x=>'<article class="alerts-inline-item" data-level="'+esc(x.nivel)+'"><div class="alerts-inline-icon" aria-hidden="true">'+(levels[x.nivel]||'ℹ')+'</div><div class="alerts-inline-body"><div class="alerts-inline-meta"><strong>'+esc(x.nivel)+'</strong><time>'+fmtDate(x.criadoEm)+'</time></div><p>'+esc(x.mensagem)+'</p><div class="alerts-inline-actions"><button type="button" data-alert-action="detail" data-alert-id="'+esc(x.id)+'">Ver detalhes</button><button type="button" data-alert-action="read" data-alert-id="'+esc(x.id)+'">Entendi</button><button type="button" data-alert-action="mute" data-alert-id="'+esc(x.id)+'">Silenciar hoje</button></div></div></article>').join(''):'<p class="alerts-inline-empty">'+esc(empty)+'</p>';
  const box=q('#alertsList');box.innerHTML=list.length?list.map(x=>'<article class="alert-entry" data-level="'+esc(x.nivel)+'"><span class="alert-level">'+(levels[x.nivel]||'ℹ')+' '+esc(x.nivel)+(demo?' · Demonstração':'')+'</span><p>'+esc(x.mensagem)+'</p><small>'+fmtDate(x.criadoEm)+' · '+esc(x.status)+'</small><div class="alert-actions">'+(x.status==='ativo'?'<button type="button" data-alert-action="read" data-alert-id="'+esc(x.id)+'">Entendi</button><button type="button" data-alert-action="mute" data-alert-id="'+esc(x.id)+'">Silenciar por hoje</button>':'')+'<button type="button" data-alert-action="detail" data-alert-id="'+esc(x.id)+'">Ver detalhe</button></div></article>').join(''):'<p>'+empty+'</p>';
 }
-backdrop.addEventListener('click',e=>{
+function handleAlertAction(e){
  const btn=e.target.closest('button[data-alert-action]');if(!btn)return;
  const demo=document.body.dataset.demoActive==='true',list=demo?demoHistory:history,item=list.find(x=>x.id===btn.dataset.alertId);if(!item)return;
  if(btn.dataset.alertAction==='detail'){
@@ -81,7 +86,9 @@ backdrop.addEventListener('click',e=>{
  }
  item.status=btn.dataset.alertAction==='read'?'lido':'silenciado';if(item.status==='silenciado')item.silenciadoAte=new Date().setHours(23,59,59,999);
  persist(demo);render();
-});
+}
+backdrop.addEventListener('click',handleAlertAction);
+card.addEventListener('click',handleAlertAction);
 function tick(){
  const d=realData();if(!d)return;
  lastOnline=d.online;
