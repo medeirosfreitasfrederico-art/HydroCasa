@@ -42,9 +42,7 @@ const overlay=document.createElement('div');overlay.className='ux-drawer';overla
 document.body.append(overlay);
 const helpBody=overlay.querySelector('.ux-help-body');
 const tourWrap=q('#tourLaunchWrap'),tourTrigger=q('#openHydroTour');
-if(tourWrap&&tourTrigger){tourWrap.classList.add('ux-tour-help');tourTrigger.textContent='✦ Fazer tour guiado';helpBody.append(tourWrap);tourTrigger.addEventListener('click',()=>closeHelp());}
-const photo=q('#heroProductPicture'),placeholder=q('#heroPhotoPlaceholder');
-if(photo){const img=photo.querySelector('img');const loaded=()=>{photo.hidden=false;placeholder.hidden=true;};const failed=()=>{photo.hidden=true;placeholder.hidden=false;};img.addEventListener('load',loaded);img.addEventListener('error',failed);if(img.complete){if(img.naturalWidth>0)loaded();else failed();}}
+if(tourWrap&&tourTrigger){tourTrigger.textContent='✦ Fazer tour guiado';tourWrap.classList.remove('ux-tour-help');}
 helpBody.append(guide.querySelector('.getting-started-steps').cloneNode(true));
 const drawerProfile=helpBody.querySelector('#guideConfigureProfile');if(drawerProfile){drawerProfile.removeAttribute('id');drawerProfile.addEventListener('click',()=>{closeHelp();navigate('dashboard',true,true);personalize.open=true;});}
 const profileLink=q('#guideConfigureProfile');if(profileLink)profileLink.onclick=()=>{personalize.open=true;};
@@ -59,6 +57,32 @@ overlay.addEventListener('keydown',e=>{
  if(e.key==='Escape'){e.preventDefault();closeHelp();}
  if(e.key==='Tab'){const nodes=qa('.ux-drawer:not([hidden]) button,.ux-drawer:not([hidden]) a');if(!nodes.length)return;const i=nodes.indexOf(document.activeElement);if(e.shiftKey&&i===0){e.preventDefault();nodes[nodes.length-1].focus();}else if(!e.shiftKey&&i===nodes.length-1){e.preventDefault();nodes[0].focus();}}
 });
+
+/* Consulta somente leitura do perfil gravado pelo sistema, sem alterar ledger. */
+const profileBtn=q('#hydroProfileBtn');
+if(profileBtn){
+ const layer=document.createElement('div');layer.className='ux-drawer';layer.hidden=true;
+ layer.innerHTML='<section class="ux-drawer-content" role="dialog" aria-modal="true" aria-labelledby="hydroProfileTitle"><button type="button" class="ux-help-close" aria-label="Fechar perfil">×</button><h2 id="hydroProfileTitle">Perfil da residência</h2><div id="hydroProfileContent"></div><button type="button" class="ghost-btn" id="hydroProfileEdit">Personalizar residência</button></section>';
+ document.body.append(layer);
+ let oldFocus=null;
+ const closeProfile=()=>{layer.hidden=true;oldFocus?.focus();};
+ const content=layer.querySelector('#hydroProfileContent');
+ const htmlEscape=v=>String(v).replace(/[&<>"']/g,a=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[a]));
+ profileBtn.onclick=()=>{
+  oldFocus=document.activeElement;
+  let p=null;
+  try{p=JSON.parse(localStorage.getItem('hydrocasa_ledger_v2')||'{}').household||null;}catch{}
+  const yes=p&&Number.isInteger(p.residents)&&p.residents>0;
+  const fmt=n=>Number(n).toLocaleString('pt-BR',{maximumFractionDigits:2});
+  content.innerHTML=yes?'<dl class="ux-profile-list"><dt>Moradores</dt><dd>'+htmlEscape(p.residents)+'</dd><dt>Abrangência</dt><dd>'+htmlEscape(p.scope==='whole'?'Residência inteira':'Somente ramais monitorados')+'</dd><dt>Referência por pessoa/dia</dt><dd>'+htmlEscape(fmt(p.referenceLiters))+' L</dd><dt>Faixa de comparação</dt><dd>± '+htmlEscape(fmt(p.tolerance))+'%</dd><dt>Ramal 01</dt><dd>'+htmlEscape(p.ramal1||'Ramal 01')+'</dd><dt>Ramal 02</dt><dd>'+htmlEscape(p.ramal2||'Ramal 02')+'</dd></dl>':'<p>O perfil da residência ainda não foi configurado.</p>';
+  layer.hidden=false;layer.querySelector('.ux-help-close').focus();
+ };
+ layer.querySelector('.ux-help-close').onclick=closeProfile;
+ layer.querySelector('#hydroProfileEdit').onclick=()=>{closeProfile();document.querySelector('[data-page="dashboard"]')?.click();document.querySelector('.tab[data-panel="dashboard"]')?.click();personalize.open=true;personalize.scrollIntoView({block:'start'});personalize.querySelector('summary')?.focus();};
+ layer.addEventListener('click',e=>{if(e.target===layer)closeProfile();});
+ layer.addEventListener('keydown',e=>{if(e.key==='Escape'){closeProfile();return;}if(e.key!=='Tab')return;const all=[...layer.querySelectorAll('button:not([disabled]),a[href]')];if(e.shiftKey&&document.activeElement===all[0]){e.preventDefault();all.at(-1).focus();}else if(!e.shiftKey&&document.activeElement===all.at(-1)){e.preventDefault();all[0].focus();}});
+}
+
 function tabActive(){return tabs.find(t=>t.classList.contains('active'))?.dataset.panel||'dashboard';}
 function apply(id,scroll=false){
  if(!names[id])id='dashboard';
