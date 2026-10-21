@@ -53,18 +53,13 @@
     </div>
   </header>
 
-  <div id="connectionNotice" class="connection-notice shell" role="status" aria-live="polite" aria-atomic="true" hidden>
-    <span id="connectionNoticeText">Conectando à maquete…</span>
-    <div class="connection-controls"><button id="retryConnection" type="button" class="ghost-btn" hidden>Tentar agora</button><details><summary>Como resolver</summary><p>Verifique a energia do ESP32, o Wi-Fi, se ambos estão na mesma rede e o endereço IP do equipamento. Em sites HTTPS, um dispositivo HTTP local pode ser bloqueado pelo navegador.</p></details></div>
-  </div>
   <nav class="page-nav shell" aria-label="Páginas do HydroCasa"><a href="?" data-page="dashboard">Painel</a><a href="?pagina=consumo" data-page="consumption"><svg class="ui-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2 7M3 4v7h7M12 7v5l3 2"/></svg>Meu consumo</a><a href="?pagina=simulador" data-page="simulator">Simulador</a><a href="?pagina=sobre" data-page="about">Sobre nós</a><a href="?pagina=fontes" data-page="sources">Fontes e estudos</a></nav>
-  <div class="tour-launch-wrap shell" id="tourLaunchWrap" hidden><button id="openHydroTour" class="tour-launch" type="button" aria-haspopup="dialog"><span aria-hidden="true">✦</span> Conhecer o HydroCasa</button></div>
-  <main class="shell" id="dashboard-page"><div id="demoNotice" class="demo-notice" hidden role="status" aria-live="polite"><span>◈ Demonstração: dados fictícios de banhos. Conecte o ESP32 para ver medições reais.</span><button type="button" id="demoClear">Limpar demonstração</button><button type="button" id="demoUseReal" hidden>Usar dados do ESP32 agora</button></div>
+  <main class="shell" id="dashboard-page">
     <section class="hero hero-premium" aria-labelledby="hydroHeroTitle">
       <div class="hero-intro">
-        <span class="eyebrow hero-kicker"><span class="hero-kicker-dot" aria-hidden="true"></span> HYDROCASA · INTELIGÊNCIA HÍDRICA</span>
+        <span class="eyebrow hero-kicker"><span class="hero-kicker-dot" aria-hidden="true"></span> PROJETO ACADÊMICO · MONITORAMENTO DE ÁGUA</span>
         <h1 id="hydroHeroTitle">Entenda o consumo.<br><em>Valorize cada gota.</em></h1>
-        <p class="hero-context">Painel de consumo de água de uma maquete residencial, com dois sensores de vazão e ESP32.</p><p class="hero-academic" id="heroAcademic">Projeto acadêmico · Engenharia</p><div class="hero-process" role="img" aria-label="Os sensores enviam leituras ao ESP32, que apresenta os resultados no painel."><span>Sensores</span><span aria-hidden="true">→</span><span>ESP32</span><span aria-hidden="true">→</span><span>Painel</span></div>
+        <p class="hero-context">Acompanhe quanto de água a casa usa, com sensores instalados na tubulação e um ESP32 que envia as medições para este painel.</p><p class="hero-academic" id="heroAcademic">Projeto acadêmico · Engenharia</p><div class="hero-process" role="img" aria-label="Os sensores enviam leituras ao ESP32, que apresenta os resultados no painel."><span>Sensores</span><span aria-hidden="true">→</span><span>ESP32</span><span aria-hidden="true">→</span><span>Painel</span></div>
         <div class="hero-benefits" hidden aria-label="O que você encontra aqui">
           <span><span aria-hidden="true">◈</span> Visão por ramal</span>
           <span><span aria-hidden="true">◷</span> Histórico de consumo</span>
@@ -77,7 +72,10 @@
         
       </div>
       <div class="hero-side">
-        <div class="hero-side-heading"><span class="hero-side-symbol" aria-hidden="true">◉</span><span>MONITORAMENTO HYDROCASA</span></div><figure class="hero-maquette-photo" id="heroMaquettePhoto"><img src="hydrocasa-maquete.webp" loading="lazy" decoding="async" alt="Protótipo físico HydroCasa: maquete residencial com tubulações e sensores de vazão" width="960" height="640" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><figcaption hidden>Foto da maquete em preparação</figcaption></figure>
+        <div class="hero-side-heading"><span class="hero-side-symbol" aria-hidden="true">◉</span><span>MONITORAMENTO HYDROCASA</span></div><!-- TODO: adicionar hydrocasa-produto.webp e hydrocasa-produto.jpg nesta pasta estática. -->
+<figure class="hero-maquette-photo" id="heroMaquettePhoto">
+<picture id="heroProductPicture" hidden><source srcset="hydrocasa-produto.webp" type="image/webp"><img src="hydrocasa-produto.jpg" width="1600" height="900" loading="eager" fetchpriority="high" decoding="async" alt="Imagem conceitual do sensor HydroCasa instalado em tubulação residencial"></picture>
+<figcaption id="heroPhotoPlaceholder">Foto da maquete — imagem em preparação</figcaption></figure>
         <div class="hero-watermark hero-logo-mark" aria-hidden="true"><img src="hydrocasa-symbol.png" alt="" width="1254" height="1254"></div>
         <div class="hero-time">
           <span>Horário do seu computador</span>
@@ -87,7 +85,12 @@
         <p class="hero-side-caption">A disponibilidade das leituras é indicada nos cartões do painel.</p>
       </div>
     </section>
-
+  <div id="connectionNotice" class="connection-notice shell hero-connection-notice" role="status" aria-live="polite" aria-atomic="true" hidden>
+    <span id="connectionNoticeText">Conectando à maquete…</span>
+    <div class="connection-controls"><button id="retryConnection" type="button" class="ghost-btn" hidden>Tentar agora</button><details><summary>Como resolver</summary><p>Verifique a energia do ESP32, o Wi-Fi, se ambos estão na mesma rede e o endereço IP do equipamento. Em sites HTTPS, um dispositivo HTTP local pode ser bloqueado pelo navegador.</p></details></div>
+  </div>
+    <div id="demoNotice" class="demo-notice" hidden role="status" aria-live="polite"><span>◈ Demonstração: dados fictícios de banhos. Conecte o ESP32 para ver medições reais.</span><button type="button" id="demoClear">Limpar demonstração</button><button type="button" id="demoUseReal" hidden>Usar dados do ESP32 agora</button></div>
+  <div class="tour-launch-wrap shell hero-tour-access" id="tourLaunchWrap" hidden><button id="openHydroTour" class="tour-launch" type="button" aria-haspopup="dialog"><span aria-hidden="true">✦</span> Conhecer o HydroCasa</button></div>
     <div class="dashboard-shortcuts-area"><span class="eyebrow">ACESSO RÁPIDO</span><p>Escolha o que deseja consultar no painel.</p>    <nav class="tabs dashboard-shortcuts" aria-label="Seções do painel">
       <button class="tab active" data-panel="dashboard">Visão geral</button>
       <button class="tab" data-panel="calendar">Calendário</button>
