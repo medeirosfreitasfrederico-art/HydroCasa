@@ -127,7 +127,7 @@ document.querySelectorAll('a[href="#top"],[aria-label*="voltar ao topo" i]').for
   event.preventDefault();
   const url=new URL(location.href);url.hash='top';
   history.replaceState(history.state,'',url);
-  scrollToPageTop();
+  window.scrollTo({top:0,left:0,behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
  });
 });
 q('#heroPrimaryLink')?.addEventListener('click',e=>{e.preventDefault();navigate('dashboard',false,false);q('.metrics-grid')?.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});});
