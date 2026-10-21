@@ -41,6 +41,10 @@ personalize.open=!(ledgerProfile&&Number.isInteger(ledgerProfile.residents)&&led
 const overlay=document.createElement('div');overlay.className='ux-drawer';overlay.hidden=true;overlay.innerHTML='<section class="ux-drawer-content" role="dialog" aria-modal="true" aria-labelledby="uxHelpTitle"><button type="button" class="ux-help-close" aria-label="Fechar ajuda">×</button><h2 id="uxHelpTitle">Como usar seu painel</h2><div class="ux-help-body"></div></section>';
 document.body.append(overlay);
 const helpBody=overlay.querySelector('.ux-help-body');
+const tourWrap=q('#tourLaunchWrap'),tourTrigger=q('#openHydroTour');
+if(tourWrap&&tourTrigger){tourWrap.classList.add('ux-tour-help');tourTrigger.textContent='✦ Fazer tour guiado';helpBody.append(tourWrap);tourTrigger.addEventListener('click',()=>closeHelp());}
+const photo=q('#heroProductPicture'),placeholder=q('#heroPhotoPlaceholder');
+if(photo){const img=photo.querySelector('img');img.addEventListener('load',()=>{photo.hidden=false;placeholder.hidden=true;});img.addEventListener('error',()=>{photo.hidden=true;placeholder.hidden=false;});}
 helpBody.append(guide.querySelector('.getting-started-steps').cloneNode(true));
 const drawerProfile=helpBody.querySelector('#guideConfigureProfile');if(drawerProfile){drawerProfile.removeAttribute('id');drawerProfile.addEventListener('click',()=>{closeHelp();navigate('dashboard',true,true);personalize.open=true;});}
 const profileLink=q('#guideConfigureProfile');if(profileLink)profileLink.onclick=()=>{personalize.open=true;};
