@@ -6,7 +6,7 @@ const mock={todayTotal:'0,426 m³',todayDelta:'+ 8,4% em relação à média',
  sensor1Total:'0,258 m³',sensor2Total:'0,168 m³',flow1:'7,2 L/min',flow2:'4,6 L/min',
  perPersonValue:'0,107 m³',householdTarget:'0,440 m³',
  comparisonStatus:'Dentro da referência',ratio1:'61%',rawAnalysis:'0,426 m³',
- justifiedValue:'0,163 m³',contextualValue:'0,107 m³'};
+ justifiedValue:'0,163 m³',contextualValue:'0,107 m³',periodVolume:'2,731 m³',periodAverage:'0,390 m³',periodCoverage:'7 dias',periodCoverageNote:'7 dias com leituras registradas',targetDetail:'4 moradores × 110 L/dia',perPersonDetail:'Volume monitorado dividido por 4 moradores',comparisonDetail:'Diferença de −3,2% da referência configurada',split1:'61%',split2:'39%',activityPreview:'Banho de 10 minutos: aproximadamente 90 L',activityMessage:'Registro de atividade disponível',profileDayNotice:'Perfil aplicado ao período selecionado',historyFilterMessage:'7 dias encontrados no período selecionado'};
 const originals=new Map(),created=[];
 let enabled=false;
 function hasReal(){
@@ -51,7 +51,22 @@ function attach(){
   const content=$('historyDayBody');if(content){const card=document.createElement('div');card.className='fixture-day-details';card.innerHTML='<strong>21/10/2026</strong><p>Ramal 01: 0,258 m³ · Ramal 02: 0,168 m³</p><p>Total: 0,426 m³ · Cobertura: 100%</p>';content.append(card);created.push(card);}
  }
 }
+
+function addTemporaryContent(id,html,className='fixture-supplement'){
+ const el=$(id);if(!el)return;
+ const block=document.createElement('div');block.className=className;block.innerHTML=html;el.append(block);created.push(block);
+}
+function addExtraCards(){
+ addTemporaryContent('activityLog','<article class="fixture-activity"><strong>Banho · 07:15</strong><p>10 min · 90 L</p></article><article class="fixture-activity"><strong>Lavagem de louça · 12:40</strong><p>15 min · 75 L</p></article><article class="fixture-activity"><strong>Limpeza · 17:20</strong><p>12 min · 45 L</p></article>');
+ addTemporaryContent('alertContent','<p><strong>Consumo dentro do intervalo configurado</strong></p><p>Volume observado: 426 L · Referência: 440 L.</p>');
+ addTemporaryContent('alertsTopList','<article class="fixture-activity"><strong>Informativo · Consumo estável</strong><p>Volume diário próximo ao valor de referência.</p></article>');
+ addTemporaryContent('historyDayBody','<div class="fixture-activity"><strong>Resumo do dia 21/10</strong><p>Entrada 1: 258 L · Entrada 2: 168 L · Total: 426 L</p><p>Horários de maior uso: 07:00–08:00 e 18:00–20:00</p></div>');
+ addTemporaryContent('methodologyContent','<p>Volume monitorado por dois ramais; referência diária calculada para quatro moradores.</p>');
+ const status=$('consumptionStatusCard');if(status){const detail=document.createElement('div');detail.className='fixture-supplement fixture-status';detail.innerHTML='<strong>Consumo monitorado: 426 L</strong><p>Comparação atual: dentro da referência diária configurada.</p>';status.append(detail);created.push(detail);}
+ const summary=$('historyDayDetails');if(summary){const view=document.createElement('div');view.className='fixture-history-details';view.innerHTML='<h3>Detalhes do dia 21/10/2026</h3><p>Ramal 01: 0,258 m³ · Ramal 02: 0,168 m³</p><p>Total registrado: 0,426 m³</p>';summary.after(view);created.push(view);}
+}
+
 function update(){const shouldShow=!hasReal();document.body.classList.toggle('hydro-view-fixtures',shouldShow);enabled=shouldShow;}
-function start(){attach();update();new MutationObserver(update).observe(document.body,{attributes:true,attributeFilter:['data-connection-state']});window.addEventListener('storage',update);setInterval(update,5000);}
+function start(){attach();addExtraCards();update();new MutationObserver(update).observe(document.body,{attributes:true,attributeFilter:['data-connection-state']});window.addEventListener('storage',update);setInterval(update,5000);}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
