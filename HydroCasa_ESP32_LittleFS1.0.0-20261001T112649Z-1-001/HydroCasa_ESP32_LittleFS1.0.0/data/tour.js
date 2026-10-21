@@ -9,7 +9,9 @@ const steps=[
  {selector:'#dashboard-page .tabs',title:'Explore o painel',description:'Use as abas para consultar a visão geral, o calendário, análises e configurações.'},
  {selector:'[data-page="consumption"]',title:'Meu consumo',description:'Acompanhe o histórico e as informações disponíveis no navegador.'},
  {selector:'[data-page="simulator"]',title:'Simulador',description:'Escolha o tipo de vazão do chuveiro, ajuste os hábitos e compare estimativas fictícias. Nenhuma dessas informações altera as leituras reais.'},
- {selector:'[data-page="about"]',title:'Sobre nós',description:'Conheça a proposta acadêmica e os objetivos do projeto.'}
+ {selector:'[data-page="about"]',title:'Sobre nós',description:'Conheça a proposta acadêmica e os objetivos do projeto.'},
+ {selector:'[data-page="sources"]',title:'Fontes e estudos',description:'Consulte a origem das referências, a metodologia das comparações e os limites das estimativas. Isso ajuda a interpretar corretamente os resultados.'},
+ {selector:'#personalizar',title:'Configurar moradores',description:'Informe quantas pessoas moram na residência e ajuste a abrangência dos sensores e as referências. Essas escolhas não mudam as leituras coletadas.'}
 ];
 let index=0,active=false,previousFocus=null,previousOverflow='',highlighted=null;
 const backdrop=document.createElement('div');backdrop.className='hydro-tour-backdrop';backdrop.hidden=true;
