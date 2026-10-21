@@ -18,3 +18,15 @@ body.hydro-view-fixtures #chartLoadingMessage,body.hydro-view-fixtures #historyE
 .fixture-calendar-grid b{font-size:12px}.fixture-calendar-grid small{margin-top:5px;font-size:10px;color:var(--muted)}
 .fixture-day-details{margin-top:10px;padding:14px;border:1px solid var(--line);border-radius:10px}
 @media(max-width:550px){.fixture-calendar-grid{gap:2px}.fixture-calendar-grid>span{min-height:38px;padding:4px}.fixture-calendar-grid small{font-size:8px}}
+
+/* Preenchimento adicional de cartões que dependem de leituras; sem persistência. */
+body:not(.hydro-view-fixtures) .fixture-supplement,body:not(.hydro-view-fixtures) .fixture-history-details{display:none!important}
+body.hydro-view-fixtures .fixture-supplement{display:block}
+body.hydro-view-fixtures #activityLog>.fixture-activity{display:block}
+.fixture-activity{padding:11px 13px;margin:7px 0;border:1px solid var(--line);border-radius:10px;background:var(--surface2);font-size:13px}
+.fixture-activity p{margin:5px 0;line-height:1.5;color:var(--muted)}
+.fixture-history-details{margin:12px 0;padding:15px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.fixture-history-details h3{margin:0 0 8px;font-size:16px}
+.fixture-history-details p{margin:5px 0;font-size:13px}
+body.hydro-view-fixtures #demoNotice,body.hydro-view-fixtures #demoRecentPreview{display:none!important}
+body.hydro-view-fixtures #alertContent>.fixture-supplement{display:block}
