@@ -64,20 +64,20 @@
       <div class="hero-intro">
         <span class="eyebrow hero-kicker"><span class="hero-kicker-dot" aria-hidden="true"></span> HYDROCASA · INTELIGÊNCIA HÍDRICA</span>
         <h1 id="hydroHeroTitle">Entenda o consumo.<br><em>Valorize cada gota.</em></h1>
-        <p>Um painel para acompanhar o uso da água, consultar registros disponíveis e interpretar os dados de cada ramal com mais clareza.</p>
-        <div class="hero-benefits" aria-label="O que você encontra aqui">
+        <p class="hero-context">Painel de consumo de água de uma maquete residencial, com dois sensores de vazão e ESP32.</p><p class="hero-academic" id="heroAcademic">Projeto acadêmico · Engenharia</p><div class="hero-process" role="img" aria-label="Os sensores enviam leituras ao ESP32, que apresenta os resultados no painel."><span>Sensores</span><span aria-hidden="true">→</span><span>ESP32</span><span aria-hidden="true">→</span><span>Painel</span></div>
+        <div class="hero-benefits" hidden aria-label="O que você encontra aqui">
           <span><span aria-hidden="true">◈</span> Visão por ramal</span>
           <span><span aria-hidden="true">◷</span> Histórico de consumo</span>
           <span><span aria-hidden="true">↗</span> Análise contextual</span>
         </div>
         <div class="hero-actions">
-          <a class="hero-cta hero-cta-primary" href="#todayTotal">Ver indicadores <span aria-hidden="true">↗</span></a>
-          <a class="hero-cta hero-cta-secondary" href="?pagina=sobre">Sobre o projeto <span aria-hidden="true">→</span></a>
+          <a class="hero-cta hero-cta-primary" href="#todayTotal" id="heroPrimaryLink">Ver painel <span aria-hidden="true">↗</span></a>
+          <a class="hero-about-link" href="?pagina=sobre">Sobre o projeto →</a>
         </div>
-        <p class="hero-trust-note">Os indicadores do painel dependem de leituras válidas ou registros existentes. Leituras e histórico disponíveis no painel.</p>
+        
       </div>
       <div class="hero-side">
-        <div class="hero-side-heading"><span class="hero-side-symbol" aria-hidden="true">◉</span><span>MONITORAMENTO HYDROCASA</span></div>
+        <div class="hero-side-heading"><span class="hero-side-symbol" aria-hidden="true">◉</span><span>MONITORAMENTO HYDROCASA</span></div><figure class="hero-maquette-photo" id="heroMaquettePhoto"><img src="hydrocasa-maquete.webp" loading="lazy" decoding="async" alt="Protótipo físico HydroCasa: maquete residencial com tubulações e sensores de vazão" width="960" height="640" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><figcaption hidden>Foto da maquete em preparação</figcaption></figure>
         <div class="hero-watermark hero-logo-mark" aria-hidden="true"><img src="hydrocasa-symbol.png" alt="" width="1254" height="1254"></div>
         <div class="hero-time">
           <span>Horário do seu computador</span>
@@ -99,7 +99,7 @@
     <section class="getting-started" aria-labelledby="gettingStartedTitle">
       <div class="getting-started-heading"><div><span class="eyebrow">PRIMEIROS PASSOS</span><h2 id="gettingStartedTitle">Como usar seu painel</h2><p>Três passos para entender as informações da sua casa.</p></div><a href="?pagina=fontes" class="getting-started-help">Entenda as referências ↗</a></div>
       <ol class="getting-started-steps">
-        <li><span class="getting-started-number" aria-hidden="true">01</span><div><strong>Configure sua residência</strong><p>Informe os moradores e confirme quais pontos os sensores monitoram.</p><a href="#householdTitle">Configurar perfil →</a></div></li>
+        <li><span class="getting-started-number" aria-hidden="true">01</span><div><strong>Configure sua residência</strong><p>Informe os moradores e confirme quais pontos os sensores monitoram.</p><a href="#personalizar" id="guideConfigureProfile">Personalizar →</a></div></li>
         <li><span class="getting-started-number" aria-hidden="true">02</span><div><strong>Consulte as medições</strong><p>Veja os volumes disponíveis. Se estiver offline, aguarde dados reais.</p></div></li>
         <li><span class="getting-started-number" aria-hidden="true">03</span><div><strong>Entenda seus hábitos</strong><p>Use o calendário e registre atividades para contextualizar o consumo.</p><button type="button" class="getting-started-action" id="guideOpenCalendar">Abrir calendário →</button></div></li>
       </ol>
