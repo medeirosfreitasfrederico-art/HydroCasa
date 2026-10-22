@@ -1,7 +1,7 @@
 /* Camada de apresentação de alertas. NUNCA grava ledger, snapshot, perfil ou endpoints. */
 (()=>{
 'use strict';
-const q=s=>document.querySelector(s),key='hydrocasa:alertas',demoKey='hydrocasa:alertas:demonstracao';
+const q=s=>document.querySelector(s),key='hydrocasa:alertas',demoKey='hydrocasa:alertas:demonstracao',removedKey='hydrocasa:alertas:removidos',demoRemovedKey='hydrocasa:alertas:demonstracao:removidos';
 const fmtDate=t=>new Date(t).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'});
 const levels={'Informativo':'ℹ','Atenção':'⚠','Acima do padrão':'▲','Leve':'●','Moderado':'▲','Crítico':'⬆'};
 const guidance={sensor:['O sensor pode ter parado de enviar leituras.','Verifique energia, cabo e conexão do ESP32.'],atividade:['Uma atividade registrada ultrapassou a referência configurada.','Confira duração e quantidade informadas no registro.'],consumo:['O volume registrado está acima da referência configurada.','Confira o perfil da residência e os hábitos do período.'],fluxo:['Foi detectado um comportamento de fluxo que merece verificação.','Verifique torneiras, chuveiros e possíveis vazamentos.']};
@@ -9,6 +9,13 @@ const why=a=>guidance[a.tipo]||['Uma condição do monitoramento merece sua aten
 let history=[],demoHistory=[],observations=[],lastCursor='',focusBefore=null,dialogOpen=false,lastOnline=false;
 const safeRead=(storage,k)=>{try{let v=JSON.parse(storage.getItem(k)||'[]');return Array.isArray(v)?v.filter(x=>x&&typeof x.id==='string').slice(0,250):[]}catch{return []}};
 history=safeRead(localStorage,key);demoHistory=safeRead(sessionStorage,demoKey);
+const readRemoved=(storage,k)=>{try{const v=JSON.parse(storage.getItem(k)||'[]');return new Set(Array.isArray(v)?v.filter(x=>typeof x==='string').slice(-2000):[])}catch{return new Set()}};
+const removedReal=readRemoved(localStorage,removedKey),removedDemo=readRemoved(sessionStorage,demoRemovedKey);
+const removedSet=demo=>demo?removedDemo:removedReal;
+const persistRemoved=demo=>{try{(demo?sessionStorage:localStorage).setItem(demo?demoRemovedKey:removedKey,JSON.stringify([...removedSet(demo)].slice(-2000)))}catch{}};
+// Carrega separadamente as exclusões: elas não podem desaparecer quando o histórico atingir seu limite.
+try{const v=JSON.parse(localStorage.getItem(removedKey)||'[]');if(Array.isArray(v))v.filter(x=>typeof x==='string').slice(-2000).forEach(x=>removedReal.add(x))}catch{}
+try{const v=JSON.parse(sessionStorage.getItem(demoRemovedKey)||'[]');if(Array.isArray(v))v.filter(x=>typeof x==='string').slice(-2000).forEach(x=>removedDemo.add(x))}catch{}
 const persist=demo=>{try{(demo?sessionStorage:localStorage).setItem(demo?demoKey:key,JSON.stringify((demo?demoHistory:history).slice(0,250)))}catch{}};
 const bell=document.createElement('button');bell.id='hydroAlertBell';bell.type='button';bell.className='icon-btn alert-bell';bell.setAttribute('aria-haspopup','dialog');bell.setAttribute('aria-label','Abrir alertas');bell.innerHTML='<span class="hydro-header-icon hydro-header-icon-alert" aria-hidden="true"></span><span id="hydroAlertCount" class="alert-count" hidden>0</span>';
 q('.header-actions')?.insertBefore(bell,q('#themeBtn'));
@@ -71,6 +78,8 @@ function realData(){
 function reconcile(demo,active,now){
  const list=demo?demoHistory:history,found=new Set(active.map(a=>a.id));let changed=false;
  for(const a of active){
+  // Exclusões ficam num registro separado e prevalecem sobre qualquer reconciliação automática.
+  if(removedSet(demo).has(a.id))continue;
   let item=list.find(x=>x.id===a.id&&x.status!=='resolvido');
   if(item){item.valor=a.valor;item.referencia=a.referencia;item.diferenca=a.diferenca;item.nivel=a.nivel;item.dataOcorrencia=a.dataOcorrencia||item.dataOcorrencia;item.mensagem=a.mensagem;continue;}
   let recent=list.find(x=>x.id===a.id&&now-x.criadoEm<HydroAlertConfig.repeatMinutes*60000);
@@ -87,7 +96,7 @@ function reconcile(demo,active,now){
  if(changed)persist(demo);
 }
 function render(){
- const demo=document.body.dataset.demoActive==='true',list=(demo?demoHistory:history).filter(x=>x.status!=='removido').slice().sort((a,b)=>b.criadoEm-a.criadoEm);
+ const demo=document.body.dataset.demoActive==='true',removed=removedSet(demo),list=(demo?demoHistory:history).filter(x=>x.status!=='removido'&&!removed.has(x.id)).slice().sort((a,b)=>b.criadoEm-a.criadoEm);
  const snapshot=realData();const day=snapshot?.history?.[snapshot?.today];
  const comparable=!!(snapshot?.online&&snapshot.profile?.scope==='whole'&&snapshot.profile?.referenceLiters>0&&snapshot.profile?.residents>0&&day?.readings>0&&Number.isFinite(day.total1)&&Number.isFinite(day.total2)&&day.total1>=0&&day.total2>=0&&!day.profileMixed);
  const active=list.filter(a=>a.status==='ativo'&&(!a.silenciadoAte||Date.now()>a.silenciadoAte)),isComparable=comparable;
@@ -109,7 +118,7 @@ function handleAlertAction(e){
  const demo=document.body.dataset.demoActive==='true',list=demo?demoHistory:history,item=list.find(x=>x.id===btn.dataset.alertId);if(!item)return;
  if(btn.dataset.alertAction==='remove'){
   // Mantém uma marca persistente para impedir que o tick recrie o alerta ativo.
-  item.status='removido';item.removidoEm=Date.now();persist(demo);render();return;
+  item.status='removido';item.removidoEm=Date.now();removedSet(demo).add(item.id);persistRemoved(demo);persist(demo);render();return;
  }
  item.status=btn.dataset.alertAction==='read'?'lido':'silenciado';if(item.status==='silenciado')item.silenciadoAte=new Date().setHours(23,59,59,999);
  persist(demo);render();
