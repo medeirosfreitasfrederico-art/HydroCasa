@@ -78,3 +78,8 @@
  .hydro-tour-progress{margin:10px 0}.hydro-tour-actions button{padding:9px 10px}
  .hydro-tour-focus{scroll-margin-top:24px;scroll-margin-bottom:calc(45dvh + 24px)}
 }
+
+/* Moldura fixa: destaca o alvo mesmo em cards com stacking contexts proprios. */
+.hydro-tour-backdrop:not([hidden]){background:transparent;backdrop-filter:none}
+.hydro-tour-spotlight:not([hidden]){position:fixed;z-index:101;pointer-events:none;border:3px solid var(--primary2,#8b7bff);border-radius:14px;box-sizing:border-box;box-shadow:0 0 0 200vmax rgba(4,10,25,.65),0 0 0 5px rgba(139,123,255,.22);transition:left .15s,top .15s,width .15s,height .15s}
+.hydro-tour-focus{outline:0!important;z-index:auto!important}
