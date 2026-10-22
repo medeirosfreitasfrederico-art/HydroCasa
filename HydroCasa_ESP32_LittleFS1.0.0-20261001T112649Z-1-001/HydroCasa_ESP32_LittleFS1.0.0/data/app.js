@@ -299,6 +299,22 @@ function renderCalendar(){
   }
 }
 
+function activityContext(dayKey,h){
+ const records=Array.isArray(state.activityRecords[dayKey])?state.activityRecords[dayKey]:[];
+ const justified=records.reduce((sum,r)=>sum+(Number.isFinite(r.liters)&&r.liters>0?r.liters:0),0);
+ const actual=h&&h.readings>0?h.total1+h.total2:null;
+ const profile=h?M.dayProfile(h,state.household):state.household;
+ const reference=profile?profile.residents*profile.referenceLiters:null;
+ const referenceResult=h&&profile?M.compareDay(h,profile,{closed:dayKey<todayKey(),connected:state.connected}):null;
+ return {records,justified,actual,profile,reference,referenceResult,hasJustification:justified>0};
+}
+function activityContextHtml(dayKey,h){
+ const x=activityContext(dayKey,h);
+ if(!x.hasJustification)return '<p>Nenhuma atividade justificada registrada para este dia.</p>';
+ let status='Não há leitura de sensores para comparar.';
+ if(x.actual!==null)status=x.actual<=x.justified?'OK — o volume medido está dentro do volume estimado pelas atividades registradas.':'O volume medido supera a estimativa das atividades registradas.';
+ return '<p><b>Volume medido:</b> '+(x.actual===null?'sem leitura':volume(x.actual))+'</p><p><b>Volume estimado pelas atividades:</b> '+volume(x.justified)+'</p><p>'+escapeHtml(status)+'</p><p><b>Comparação independente com a referência diária:</b> '+escapeHtml(x.referenceResult?.label||'Indisponível')+(x.reference!==null?' ('+volume(x.reference)+' para '+x.profile.residents+' morador(es)).':'.')+'</p><p class="muted-note">As atividades contextualizam o volume, mas são estimativas informadas e não substituem a medição nem comprovam a causa do consumo.</p>';
+}
 function openDayModal(d){
  const k=keyForDate(d),h=state.history[k],future=d>new Date(),records=Array.isArray(state.activityRecords[k])?state.activityRecords[k]:[];
  if(future){showModal('<h3>Data futura</h3><p>A coleta ainda não está disponível.</p>');return;}
@@ -308,6 +324,7 @@ function openDayModal(d){
    content+='<p><b>Volume registrado pelos sensores: '+volume(total)+'</b></p><p>'+(h.partial?'Coleta parcial.':'Consumo registrado neste dia.')+'</p>';
    content+='<p>'+escapeHtml(M.compareDay(h,null,{closed:k<todayKey()}).label)+'</p>';
  } else content+='<p>Sem leituras dos sensores neste dia.</p>';
+ content+='<details class="activity-context-details" open><summary>Detalhamento da comparação com as atividades justificadas</summary>'+activityContextHtml(k,h)+'</details>';
  content+='<h4>Atividades registradas</h4>';
  content+=records.length?records.map((r,i)=>'<div class="activity-entry"><b>'+escapeHtml(r.name)+'</b><p>'+escapeHtml(r.quantity)+' ocorrência(s)'+(r.minutes?'; '+escapeHtml(r.minutes)+' min':'')+'</p><div class="activity-calendar-actions"><button class="ghost-btn" type="button" data-edit-day-activity="'+i+'">Editar</button><button class="ghost-btn" type="button" data-delete-day-activity="'+i+'">Remover</button></div></div>').join(''):'<p>Nenhuma atividade cadastrada para esta data.</p>';
  // O registro manual é descritivo e fica exclusivamente em activityRecords[k].
@@ -416,9 +433,14 @@ function updateHousehold(){
   $("#targetDetail").textContent=p?`${p.residents} × ${volume(p.referenceLiters)}/pessoa/dia; faixa ±${fmt(p.tolerance)}%.`:"Configure os moradores.";
   $("#perPersonValue").textContent=h&&h.readings&&h.profile&&!h.profileMixed?volume(total/h.profile.residents):"—";
   const result=M.compareDay(h,p,{connected:state.connected});
-  $("#comparisonStatus").textContent=result.label;
-  $("#comparisonStatus").className=result.code==="above"?"comparison-above":"";
-  $("#comparisonDetail").textContent=result.percent!==undefined?`${fmt(Math.abs(result.percent))}% ${result.percent<0?"abaixo":"acima"} da referência central. Volume observado, sem projeção do restante do dia.`:"Comparação indisponível.";
+  const context=activityContext(todayKey(),h);
+  const hasActual=!!(h&&h.readings>0&&Number.isFinite(total));
+  const contextualOk=hasActual&&context.hasJustification&&total<=context.justified;
+  $("#comparisonStatus").textContent=contextualOk?"Dentro do volume justificado":hasActual&&context.hasJustification&&total>context.justified?"Acima do volume justificado":result.label;
+  $("#comparisonStatus").className=contextualOk?"comparison-context-ok":result.code==="above"?"comparison-above":"";
+  $("#comparisonDetail").textContent=(context.hasJustification?"Atividades estimadas: "+volume(context.justified)+". ":"")+(result.percent!==undefined?`${fmt(Math.abs(result.percent))}% ${result.percent<0?"abaixo":"acima"} da referência central.`:result.label+".")+" Volume observado, sem projeção do restante do dia.";
+  const contextDetails=$("#comparisonActivityDetails");
+  if(contextDetails)contextDetails.innerHTML=activityContextHtml(todayKey(),h);
   const names=p||M.defaults;
   $$('[data-ramal]').forEach(el=>el.textContent=names['ramal'+el.dataset.ramal]);
   const source=p?p.referenceMode:$("#referenceMode").value;
@@ -441,8 +463,9 @@ function applyProfile(next,now=Date.now()){
   const keys=["residents","referenceMode","referenceLiters","tolerance","scope"];
   const changed=!state.household||keys.some(key=>state.household[key]!==p[key]);
   if(changed){
-    if(h.readings) h.profileMixed=true;
-    else h.profile=M.clone(p);
+    // Preserve the measured volume, but evaluate it using the newly applied household profile immediately.
+    h.profile=M.clone(p);
+    h.profileMixed=false;
     if(!Array.isArray(h.profileChanges))h.profileChanges=[];
     h.profileChanges.push({at:now,profile:M.clone(p)});
   }
