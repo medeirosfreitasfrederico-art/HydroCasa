@@ -42,6 +42,20 @@ const directOriginals=new Map(directIds.map(id=>[id,$(id)]).filter(x=>x[1]).map(
 function demoProfile(residents){const mode=$('referenceMode')?.value||'snis';const ref=mode==='user'?Number($('referenceM3')?.value)*1000:152.1;const people=Number(residents||$('residentsInput')?.value||3);const tolerance=Number($('toleranceInput')?.value??10);return {residents:Number.isInteger(people)&&people>0?people:3,reference:Number.isFinite(ref)&&ref>0?ref:152.1,tolerance:Number.isFinite(tolerance)&&tolerance>=0?tolerance:10,mode};}
 function showUpdatedPopup(){let toast=$('demoUpdatedToast');if(!toast){toast=document.createElement('div');toast.id='demoUpdatedToast';toast.className='demo-updated-toast';toast.setAttribute('role','status');toast.setAttribute('aria-live','polite');toast.innerHTML='<span aria-hidden="true">✓</span><div><strong>Dados simulados atualizados</strong><small>O painel foi atualizado com os valores personalizados.</small></div>';document.body.append(toast);}toast.classList.add('is-visible');clearTimeout(popupTimer);popupTimer=setTimeout(()=>toast?.classList.remove('is-visible'),3600);}
 let popupTimer=null;
+const reportIds=['rawAnalysis','justifiedValue','contextualValue','analysisBars'];
+const reportOriginals=new Map(reportIds.map(id=>[id,$(id)]).filter(x=>x[1]).map(([id,node])=>[id,{node,html:node.innerHTML,className:node.className}]));
+function updateDemoReport(useDemo){
+ if(!useDemo){for(const item of reportOriginals.values()){item.node.innerHTML=item.html;item.node.className=item.className;}return;}
+ const row=weekly?.values?.[new Date().getDay()];
+ const daily=weekly?(row[0]+row[1]):simulation?simulation[0]*simulation[1]*simulation[2]*simulation[3]:0;
+ const r1=weekly?row[0]:daily/2,r2=weekly?row[1]:daily/2,people=weekly?.residents||Number($('residentsInput')?.value)||1;
+ const set=(id,value)=>{const item=reportOriginals.get(id);if(item)item.node.textContent=value;};
+ set('rawAnalysis',fmt(daily));set('justifiedValue','—');set('contextualValue',fmt(daily/people));
+ const bars=reportOriginals.get('analysisBars');
+ if(bars)bars.node.innerHTML='<div class="demo-report-note">◈ RELATÓRIO SIMULADO · valores fictícios, não medidos pelos sensores</div>'+
+ '<div class="bar-row"><div class="bar-label"><span>Ramal 1'+(weekly?'':' (estimado)')+'</span><b>'+fmt(r1)+'</b></div><div class="bar-track"><div class="bar-fill" style="width:'+(daily?Math.max(0,Math.min(100,r1/daily*100)):0)+'%"></div></div></div>'+
+ '<div class="bar-row"><div class="bar-label"><span>Ramal 2'+(weekly?'':' (estimado)')+'</span><b>'+fmt(r2)+'</b></div><div class="bar-track"><div class="bar-fill" style="width:'+(daily?Math.max(0,Math.min(100,r2/daily*100)):0)+'%"></div></div></div>';
+}
 const overlays=new Map();
 for(const [id] of map){const node=$(id);if(!node)continue;const parent=node.parentElement;const shown=document.createElement('span');shown.className='demo-value';shown.hidden=true;shown.setAttribute('aria-label','Demonstração, valor fictício');parent.append(shown);overlays.set(id,{node,shown});}
 function update(){
@@ -80,7 +94,7 @@ function update(){
   const label=$('demoNotice')?.querySelector('span');
   if(label)label.textContent=weekly?'◈ Demonstração: padrão semanal personalizado. Valores fictícios, sem alterar as medições reais.':'◈ Demonstração: dados fictícios de banhos. Conecte o ESP32 para ver medições reais.';
  }else for(const {node,shown} of overlays.values()){node.classList.remove('demo-covered');shown.hidden=true;}
- const chart=$('dailyChart');
+ updateDemoReport(useDemo);\n const chart=$('dailyChart');
  if(chart)chart.parentElement.classList.toggle('demo-chart-empty',useDemo);
  const estimated=$('demoRecentPreview');
  if(estimated){
@@ -232,7 +246,7 @@ function drawWeeklyCalendar(real){
   if(active&&age>=0&&age<weekly.days){
    const row=weekly.values[date.getDay()],liters=row[0]+row[1];
    if(!badge){badge=document.createElement('span');badge.className='demo-day-value';badge.setAttribute('aria-label','Valor fictício de demonstração');total.insertAdjacentElement('afterend',badge);}
-   badge.textContent='◈ Demo · '+fmt(liters/1000);
+   badge.textContent='◈ Demo · '+fmt(liters/1000);\n   total.textContent='◈ Demonstração';
    cell.classList.add('demo-day-has-data');
    cell.title='Demonstração fictícia: Ramal 1 '+fmt(row[0])+' L; Ramal 2 '+fmt(row[1])+' L. O valor real, se houver, permanece acima.';
   }else{
@@ -241,6 +255,20 @@ function drawWeeklyCalendar(real){
  });
 }
 renderWeekSummary();
+function openDemoCalendarDay(dateKey){
+ const parts=dateKey.split('-').map(Number),date=new Date(parts[0],parts[1]-1,parts[2]),row=weekly.values[date.getDay()],total=row[0]+row[1];
+ const modal=$('modal'),body=$('modalBody');if(!modal||!body)return;
+ body.innerHTML='<span class="eyebrow">CALENDÁRIO · DEMONSTRAÇÃO</span><h3>'+date.toLocaleDateString('pt-BR',{dateStyle:'full'})+'</h3><p><b>Volume simulado: '+fmt(total)+'</b></p><p>Ramal 1: '+fmt(row[0])+' · Ramal 2: '+fmt(row[1])+'</p><p>Consumo simulado por morador: '+fmt(total/weekly.residents)+'</p><p>Perfil da demonstração: '+weekly.residents+' morador(es). Período configurado: '+weekly.days+' dia(s).</p><p class="muted-note">Valores fictícios: não foram gravados no histórico real nem enviados ao ESP32.</p>';
+ modal.classList.add('open');modal.setAttribute('aria-hidden','false');
+}
+document.addEventListener('click',event=>{
+ const cell=event.target.closest('#calendarGrid .day[data-demo-date]');
+ if(!cell||!weekly||document.body.dataset.demoActive!=='true')return;
+ const dateKey=cell.dataset.demoDate,parts=dateKey.split('-').map(Number),date=new Date(parts[0],parts[1]-1,parts[2]);date.setHours(0,0,0,0);
+ const now=new Date();now.setHours(0,0,0,0);const age=Math.round((now-date)/86400000);
+ if(age<0||age>=weekly.days)return;
+ event.preventDefault();event.stopImmediatePropagation();openDemoCalendarDay(dateKey);
+},true);
 const calendarGrid=$('calendarGrid');
 if(calendarGrid)new MutationObserver(()=>drawWeeklyCalendar(hasRealHistory()||isRealOnline())).observe(calendarGrid,{childList:true});
 
