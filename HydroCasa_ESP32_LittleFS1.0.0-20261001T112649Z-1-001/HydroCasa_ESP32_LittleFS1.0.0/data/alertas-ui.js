@@ -54,7 +54,7 @@ function reconcile(demo,active,now){
  const list=demo?demoHistory:history,found=new Set(active.map(a=>a.id));let changed=false;
  for(const a of active){
   let item=list.find(x=>x.id===a.id&&x.status!=='resolvido');
-  if(item){item.valor=a.valor;item.referencia=a.referencia;item.diferenca=a.diferenca;item.mensagem=a.mensagem;continue;}
+  if(item){item.valor=a.valor;item.referencia=a.referencia;item.diferenca=a.diferenca;item.nivel=a.nivel;item.dataOcorrencia=a.dataOcorrencia||item.dataOcorrencia;item.mensagem=a.mensagem;continue;}
   let recent=list.find(x=>x.id===a.id&&now-x.criadoEm<HydroAlertConfig.repeatMinutes*60000);
   if(recent){recent.status='ativo';recent.valor=a.valor;recent.mensagem=a.mensagem;recent.atualizadoEm=now;changed=true;continue;}
   item={...a,status:'ativo',criadoEm:now,atualizadoEm:now};list.unshift(item);changed=true;
