@@ -45,23 +45,22 @@
 @media(max-width:600px){.demo-data-content{padding:0 12px 14px}.demo-week-heading,.demo-week-table>label{grid-template-columns:minmax(88px,1.1fr) minmax(0,1fr) minmax(0,1fr);gap:6px;padding:8px}.demo-week-table input{padding:7px 4px}.demo-week-heading{font-size:10px}.demo-week-table>label{font-size:11px}.demo-data-options{grid-template-columns:1fr}.demo-data-actions{flex-direction:column}.demo-data-actions button{width:100%}}
 
 
-/* HydroCasa — editor demonstrativo em modal com acabamento futurista */
+/* Personalização demonstrativa: reutiliza o modal nativo do calendário (#modal/.modal-box). */
 #demoDataStudio{margin:14px 0 22px;background:transparent;border:0;box-shadow:none;overflow:visible}
 #demoDataDetails{border:0;background:transparent;color:var(--text)}
 #demoDataDetails>summary{display:flex;align-items:center;gap:12px;list-style:none;border:1px solid color-mix(in srgb,#8b7bff 35%,var(--line));border-radius:14px;padding:15px 17px;background:linear-gradient(110deg,color-mix(in srgb,#635bff 12%,var(--surface)),color-mix(in srgb,#2ea8ff 8%,var(--surface)));color:var(--text);box-shadow:0 8px 26px #312e8110;transition:border-color .2s,box-shadow .2s}
 #demoDataDetails>summary::-webkit-details-marker{display:none}
 #demoDataDetails>summary:hover{border-color:#8b7bff;box-shadow:0 0 0 3px #8b7bff18,0 10px 28px #312e8115}
-#demoDataDetails[open]{position:fixed!important;z-index:10050!important;top:50%!important;left:50%!important;right:auto!important;bottom:auto!important;inset:auto!important;transform:translate(-50%,-50%)!important;width:min(760px,calc(100vw - 32px))!important;max-height:min(84dvh,780px)!important;overflow:auto!important;overscroll-behavior:contain;border:1px solid color-mix(in srgb,#8b7bff 35%,var(--line));border-radius:22px;background:var(--surface)!important;color:var(--text);box-shadow:0 30px 100px #05081675,0 0 0 1px #8b7bff12;isolation:isolate}
-#demoDataDetails[open]::before{content:"";position:fixed;z-index:-1;inset:-100vh -100vw;background:rgba(5,8,22,.58);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);pointer-events:none}
-body.demo-modal-open{overflow:hidden}
-#demoDataDetails[open]>summary{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:12px;padding:17px 20px;background:var(--surface);border:0;border-bottom:1px solid color-mix(in srgb,#8b7bff 22%,var(--line));border-radius:0;color:var(--text)}
-#demoDataDetails[open]>summary::after{content:"PERSONALIZAÇÃO";font-size:10px;letter-spacing:.16em;font-weight:800;color:#8b7bff;margin-left:auto}
-#demoDataDetails[open] .demo-data-content{padding:18px 20px 22px}
-#demoDataDetails .demo-modal-close{order:5;margin-left:0;flex:0 0 36px;width:36px;height:36px;border:1px solid var(--line);border-radius:11px;background:var(--surface2);color:var(--text);font-size:23px;line-height:1;cursor:pointer;transition:background .2s,border-color .2s}
-#demoDataDetails .demo-modal-close:hover{background:color-mix(in srgb,#8b7bff 14%,var(--surface));border-color:#8b7bff}
-#demoDataDetails .demo-week-summary{border:1px solid color-mix(in srgb,#8b7bff 18%,var(--line));background:linear-gradient(120deg,color-mix(in srgb,#645bff 8%,var(--surface2)),color-mix(in srgb,#2ea8ff 6%,var(--surface2)));border-radius:13px}
-#demoDataDetails .demo-data-actions button{border-radius:11px}
-#demoDataDetails .demo-data-footnote strong,#demoDataDetails .demo-data-content strong{color:color-mix(in srgb,#8b7bff 80%,var(--text))}
+#modalBody #demoDataDetails{position:static!important;inset:auto!important;top:auto!important;left:auto!important;right:auto!important;bottom:auto!important;transform:none!important;width:100%!important;max-width:none!important;max-height:none!important;overflow:visible!important;border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;isolation:auto}
+#modalBody #demoDataDetails[open]{position:static!important;inset:auto!important;transform:none!important;width:100%!important;max-height:none!important;overflow:visible!important;background:transparent!important;box-shadow:none!important}
+#modalBody #demoDataDetails>summary{position:relative;top:auto;display:flex;align-items:center;gap:12px;padding:0 0 15px;border:0;border-bottom:1px solid color-mix(in srgb,#8b7bff 22%,var(--line));border-radius:0;background:transparent;color:var(--text)}
+#modalBody #demoDataDetails>summary::after{content:"PERSONALIZAÇÃO";font-size:10px;letter-spacing:.16em;font-weight:800;color:#8b7bff;margin-left:auto}
+#modalBody #demoDataDetails .demo-data-content{padding:18px 0 0}
+#modalBody #demoDataDetails .demo-modal-close{order:5;margin-left:0;flex:0 0 36px;width:36px;height:36px;border:1px solid var(--line);border-radius:11px;background:var(--surface2);color:var(--text);font-size:23px;line-height:1;cursor:pointer;transition:background .2s,border-color .2s}
+#modalBody #demoDataDetails .demo-modal-close:hover{background:color-mix(in srgb,#8b7bff 14%,var(--surface));border-color:#8b7bff}
+#modalBody #demoDataDetails .demo-week-summary{border:1px solid color-mix(in srgb,#8b7bff 18%,var(--line));background:linear-gradient(120deg,color-mix(in srgb,#645bff 8%,var(--surface2)),color-mix(in srgb,#2ea8ff 6%,var(--surface2)));border-radius:13px}
+#modalBody #demoDataDetails .demo-data-actions button{border-radius:11px}
+#modalBody #demoDataDetails .demo-data-footnote strong,#modalBody #demoDataDetails .demo-data-content strong{color:color-mix(in srgb,#8b7bff 80%,var(--text))}
 .demo-day-value{padding:3px 6px!important;margin-top:3px!important;width:max-content;max-width:100%;border-radius:7px;background:linear-gradient(100deg,#7165ff20,#31aaff20)!important;color:color-mix(in srgb,#8b7bff 75%,var(--text))!important;border:1px solid #8b7bff2b}
 .day.demo-day-has-data{background:color-mix(in srgb,#635bff 5%,var(--surface))!important}
-@media(max-width:600px){#demoDataDetails[open]{width:calc(100vw - 16px)!important;max-height:calc(100dvh - 16px)!important;border-radius:18px}#demoDataDetails[open] .demo-data-content{padding:14px 12px 16px}#demoDataDetails[open]>summary{padding:13px 12px}#demoDataDetails[open]>summary::after{display:none}}
+@media(max-width:600px){#modalBody #demoDataDetails .demo-data-content{padding-top:14px}#modalBody #demoDataDetails>summary::after{display:none}}
