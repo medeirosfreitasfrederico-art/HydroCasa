@@ -128,21 +128,21 @@ $('demoClearWeek')?.addEventListener('click',erase);
 $('demoDataStudio')?.querySelectorAll('input,select').forEach(el=>el.addEventListener('input',renderWeekSummary));
 function drawWeeklyCalendar(real){
  const grid=$('calendarGrid');if(!grid)return;
- const active=!!weekly&&!real&&!!(simulation||weekly);
+ const active=!!weekly;
  const now=new Date();now.setHours(0,0,0,0);
  grid.querySelectorAll('.day[data-demo-date]').forEach(cell=>{
   const total=cell.querySelector('.day-total');if(!total)return;
-  if(!cell.dataset.demoOriginalTotal)cell.dataset.demoOriginalTotal=total.textContent;
   const key=cell.dataset.demoDate,parts=key.split('-').map(Number),date=new Date(parts[0],parts[1]-1,parts[2]);date.setHours(0,0,0,0);
   const age=Math.round((now-date)/86400000);
+  let badge=cell.querySelector('.demo-day-value');
   if(active&&age>=0&&age<weekly.days){
    const row=weekly.values[date.getDay()],liters=row[0]+row[1];
-   total.textContent='◈ Demo · '+fmt(liters/1000)+' m³';
-   total.classList.add('demo-day-value');cell.classList.add('demo-day-has-data');
-   cell.title='Demonstração fictícia: Ramal 1 '+fmt(row[0])+' L; Ramal 2 '+fmt(row[1])+' L. Não são medições reais.';
+   if(!badge){badge=document.createElement('span');badge.className='demo-day-value';badge.setAttribute('aria-label','Valor fictício de demonstração');total.insertAdjacentElement('afterend',badge);}
+   badge.textContent='◈ Demo · '+fmt(liters/1000);
+   cell.classList.add('demo-day-has-data');
+   cell.title='Demonstração fictícia: Ramal 1 '+fmt(row[0])+' L; Ramal 2 '+fmt(row[1])+' L. O valor real, se houver, permanece acima.';
   }else{
-   total.textContent=cell.dataset.demoOriginalTotal;
-   total.classList.remove('demo-day-value');cell.classList.remove('demo-day-has-data');cell.removeAttribute('title');
+   badge?.remove();cell.classList.remove('demo-day-has-data');cell.removeAttribute('title');
   }
  });
 }
