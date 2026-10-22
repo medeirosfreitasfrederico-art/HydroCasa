@@ -660,7 +660,7 @@ body:not(.dark) textarea:focus-visible{outline-color:#7c3aed}
 .calendar-form-actions{display:flex;flex-wrap:wrap;gap:10px}
 .calendar-add-form :focus-visible,.calendar-add-toggle:focus-visible{outline:3px solid var(--primary);outline-offset:3px}
 @media(prefers-reduced-motion:reduce){.calendar-add-form *{scroll-behavior:auto}}
-/* Centraliza o símbolo de informação nas dicas das métricas por morador. */
-#dashboard-page .info-tip>summary{box-sizing:border-box;display:flex;align-items:center;justify-content:center;width:26px;height:26px;min-width:26px;padding:0;margin:0;line-height:1;font-size:15px;text-align:center;vertical-align:middle;list-style:none}
+/* Ícone de informação das métricas: círculo e exclamação alinhados explicitamente. */
+#dashboard-page .info-tip>summary{box-sizing:border-box;display:flex;align-items:center;justify-content:center;width:26px;height:26px;min-width:26px;padding:0;margin:0;border:1.5px solid currentColor;border-radius:50%;font-family:Arial,sans-serif;font-size:16px;font-weight:700;line-height:1;letter-spacing:0;text-align:center;list-style:none}
 #dashboard-page .info-tip>summary::-webkit-details-marker{display:none}
 #dashboard-page .info-tip>summary::marker{content:""}
