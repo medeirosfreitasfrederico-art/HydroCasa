@@ -13,3 +13,33 @@
 
 /* Apenas o Painel exibe o acionador do tour. */
 .tour-launch-wrap[hidden]{display:none!important}
+
+/* Editor de dados demonstrativos, isolado do histórico real. */
+.demo-data-studio{margin:14px 0 22px;overflow:hidden;border:1px solid var(--line);border-radius:16px;background:var(--surface)}
+.demo-data-studio[hidden],.demo-data-content[hidden]{display:none!important}
+#demoDataDetails>summary{display:flex;align-items:center;justify-content:space-between;gap:14px;cursor:pointer;list-style:none;padding:18px 20px}
+#demoDataDetails>summary::-webkit-details-marker{display:none}
+#demoDataDetails>summary>span:first-child{display:grid;gap:5px}
+#demoDataDetails>summary strong{font-size:15px;color:var(--text)}
+#demoDataDetails>summary small{font-size:12px;line-height:1.5;color:var(--muted)}
+#demoDataDetails>summary>span:last-child{font-size:22px;color:var(--primary2)}
+#demoDataDetails[open]>summary>span:last-child{transform:rotate(45deg)}
+.demo-data-content{padding:0 20px 20px}
+.demo-data-warning{padding:12px 14px;border:1px dashed var(--primary2);border-radius:10px;font-size:12px;line-height:1.55;color:var(--muted);background:color-mix(in srgb,var(--primary2) 7%,var(--surface))}
+.demo-data-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px 0}
+.demo-data-options label{display:grid;gap:6px;font-size:12px;font-weight:750;color:var(--text)}
+.demo-data-options input,.demo-data-options select,.demo-week-table input{box-sizing:border-box;width:100%;min-width:0;border:1px solid var(--line);border-radius:9px;padding:10px;background:var(--surface2);color:var(--text);font:inherit}
+.demo-week-table{overflow:hidden;border:1px solid var(--line);border-radius:12px}
+.demo-week-heading,.demo-week-table>label{display:grid;grid-template-columns:minmax(115px,1.25fr) minmax(0,1fr) minmax(0,1fr);align-items:center;gap:10px;padding:9px 12px}
+.demo-week-heading{font-size:11px;font-weight:800;color:var(--muted);background:var(--surface2)}
+.demo-week-table>label{border-top:1px solid var(--line);font-size:12px;color:var(--text)}
+.demo-week-table>label:nth-child(even){background:color-mix(in srgb,var(--surface2) 50%,transparent)}
+.demo-week-table input{padding:8px;font-size:12px}
+.demo-week-summary{margin:14px 0;padding:13px 15px;border-radius:11px;background:var(--surface2);font-size:12px;line-height:1.7;color:var(--text)}
+.demo-data-actions{display:flex;flex-wrap:wrap;gap:10px}
+.demo-data-actions button{cursor:pointer}
+.demo-data-footnote{font-size:11px;line-height:1.6;color:var(--muted);margin-bottom:0}
+.demo-day-value{display:block!important;font-size:10px!important;color:var(--primary2)!important;font-weight:800!important;line-height:1.35}
+.day.demo-day-has-data{border-style:dashed!important;border-color:var(--primary2)!important}
+.day.demo-day-has-data .day-total{color:var(--primary2)!important}
+@media(max-width:600px){.demo-data-content{padding:0 12px 14px}.demo-week-heading,.demo-week-table>label{grid-template-columns:minmax(88px,1.1fr) minmax(0,1fr) minmax(0,1fr);gap:6px;padding:8px}.demo-week-table input{padding:7px 4px}.demo-week-heading{font-size:10px}.demo-week-table>label{font-size:11px}.demo-data-options{grid-template-columns:1fr}.demo-data-actions{flex-direction:column}.demo-data-actions button{width:100%}}
