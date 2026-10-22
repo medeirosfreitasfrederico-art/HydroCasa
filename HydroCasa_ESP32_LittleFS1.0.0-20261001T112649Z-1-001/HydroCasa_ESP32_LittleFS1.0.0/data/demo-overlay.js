@@ -237,7 +237,7 @@ if(demoDetails&&modal&&modalBody){
 }
 function drawWeeklyCalendar(real){
  const grid=$('calendarGrid');if(!grid)return;
- const active=!!weekly;
+ const active=!!weekly&&document.body.dataset.demoActive==='true';
  const now=new Date();now.setHours(0,0,0,0);
  grid.querySelectorAll('.day[data-demo-date]').forEach(cell=>{
   const total=cell.querySelector('.day-total');if(!total)return;
