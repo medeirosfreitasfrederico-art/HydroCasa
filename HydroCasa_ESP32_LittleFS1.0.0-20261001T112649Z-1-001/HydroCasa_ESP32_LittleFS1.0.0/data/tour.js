@@ -5,14 +5,14 @@ const steps=[
  {selector:'#connectionBadge',title:'Estado da conexão',description:'Online indica conexão com o sistema. Offline não significa que os dados do simulador sejam medições.'},
  {selector:'#dashboard-page .hero-premium',title:'O que é o HydroCasa',description:'Esta é uma maquete acadêmica: os sensores enviam medições ao ESP32 e o painel apresenta os resultados.'},
  {selector:'#dashboard-page .metrics-grid',title:'Painel de consumo',description:'Estes indicadores pertencem ao monitoramento. O tour não cria nem modifica nenhuma leitura.'},
- {selector:'#tourLaunchWrap',title:'Tour guiado',description:'Você pode iniciar este passo a passo novamente sempre que quiser.'},
  {selector:'#demoDataDetails > summary',title:'Personalizar dados demonstrativos',description:'Este botão abre o editor atual de dados demonstrativos. Clique nele depois de concluir o tour para configurar os consumos semanais, escolher o período e aplicar ou limpar o histórico fictício.'},
  {selector:'#dashboard-page .tabs',title:'Explore o painel',description:'Use as abas para consultar a visão geral, o calendário, análises e configurações.'},
  {selector:'[data-page="consumption"]',title:'Meu consumo',description:'Acompanhe o histórico e as informações disponíveis no navegador.'},
  {selector:'[data-page="simulator"]',title:'Simulador',description:'Escolha o tipo de vazão do chuveiro, ajuste os hábitos e compare estimativas fictícias. Nenhuma dessas informações altera as leituras reais.'},
  {selector:'[data-page="about"]',title:'Sobre nós',description:'Conheça a proposta acadêmica e os objetivos do projeto.'},
  {selector:'[data-page="sources"]',title:'Fontes e estudos',description:'Consulte a origem das referências, a metodologia das comparações e os limites das estimativas. Isso ajuda a interpretar corretamente os resultados.'},
- {selector:'#personalizar',title:'Configurar moradores',description:'Informe quantas pessoas moram na residência e ajuste a abrangência dos sensores e as referências. Essas escolhas não mudam as leituras coletadas.'}
+ {selector:'#personalizar',title:'Configurar moradores',description:'Informe quantas pessoas moram na residência e ajuste a abrangência dos sensores e as referências. Essas escolhas não mudam as leituras coletadas.'},
+ {selector:'#heroTourButton',title:'Tour guiado',description:'Você chegou ao final do tour! Este botão no topo do site permite iniciar o passeio guiado novamente sempre que quiser.'}
 ];
 let index=0,active=false,previousFocus=null,previousOverflow='',highlighted=null;
 const backdrop=document.createElement('div');backdrop.className='hydro-tour-backdrop';backdrop.hidden=true;
