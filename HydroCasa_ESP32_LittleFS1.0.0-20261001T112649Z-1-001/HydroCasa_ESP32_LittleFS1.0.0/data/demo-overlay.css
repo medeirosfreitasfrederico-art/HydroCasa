@@ -31,3 +31,6 @@ body[data-demo-active="true"] #dailyChart{opacity:.2}
 .demo-updated-toast>div{display:grid;gap:4px}.demo-updated-toast strong{font-size:13px}.demo-updated-toast small{font-size:11px;line-height:1.45;color:var(--muted)}
 @media(max-width:600px){.demo-updated-toast{right:12px;bottom:12px}}
 @media(prefers-reduced-motion:reduce){.demo-updated-toast{transition:none}}
+
+body[data-demo-active="true"][data-demo-weekly="true"] #dashboard-page #donut{opacity:1}
+body[data-demo-active="true"][data-demo-weekly="true"] #dashboard-page #donut::after{content:none}
