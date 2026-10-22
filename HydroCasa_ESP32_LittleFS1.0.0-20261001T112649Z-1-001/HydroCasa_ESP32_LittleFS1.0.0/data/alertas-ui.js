@@ -71,10 +71,12 @@ function reconcile(demo,active,now){
 function render(){
  const demo=document.body.dataset.demoActive==='true',list=(demo?demoHistory:history).slice().sort((a,b)=>b.criadoEm-a.criadoEm);
  const snapshot=realData();const day=snapshot?.history?.[snapshot?.today];
- const comparable=!!(snapshot?.online&&snapshot.profile?.scope==='whole'&&snapshot.profile?.referenceLiters>0&&snapshot.profile?.residents>0&&day?.readings>0&&Number.isFinite(day.total1)&&Number.isFinite(day.total2)&&day.total1>=0&&day.total2>=0&&!day.profileMixed);
+ const demo=document.body.dataset.demoActive==='true';
+ let demoConfigured=false;try{const o=JSON.parse(sessionStorage.getItem('hydrocasa:semana-demo')||'null');demoConfigured=!!(o&&o.version===1&&Number.isInteger(o.days)&&o.days>=1&&o.days<=366&&Array.isArray(o.values)&&o.values.length===7);}catch{}
+ const comparable=demo?demoConfigured:!!(snapshot?.online&&snapshot.profile?.scope==='whole'&&snapshot.profile?.referenceLiters>0&&snapshot.profile?.residents>0&&day?.readings>0&&Number.isFinite(day.total1)&&Number.isFinite(day.total2)&&day.total1>=0&&day.total2>=0&&!day.profileMixed);
  const active=list.filter(a=>a.status==='ativo'&&(!a.silenciadoAte||Date.now()>a.silenciadoAte)),isComparable=comparable;
- const empty=isComparable?'Nenhum problema detectado nas condições avaliadas.':'Ainda não há informações suficientes para avaliar o consumo.';
- stateLine.textContent=!snapshot?.online?'Sensor offline — verifique a conexão do ESP32.':!day?.readings?'Conectado, mas ainda sem leituras suficientes.':active.length?'Atenção: há '+active.length+' ocorrência(s) que precisam de verificação.':isComparable?'Consumo dentro dos parâmetros configurados.':'Leituras disponíveis; comparação parcial do dia.';
+ const empty=isComparable?'Nenhum excesso detectado nos dias avaliados.':'Ainda não há informações suficientes para avaliar o consumo.';
+ stateLine.textContent=demo?(active.length?'Demonstração avaliada: '+active.length+' dia(s) acima da referência ilustrativa.':isComparable?'Demonstração avaliada; nenhum dia ultrapassou a referência ilustrativa.':'Configure os dados da demonstração para avaliar o consumo.'):!snapshot?.online?'Sensor offline — verifique a conexão do ESP32.':!day?.readings?'Conectado, mas ainda sem leituras suficientes.':active.length?'Atenção: há '+active.length+' ocorrência(s) que precisam de verificação.':isComparable?'Consumo dentro dos parâmetros configurados.':'Leituras disponíveis; comparação parcial do dia.';
  q('#hydroAlertCount').hidden=active.length===0;q('#hydroAlertCount').textContent=String(active.length);
  bell.setAttribute('aria-label','Abrir alertas: '+active.length+' ativo(s)');
  const preview=q('#alertsTopList');
