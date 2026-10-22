@@ -15,6 +15,7 @@ demoInfoOverlay.className='demo-info-overlay';demoInfoOverlay.hidden=true;
 demoInfoOverlay.innerHTML='<section class="demo-info-dialog" role="dialog" aria-modal="true" aria-labelledby="demoInfoTitle" aria-describedby="demoInfoDescription"><button type="button" class="demo-info-close" aria-label="Fechar aviso" title="Fechar">×</button><span class="demo-info-kicker">HYDROCASA · MODO DEMONSTRAÇÃO</span><h2 id="demoInfoTitle">Estes dados são simulados</h2><p id="demoInfoDescription">As informações exibidas neste momento são fictícias e servem apenas para demonstrar as funções do HydroCasa. Elas não representam o consumo real de uma residência.</p><div class="demo-info-note"><strong>Quer usar o HydroCasa na sua casa?</strong><p>Para acompanhar medições reais, é necessário conectar um ESP32 equipado com sensores de vazão instalados na tubulação e configurar o dispositivo para enviar as leituras ao painel. O ESP32 e o site precisam estar configurados para se comunicar pela rede; dependendo da hospedagem e do navegador, pode ser necessário ajustar a conexão local.</p></div><p class="demo-info-foot">Enquanto a demonstração estiver ativa, considere os números, gráficos e comparações como exemplos — não como medições reais.</p><button type="button" class="primary-btn demo-info-understood">Entendi</button></section>';
 document.body.appendChild(demoInfoOverlay);
 const demoInfoClose=demoInfoOverlay.querySelector('.demo-info-close'),demoInfoOk=demoInfoOverlay.querySelector('.demo-info-understood');
+let demoInfoActivated=false;
 let demoInfoReturnFocus=null;
 function closeDemoInfo(){demoInfoOverlay.hidden=true;document.body.classList.remove('demo-info-open');demoInfoReturnFocus?.focus?.();}
 function openDemoInfo(){demoInfoReturnFocus=document.activeElement;demoInfoOverlay.hidden=false;document.body.classList.add('demo-info-open');demoInfoClose?.focus();}
@@ -48,7 +49,7 @@ function update(){
  const useDemo=!!(simulation||weekly)&&!real;
  source=real?'esp32':useDemo?'simulacao':'nenhuma';
  document.body.dataset.demoActive=useDemo?'true':'false';
- demoInfoButton.hidden=!useDemo;
+ demoInfoButton.hidden=!(useDemo&&demoInfoActivated);
  if(!useDemo&&!demoInfoOverlay.hidden)closeDemoInfo();
  document.body.dataset.demoWeekly=useDemo&&!!weekly?'true':'false';
  notice.hidden=!useDemo;
@@ -97,6 +98,7 @@ function update(){
  if(useDemo&&weekly)wasWeeklyDemo=true;
 }
 function store(v){
+ demoInfoActivated=true;
  simulation=v;weekly=null;
  try{sessionStorage.setItem(KEY,JSON.stringify({version:1,v}));sessionStorage.removeItem(WEEK_KEY);}catch{}
  update();
@@ -159,7 +161,7 @@ function renderWeekSummary(){
 }
 function applyWeek(){
  try{
-  const o=readWeekForm();weekly=o;simulation=null;
+  const o=readWeekForm();demoInfoActivated=true;weekly=o;simulation=null;
   try{sessionStorage.setItem(WEEK_KEY,JSON.stringify(o));sessionStorage.removeItem(KEY);}catch{}
   blockedAfterClear=false;update();renderWeekSummary();showUpdatedPopup();
  }catch(e){const box=$('demoWeekSummary');if(box)box.textContent=e.message;}
