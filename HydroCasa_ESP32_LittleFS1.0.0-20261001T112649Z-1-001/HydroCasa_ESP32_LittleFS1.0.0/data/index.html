@@ -87,6 +87,31 @@
     <div class="connection-controls"><button id="retryConnection" type="button" class="ghost-btn" hidden>Tentar agora</button><details><summary>Como resolver</summary><p>Verifique a energia do ESP32, o Wi-Fi, se ambos estão na mesma rede e o endereço IP do equipamento. Em sites HTTPS, um dispositivo HTTP local pode ser bloqueado pelo navegador.</p></details></div>
   </div>
     <div id="demoNotice" class="demo-notice" hidden role="status" aria-live="polite"><span>◈ Demonstração: dados fictícios de banhos. Conecte o ESP32 para ver medições reais.</span><button type="button" id="demoClear">Limpar demonstração</button><button type="button" id="demoUseReal" hidden>Usar dados do ESP32 agora</button></div>
+  <section id="demoDataStudio" class="demo-data-studio glass-card" aria-labelledby="demoDataTitle">
+    <details id="demoDataDetails">
+      <summary><span><strong id="demoDataTitle">Personalizar dados demonstrativos</strong><small>Defina o consumo de cada dia da semana e visualize um histórico fictício.</small></span><span aria-hidden="true">＋</span></summary>
+      <div class="demo-data-content">
+        <p class="demo-data-warning">Estes valores são apenas para demonstração. Eles não são enviados ao ESP32 nem gravados no histórico real do navegador.</p>
+        <div class="demo-data-options">
+          <label>Moradores <input id="demoResidents" type="number" min="1" max="100" step="1" value="3"></label>
+          <label>Período a exibir <select id="demoPeriod"><option value="7">7 dias</option><option value="14">14 dias</option><option value="30" selected>30 dias</option><option value="90">90 dias</option></select></label>
+        </div>
+        <div class="demo-week-table" role="group" aria-label="Consumo simulado por dia da semana">
+          <div class="demo-week-heading"><span>Dia</span><span>Ramal 1 (L)</span><span>Ramal 2 (L)</span></div>
+          <label><span>Segunda-feira</span><input data-demo-weekday="1" data-demo-ramal="1" type="number" min="0" max="100000" step="10" value="220" aria-label="Segunda-feira, consumo do ramal 1 em litros"><input data-demo-weekday="1" data-demo-ramal="2" type="number" min="0" max="100000" step="10" value="130" aria-label="Segunda-feira, consumo do ramal 2 em litros"></label>
+          <label><span>Terça-feira</span><input data-demo-weekday="2" data-demo-ramal="1" type="number" min="0" max="100000" step="10" value="250" aria-label="Terça-feira, consumo do ramal 1 em litros"><input data-demo-weekday="2" data-demo-ramal="2" type="number" min="0" max="100000" step="10" value="140" aria-label="Terça-feira, consumo do ramal 2 em litros"></label>
+          <label><span>Quarta-feira</span><input data-demo-weekday="3" data-demo-ramal="1" type="number" min="0" max="100000" step="10" value="210" aria-label="Quarta-feira, consumo do ramal 1 em litros"><input data-demo-weekday="3" data-demo-ramal="2" type="number" min="0" max="100000" step="10" value="160" aria-label="Quarta-feira, consumo do ramal 2 em litros"></label>
+          <label><span>Quinta-feira</span><input data-demo-weekday="4" data-demo-ramal="1" type="number" min="0" max="100000" step="10" value="240" aria-label="Quinta-feira, consumo do ramal 1 em litros"><input data-demo-weekday="4" data-demo-ramal="2" type="number" min="0" max="100000" step="10" value="150" aria-label="Quinta-feira, consumo do ramal 2 em litros"></label>
+          <label><span>Sexta-feira</span><input data-demo-weekday="5" data-demo-ramal="1" type="number" min="0" max="100000" step="10" value="280" aria-label="Sexta-feira, consumo do ramal 1 em litros"><input data-demo-weekday="5" data-demo-ramal="2" type="number" min="0" max="100000" step="10" value="180" aria-label="Sexta-feira, consumo do ramal 2 em litros"></label>
+          <label><span>Sábado</span><input data-demo-weekday="6" data-demo-ramal="1" type="number" min="0" max="100000" step="10" value="350" aria-label="Sábado, consumo do ramal 1 em litros"><input data-demo-weekday="6" data-demo-ramal="2" type="number" min="0" max="100000" step="10" value="230" aria-label="Sábado, consumo do ramal 2 em litros"></label>
+          <label><span>Domingo</span><input data-demo-weekday="0" data-demo-ramal="1" type="number" min="0" max="100000" step="10" value="300" aria-label="Domingo, consumo do ramal 1 em litros"><input data-demo-weekday="0" data-demo-ramal="2" type="number" min="0" max="100000" step="10" value="200" aria-label="Domingo, consumo do ramal 2 em litros"></label>
+        </div>
+        <div id="demoWeekSummary" class="demo-week-summary" aria-live="polite">Configure os valores e aplique para visualizar a demonstração.</div>
+        <div class="demo-data-actions"><button id="demoApplyWeek" class="primary-btn" type="button">Aplicar dados simulados</button><button id="demoClearWeek" class="ghost-btn" type="button">Limpar dados simulados</button></div>
+        <p class="demo-data-footnote">O padrão semanal é repetido no período escolhido. Os dias aparecem identificados como demonstração e nunca substituem medições reais.</p>
+      </div>
+    </details>
+  </section>
   <div class="tour-launch-wrap shell tour-inline-access" id="tourLaunchWrap" hidden><button id="openHydroTour" class="tour-launch" type="button" aria-haspopup="dialog"><span aria-hidden="true">✦</span> Conhecer o HydroCasa</button></div>
     <div class="dashboard-shortcuts-area"><span class="eyebrow">ACESSO RÁPIDO</span><p>Escolha o que deseja consultar no painel.</p>    <nav class="tabs dashboard-shortcuts" aria-label="Seções do painel">
       <button class="tab active" data-panel="dashboard">Visão geral</button>
