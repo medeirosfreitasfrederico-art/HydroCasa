@@ -81,3 +81,8 @@
 @media (prefers-reduced-motion: reduce) {
   .page-nav,.tabs,.history-table-scroll { scroll-behavior:auto; }
 }
+
+/* Oculta apenas o aviso 'Sem dados ainda' no cabecalho de celulares. */
+@media (max-width: 540px) {
+  body[data-connection-state="semDados"] #connectionBadge { display: none !important; }
+}
