@@ -344,7 +344,9 @@ function openDayModal(d){
    const activity=M.activities.find(x=>x.id===addForm.elements.activity.value);
    const duration=$("#calendarMinutesLabel"),custom=$("#calendarCustomLabel");
    duration.hidden=!activity?.minutes;addForm.elements.minutes.required=!!activity?.minutes;
+   addForm.elements.quantity.max=activity?.id==="pool"?5:activity?.id==="cleaning"?10:activity?.id==="shower"||activity?.id==="shower-electric"?5:20;
    custom.hidden=activity?.liters!==null;addForm.elements.custom.required=activity?.liters===null;
+   addForm.elements.custom.max=activity?.id==="pool"?"100":activity?.id==="cleaning"?"1":"100";
    if(activity?.minutes)addForm.elements.minutes.value=activity.minutes;
  };
  addToggle.onclick=()=>{addForm.hidden=!addForm.hidden;addToggle.setAttribute("aria-expanded",String(!addForm.hidden));if(!addForm.hidden)addForm.elements.activity.focus();};
@@ -491,6 +493,7 @@ function updateActivityPreview(){
 function selectActivity(){
   const a=M.activities.find(x=>x.id===$("#activitySelect").value);
   $("#quantityLabel").textContent=a.perPerson?"Ocorrências por morador":"Ocorrências da casa";
+  $("#activityQuantity").max=a.id==="pool"?5:a.id==="cleaning"?10: a.id==="shower"||a.id==="shower-electric"?5:20;
   $("#minutesLabel").hidden=!a.minutes;
   $("#activityMinutes").required=!!a.minutes;
   $("#activityMinutes").disabled=!a.minutes;
