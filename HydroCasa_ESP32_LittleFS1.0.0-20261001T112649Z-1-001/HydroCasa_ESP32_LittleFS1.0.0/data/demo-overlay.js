@@ -151,6 +151,19 @@ function syncCustomPeriod(){if(customPeriodWrap)customPeriodWrap.hidden=periodSe
 periodSelect?.addEventListener('change',syncCustomPeriod);
 $('demoDataStudio')?.querySelectorAll('input,select').forEach(el=>el.addEventListener('input',renderWeekSummary));
 syncCustomPeriod();
+// O editor abre como janela modal, sem expandir a página inicial.
+const demoDetails=$('demoDataDetails');
+if(demoDetails){
+ const summary=demoDetails.querySelector(':scope > summary');
+ if(summary&&!summary.querySelector('.demo-modal-close')){
+  const close=document.createElement('button');close.type='button';close.className='demo-modal-close';close.setAttribute('aria-label','Fechar personalização');close.title='Fechar';close.textContent='×';summary.appendChild(close);
+  close.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();demoDetails.open=false;document.body.classList.remove('demo-modal-open');});
+ }
+ const syncModal=()=>{document.body.classList.toggle('demo-modal-open',demoDetails.open);};
+ new MutationObserver(syncModal).observe(demoDetails,{attributes:true,attributeFilter:['open']});
+ document.addEventListener('keydown',event=>{if(event.key==='Escape'&&demoDetails.open){demoDetails.open=false;syncModal();}});
+ document.addEventListener('click',event=>{if(!demoDetails.open)return;const r=demoDetails.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom){demoDetails.open=false;syncModal();}});
+}
 function drawWeeklyCalendar(real){
  const grid=$('calendarGrid');if(!grid)return;
  const active=!!weekly;
