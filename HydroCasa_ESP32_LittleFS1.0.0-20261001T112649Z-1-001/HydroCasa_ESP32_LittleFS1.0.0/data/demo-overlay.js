@@ -171,7 +171,7 @@ if(demoDetails&&modal&&modalBody){
  function closeDemoModal(){
   if(!openedFromDemo)return;
   openedFromDemo=false;
-  modal.classList.remove('open');
+  modal.classList.remove('open','demo-editor-open');
   modal.setAttribute('aria-hidden','true');
   restoreDemoDetails();
  }
@@ -181,7 +181,7 @@ if(demoDetails&&modal&&modalBody){
   openedFromDemo=true;
   demoDetails.open=true;
   modalBody.replaceChildren(demoDetails);
-  modal.classList.add('open');
+  modal.classList.add('open','demo-editor-open');
   modal.setAttribute('aria-hidden','false');
  }
  summary?.addEventListener('click',openDemoModal);
