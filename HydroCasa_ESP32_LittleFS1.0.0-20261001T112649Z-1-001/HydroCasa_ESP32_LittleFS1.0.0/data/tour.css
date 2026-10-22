@@ -67,3 +67,6 @@
 
 /* No editor demonstrativo, manter apenas o X próprio do editor. */
 #modal.demo-editor-open>.modal-box>.modal-close{display:none!important}
+/* O X de fechar aparece somente dentro do modal, nunca no botão de abertura. */
+#demoDataStudio .demo-modal-close{display:none!important}
+#modalBody #demoDataDetails .demo-modal-close{display:inline-flex!important;align-items:center;justify-content:center}
