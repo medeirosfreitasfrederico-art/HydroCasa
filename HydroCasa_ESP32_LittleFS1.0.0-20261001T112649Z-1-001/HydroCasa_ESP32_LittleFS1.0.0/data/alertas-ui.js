@@ -87,7 +87,7 @@ function reconcile(demo,active,now){
  if(changed)persist(demo);
 }
 function render(){
- const demo=document.body.dataset.demoActive==='true',list=(demo?demoHistory:history).slice().sort((a,b)=>b.criadoEm-a.criadoEm);
+ const demo=document.body.dataset.demoActive==='true',list=(demo?demoHistory:history).filter(x=>x.status!=='removido').slice().sort((a,b)=>b.criadoEm-a.criadoEm);
  const snapshot=realData();const day=snapshot?.history?.[snapshot?.today];
  const comparable=!!(snapshot?.online&&snapshot.profile?.scope==='whole'&&snapshot.profile?.referenceLiters>0&&snapshot.profile?.residents>0&&day?.readings>0&&Number.isFinite(day.total1)&&Number.isFinite(day.total2)&&day.total1>=0&&day.total2>=0&&!day.profileMixed);
  const active=list.filter(a=>a.status==='ativo'&&(!a.silenciadoAte||Date.now()>a.silenciadoAte)),isComparable=comparable;
@@ -107,9 +107,9 @@ function render(){
 function handleAlertAction(e){
  const btn=e.target.closest('button[data-alert-action]');if(!btn)return;
  const demo=document.body.dataset.demoActive==='true',list=demo?demoHistory:history,item=list.find(x=>x.id===btn.dataset.alertId);if(!item)return;
- if(btn.dataset.alertAction==='detail'){
-  close();const target=item.tipo==='atividade'?'activities':'dashboard';document.querySelector('.dashboard-shortcuts .tab[data-panel="'+target+'"]')?.click();
-  document.querySelector('#'+target)?.scrollIntoView({block:'start'});return;
+ if(btn.dataset.alertAction==='remove'){
+  // Mantém uma marca persistente para impedir que o tick recrie o alerta ativo.
+  item.status='removido';item.removidoEm=Date.now();persist(demo);render();return;
  }
  item.status=btn.dataset.alertAction==='read'?'lido':'silenciado';if(item.status==='silenciado')item.silenciadoAte=new Date().setHours(23,59,59,999);
  persist(demo);render();
