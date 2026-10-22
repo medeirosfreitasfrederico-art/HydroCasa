@@ -55,3 +55,10 @@
 .alerts-filters select:focus-visible{outline:3px solid var(--primary2);outline-offset:2px}
 .alerts-inline-item .alerts-inline-icon{font-weight:800}
 @media(max-width:540px){.alerts-filters{grid-template-columns:1fr}}
+
+/* Expansao progressiva da lista de alertas apenas no desktop. */
+@media (min-width:701px){
+ #dashboard-page #alertsTopList .alerts-inline-item[hidden]{display:none!important}
+ #dashboard-page .alerts-expand-button:not([hidden]){display:block;margin:12px 0 0 auto;padding:7px 12px;min-height:34px;border-radius:9px;font-size:12px;cursor:pointer}
+}
+#dashboard-page .alerts-expand-button[hidden]{display:none!important}
