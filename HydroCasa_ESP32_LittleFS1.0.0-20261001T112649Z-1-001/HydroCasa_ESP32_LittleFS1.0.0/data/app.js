@@ -282,7 +282,7 @@ function renderCalendar(){
   for(let i=0;i<first;i++) grid.appendChild(document.createElement("div"));
   for(let day=1;day<=days;day++){
     const d=new Date(year,month,day),k=keyForDate(d),el=document.createElement("button");
-    el.className="day";el.type="button";
+    el.className="day";el.type="button";el.dataset.demoDate=k;
     const today=new Date();today.setHours(0,0,0,0);const dd=new Date(d);dd.setHours(0,0,0,0);
     const h=state.history[k],isFuture=dd>today,isPast=dd<today;
     if(isFuture) el.classList.add("future");
