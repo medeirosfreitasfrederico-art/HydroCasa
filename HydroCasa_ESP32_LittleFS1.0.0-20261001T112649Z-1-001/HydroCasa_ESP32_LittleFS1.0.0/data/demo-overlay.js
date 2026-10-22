@@ -40,7 +40,7 @@ function update(){
   for(const [id,fn] of map){
    const p=overlays.get(id);if(!p)continue;
    if(weekly){
-    const custom={todayTotal:fmt(weekDaily),perPersonValue:fmt(weekDaily/weekly.residents),householdTarget:fmt(referenceTotal),comparisonStatus:excessive?'Acima da referência ilustrativa':'Dentro da faixa ilustrativa',sensor1Total:fmt(weekToday[0]),sensor2Total:fmt(weekToday[1]),flow1:fmt(weekToday[0]/1440)+'/min',flow2:fmt(weekToday[1]/1440)+'/min',ratio1:(weekDaily?Math.round(weekToday[0]/weekDaily*100):0)+'%'};
+    const custom={todayTotal:fmt(weekDaily),perPersonValue:fmt(weekDaily/weekly.residents),householdTarget:fmt(referenceTotal),comparisonStatus:excessive?'Acima da referência ilustrativa':'Dentro da faixa ilustrativa',sensor1Total:fmt(weekToday[0]),sensor2Total:fmt(weekToday[1]),flow1:(weekToday[0]/1440).toLocaleString('pt-BR',{maximumFractionDigits:2})+' L/min',flow2:(weekToday[1]/1440).toLocaleString('pt-BR',{maximumFractionDigits:2})+' L/min',ratio1:(weekDaily?Math.round(weekToday[0]/weekDaily*100):0)+'%'};
     p.shown.textContent=custom[id]??'—';
    }else p.shown.textContent=fn(v);
    p.shown.hidden=false;p.node.classList.add('demo-covered');
@@ -48,6 +48,7 @@ function update(){
   if(weekly){
    const setText=(id,value)=>{const node=$(id);if(node)node.textContent=value;};
    setText('split1',fmt(weekToday[0]));setText('split2',fmt(weekToday[1]));
+   const donut=$('donut'),share=weekDaily?Math.round(weekToday[0]/weekDaily*100):0;if(donut){donut.dataset.empty=weekDaily?'false':'true';donut.style.background=weekDaily?`conic-gradient(var(--primary) 0 ${share}%,var(--primary2) ${share}% 100%)`:'var(--line)';}
    setText('targetDetail',profile.residents+' morador(es) × '+fmt(profile.reference)+' por pessoa/dia · '+(profile.mode==='user'?'referência personalizada':'referência histórica SNIS 2020'));
    setText('perPersonDetail','Volume simulado ÷ '+weekly.residents+' morador(es). Não representa consumo individual medido.');
    setText('comparisonDetail',(excessive?'O cenário ultrapassa a referência em '+Math.round((weekDaily/referenceTotal-1)*100)+'%. ':'')+'Comparação ilustrativa com tolerância de '+profile.tolerance+'%; '+(profile.mode==='user'?'hipótese definida no perfil.':'referência histórica, não meta universal.'));
