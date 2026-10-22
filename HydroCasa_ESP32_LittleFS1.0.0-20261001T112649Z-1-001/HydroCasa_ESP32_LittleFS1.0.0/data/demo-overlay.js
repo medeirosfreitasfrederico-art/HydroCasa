@@ -151,18 +151,43 @@ function syncCustomPeriod(){if(customPeriodWrap)customPeriodWrap.hidden=periodSe
 periodSelect?.addEventListener('change',syncCustomPeriod);
 $('demoDataStudio')?.querySelectorAll('input,select').forEach(el=>el.addEventListener('input',renderWeekSummary));
 syncCustomPeriod();
-// O editor abre como janela modal, sem expandir a página inicial.
-const demoDetails=$('demoDataDetails');
-if(demoDetails){
+// Reutiliza a mesma estrutura de modal do detalhamento dos dias do calendário.
+const demoDetails=$('demoDataDetails'),modal=$('modal'),modalBody=$('modalBody'),closeModalButton=$('closeModal'),backdrop=modal?.querySelector('.modal-backdrop');
+if(demoDetails&&modal&&modalBody){
+ const originalParent=demoDetails.parentNode,originalNext=demoDetails.nextSibling;
  const summary=demoDetails.querySelector(':scope > summary');
+ let openedFromDemo=false;
  if(summary&&!summary.querySelector('.demo-modal-close')){
   const close=document.createElement('button');close.type='button';close.className='demo-modal-close';close.setAttribute('aria-label','Fechar personalização');close.title='Fechar';close.textContent='×';summary.appendChild(close);
-  close.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();demoDetails.open=false;document.body.classList.remove('demo-modal-open');});
+  close.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();closeDemoModal();});
  }
- const syncModal=()=>{document.body.classList.toggle('demo-modal-open',demoDetails.open);};
- new MutationObserver(syncModal).observe(demoDetails,{attributes:true,attributeFilter:['open']});
- document.addEventListener('keydown',event=>{if(event.key==='Escape'&&demoDetails.open){demoDetails.open=false;syncModal();}});
- document.addEventListener('click',event=>{if(!demoDetails.open)return;const r=demoDetails.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom){demoDetails.open=false;syncModal();}});
+ function restoreDemoDetails(){
+  if(originalParent&&demoDetails.parentNode!==originalParent){
+   if(originalNext&&originalNext.parentNode===originalParent)originalParent.insertBefore(demoDetails,originalNext);
+   else originalParent.appendChild(demoDetails);
+  }
+  demoDetails.open=false;
+ }
+ function closeDemoModal(){
+  if(!openedFromDemo)return;
+  openedFromDemo=false;
+  modal.classList.remove('open');
+  modal.setAttribute('aria-hidden','true');
+  restoreDemoDetails();
+ }
+ function openDemoModal(event){
+  event?.preventDefault();
+  if(openedFromDemo)return;
+  openedFromDemo=true;
+  demoDetails.open=true;
+  modalBody.replaceChildren(demoDetails);
+  modal.classList.add('open');
+  modal.setAttribute('aria-hidden','false');
+ }
+ summary?.addEventListener('click',openDemoModal);
+ closeModalButton?.addEventListener('click',closeDemoModal);
+ backdrop?.addEventListener('click',closeDemoModal);
+ document.addEventListener('keydown',event=>{if(event.key==='Escape')closeDemoModal();});
 }
 function drawWeeklyCalendar(real){
  const grid=$('calendarGrid');if(!grid)return;
