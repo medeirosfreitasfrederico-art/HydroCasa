@@ -49,11 +49,20 @@
   }
   function estimate(id,{residents,quantity=1,minutes,customLiters}={}){
     const a=activities.find(x=>x.id===id);if(!a)throw new Error("Atividade inválida.");
-    if(!Number.isInteger(quantity)||quantity<1||quantity>100)throw new Error("Informe de 1 a 100 ocorrências inteiras.");
+    const maxQuantity=a.id==="shower"||a.id==="shower-electric"?5:a.id==="pool"?10:20;
+    if(!Number.isInteger(quantity)||quantity<1||quantity>maxQuantity)throw new Error("Informe de 1 a "+maxQuantity+" ocorrência(s) para esta atividade.");
     if(a.perPerson&&(!Number.isInteger(residents)||residents<1||residents>100))throw new Error("Configure a quantidade de moradores.");
     let unit=a.liters;
-    if(unit===null){if(!Number.isFinite(customLiters)||customLiters<=0||customLiters>1000000)throw new Error("Informe o volume de referência da atividade.");unit=customLiters;}
-    if(a.minutes){if(!Number.isFinite(minutes)||minutes<=0||minutes>240)throw new Error("Informe uma duração entre 0 e 240 minutos.");unit*=minutes/a.minutes;}
+    if(unit===null){
+      const maxCustom=a.id==="pool"?100000:a.id==="cleaning"?10000:100000;
+      if(!Number.isFinite(customLiters)||customLiters<=0||customLiters>maxCustom)throw new Error("O volume por ocorrência deve ser maior que zero e até "+(maxCustom/1000).toLocaleString("pt-BR")+" m³ para esta atividade.");
+      unit=customLiters;
+    }
+    if(a.minutes){
+      const maxMinutes=a.id==="shower"||a.id==="shower-electric"?60:a.id==="dishes"?60:a.id==="garden"?60:a.id==="sidewalk"?60:120;
+      if(!Number.isFinite(minutes)||minutes<=0||minutes>maxMinutes)throw new Error("Informe uma duração entre 0 e "+maxMinutes+" minutos para esta atividade.");
+      unit*=minutes/a.minutes;
+    }
     return unit*quantity*(a.perPerson?residents:1);
   }
   function dayProfile(day,current){return day&&day.profile?maybeProfile(day.profile):maybeProfile(current);}
