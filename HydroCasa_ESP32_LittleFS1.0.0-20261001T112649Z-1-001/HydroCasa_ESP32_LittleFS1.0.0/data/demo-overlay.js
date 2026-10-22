@@ -30,6 +30,7 @@ function update(){
  const useDemo=!!(simulation||weekly)&&!real;
  source=real?'esp32':useDemo?'simulacao':'nenhuma';
  document.body.dataset.demoActive=useDemo?'true':'false';
+ document.body.dataset.demoWeekly=useDemo&&!!weekly?'true':'false';
  notice.hidden=!useDemo;
  const weekToday=weekly?.values?.[new Date().getDay()];
  const weekDaily=weekToday?weekToday[0]+weekToday[1]:0;
