@@ -71,12 +71,10 @@ function reconcile(demo,active,now){
 function render(){
  const demo=document.body.dataset.demoActive==='true',list=(demo?demoHistory:history).slice().sort((a,b)=>b.criadoEm-a.criadoEm);
  const snapshot=realData();const day=snapshot?.history?.[snapshot?.today];
- const demo=document.body.dataset.demoActive==='true';
- let demoConfigured=false;try{const o=JSON.parse(sessionStorage.getItem('hydrocasa:semana-demo')||'null');demoConfigured=!!(o&&o.version===1&&Number.isInteger(o.days)&&o.days>=1&&o.days<=366&&Array.isArray(o.values)&&o.values.length===7);}catch{}
- const comparable=demo?demoConfigured:!!(snapshot?.online&&snapshot.profile?.scope==='whole'&&snapshot.profile?.referenceLiters>0&&snapshot.profile?.residents>0&&day?.readings>0&&Number.isFinite(day.total1)&&Number.isFinite(day.total2)&&day.total1>=0&&day.total2>=0&&!day.profileMixed);
+ const comparable=!!(snapshot?.online&&snapshot.profile?.scope==='whole'&&snapshot.profile?.referenceLiters>0&&snapshot.profile?.residents>0&&day?.readings>0&&Number.isFinite(day.total1)&&Number.isFinite(day.total2)&&day.total1>=0&&day.total2>=0&&!day.profileMixed);
  const active=list.filter(a=>a.status==='ativo'&&(!a.silenciadoAte||Date.now()>a.silenciadoAte)),isComparable=comparable;
- const empty=isComparable?'Nenhum excesso detectado nos dias avaliados.':'Ainda não há informações suficientes para avaliar o consumo.';
- stateLine.textContent=demo?(active.length?'Demonstração avaliada: '+active.length+' dia(s) acima da referência ilustrativa.':isComparable?'Demonstração avaliada; nenhum dia ultrapassou a referência ilustrativa.':'Configure os dados da demonstração para avaliar o consumo.'):!snapshot?.online?'Sensor offline — verifique a conexão do ESP32.':!day?.readings?'Conectado, mas ainda sem leituras suficientes.':active.length?'Atenção: há '+active.length+' ocorrência(s) que precisam de verificação.':isComparable?'Consumo dentro dos parâmetros configurados.':'Leituras disponíveis; comparação parcial do dia.';
+ const empty=isComparable?'Nenhum problema detectado nas condições avaliadas.':'Ainda não há informações suficientes para avaliar o consumo.';
+ stateLine.textContent=!snapshot?.online?'Sensor offline — verifique a conexão do ESP32.':!day?.readings?'Conectado, mas ainda sem leituras suficientes.':active.length?'Atenção: há '+active.length+' ocorrência(s) que precisam de verificação.':isComparable?'Consumo dentro dos parâmetros configurados.':'Leituras disponíveis; comparação parcial do dia.';
  q('#hydroAlertCount').hidden=active.length===0;q('#hydroAlertCount').textContent=String(active.length);
  bell.setAttribute('aria-label','Abrir alertas: '+active.length+' ativo(s)');
  const preview=q('#alertsTopList');
@@ -99,42 +97,14 @@ function handleAlertAction(e){
 }
 backdrop.addEventListener('click',handleAlertAction);
 card.addEventListener('click',handleAlertAction);
-function demoConsumptionAlerts(d){
- const alerts=[];
- let weekly;try{weekly=JSON.parse(sessionStorage.getItem('hydrocasa:semana-demo')||'null');}catch{return alerts;}
- if(!weekly||weekly.version!==1||!Number.isInteger(weekly.days)||weekly.days<1||weekly.days>366||!Number.isInteger(weekly.residents)||weekly.residents<1||!Array.isArray(weekly.values)||weekly.values.length!==7)return alerts;
- const mode=q('#referenceMode')?.value||'snis';
- const perPerson=mode==='user'?Number(q('#referenceM3')?.value)*1000:152.1;
- const residents=weekly.residents;
- const tolerance=Math.max(0,Number(q('#toleranceInput')?.value??10)||0);
- if(!Number.isFinite(perPerson)||perPerson<=0)return alerts;
- const limit=perPerson*residents*(1+tolerance/100);
- const now=new Date();now.setHours(12,0,0,0);
- for(let age=0;age<weekly.days;age++){
-  const date=new Date(now);date.setDate(date.getDate()-age);
-  const key=[date.getFullYear(),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0')].join('-');
-  const real=d?.history?.[key];
-  // A simulação nunca substitui nem duplica um dia com leituras reais.
-  if(real&&real.readings>0)continue;
-  const row=weekly.values[date.getDay()];
-  if(!Array.isArray(row)||row.length!==2||!row.every(v=>Number.isFinite(v)&&v>=0))continue;
-  const volume=row[0]+row[1];
-  if(volume<=limit)continue;
-  const pct=Math.round((volume/limit-1)*100);
-  alerts.push({id:'demo-consumo:'+key,tipo:'consumo',nivel:'Acima do padrão',alvo:'Residência · '+key,valor:volume,referencia:limit,diferenca:pct,mensagem:'Demonstração de '+key.split('-').reverse().join('/')+': '+fmt(volume)+' L/dia, '+pct+'% acima da faixa ilustrativa de '+fmt(limit)+' L/dia ('+residents+' morador(es), tolerância de '+tolerance+'%). Valores fictícios, não são medições do ESP32.'});
- }
- return alerts;
-}
 function tick(){
  const d=realData();if(!d)return;
  lastOnline=d.online;
  const demo=document.body.dataset.demoActive==='true';
- // Dados demonstrativos são avaliados separadamente; nunca são apresentados como leituras do ESP32.
- if(demo)reconcile(true,demoConsumptionAlerts(d),Date.now());
- else {
-  const active=HydroAlerts.avaliar(d,d.profile,d.activities);
-  reconcile(false,active,Date.now());
- }
+ // Dados demonstrativos nunca são tratados como sensores.
+ const active=HydroAlerts.avaliar({...d,online:!demo&&d.online},d.profile,d.activities).filter(x=>x.tipo==='atividade'||(!demo&&d.online));
+ // Na demonstração não há avaliação de sensores: nunca transformar suposições em medições.
+ if(!demo){reconcile(false,active,Date.now());}
  // Marcadores apenas visuais nas atividades efetivamente listadas.
  const alertNames=new Set(history.filter(x=>x.status==='ativo'&&x.tipo==='atividade').map(x=>x.alvo));
  document.querySelectorAll('#activityLog .activity-entry').forEach(entry=>{
