@@ -49,6 +49,7 @@
     </a>
     <div class="header-actions">
       <span title="Estado da conexão com o ESP32; abra Sistema para verificar a rede." id="connectionBadge" class="badge offline" role="status" aria-live="polite" aria-atomic="true">◌ Conectando…</span>
+      <button id="hydroAlertBell" class="icon-btn alert-bell" type="button" aria-haspopup="dialog" aria-label="Abrir alertas" title="Alertas do HydroCasa"><span class="hydro-header-icon hydro-header-icon-alert" aria-hidden="true"></span><span id="hydroAlertCount" class="alert-count" hidden>0</span></button>
       <button id="hydroProfileBtn" class="icon-btn" type="button" aria-label="Consultar perfil da residência" aria-haspopup="dialog" title="Perfil da residência"><span class="hydro-header-icon hydro-header-icon-profile" aria-hidden="true"></span></button>
       <button id="themeBtn" class="icon-btn" aria-label="Ativar modo escuro" aria-pressed="false" title="Alternar tema"><span class="theme-sun-symbol" aria-hidden="true">☀</span><span class="theme-moon-symbol" aria-hidden="true">☾</span></button>
     </div>
