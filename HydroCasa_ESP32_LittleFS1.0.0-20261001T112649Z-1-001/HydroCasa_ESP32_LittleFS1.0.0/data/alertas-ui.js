@@ -18,6 +18,24 @@ const quickAccess=q('#dashboard-page .dashboard-shortcuts-area');
 if(quickAccess)quickAccess.after(card);
 else {const dashboard=q('#dashboard .section-heading');if(dashboard)dashboard.after(card);}
 card.setAttribute('aria-label','Situação e avisos do monitoramento');
+/* Expansao progressiva somente na versao desktop, sem alterar os alertas. */
+let alertPreviewVisible=3;
+const alertExpandButton=document.createElement('button');
+alertExpandButton.type='button';
+alertExpandButton.className='ghost-btn alerts-expand-button';
+alertExpandButton.setAttribute('aria-controls','alertsTopList');
+card.querySelector('#alertsTopList').after(alertExpandButton);
+function updateAlertPreviewLimit(){
+ const items=[...card.querySelectorAll('#alertsTopList .alerts-inline-item')];
+ const desktop=window.innerWidth>700;
+ items.forEach((item,i)=>{item.hidden=desktop&&i>=alertPreviewVisible;});
+ const left=Math.max(0,items.length-alertPreviewVisible);
+ alertExpandButton.hidden=!desktop||left===0;
+ alertExpandButton.textContent='Mostrar mais ('+Math.min(3,left)+') ↓';
+ alertExpandButton.setAttribute('aria-label','Exibir mais '+Math.min(3,left)+' alertas');
+}
+alertExpandButton.addEventListener('click',()=>{alertPreviewVisible+=3;updateAlertPreviewLimit();});
+window.addEventListener('resize',updateAlertPreviewLimit);
 const stateLine=document.createElement('p');stateLine.className='alerts-state-line';stateLine.setAttribute('role','status');stateLine.setAttribute('aria-live','polite');card.querySelector('.alerts-heading').after(stateLine);
 const filters=document.createElement('form');filters.className='alerts-filters';filters.setAttribute('aria-label','Filtros do histórico de alertas');
 filters.innerHTML='<label>De <input type="date" id="alertDateFrom"></label><label>Até <input type="date" id="alertDateTo"></label><label>Gravidade <select id="alertSeverity"><option value="all">Todas</option><option value="Crítico">Críticos</option><option value="Moderado">Moderados</option><option value="Leve">Leves</option><option value="Acima do padrão">Outros acima do padrão</option><option value="Atenção">Atenção</option><option value="Informativo">Informativo</option></select></label><label>Situação <select id="alertState"><option value="all">Todas</option><option value="ativo">Ativos</option><option value="lido">Lidos</option><option value="silenciado">Silenciados</option><option value="resolvido">Resolvidos</option></select></label>';
@@ -81,6 +99,7 @@ function render(){
  const priority={'Acima do padrão':0,'Atenção':1,'Informativo':2};
  const ordered=active.slice().sort((a,b)=>(priority[a.nivel]??3)-(priority[b.nivel]??3)||b.criadoEm-a.criadoEm);
  preview.innerHTML=ordered.length?ordered.map(x=>'<article class="alerts-inline-item" data-level="'+esc(x.nivel)+'"><div class="alerts-inline-icon" aria-hidden="true">'+(levels[x.nivel]||'ℹ')+'</div><div class="alerts-inline-body"><div class="alerts-inline-meta"><strong>'+esc(x.nivel)+'</strong><time>'+fmtDate(x.criadoEm)+'</time></div><p>'+esc(x.mensagem)+'</p><div class="alerts-inline-actions"><button type="button" data-alert-action="detail" data-alert-id="'+esc(x.id)+'">Ver detalhes</button><button type="button" data-alert-action="read" data-alert-id="'+esc(x.id)+'">Entendi</button><button type="button" data-alert-action="mute" data-alert-id="'+esc(x.id)+'">Silenciar hoje</button></div></div></article>').join(''):'<p class="alerts-inline-empty">'+esc(empty)+'</p>';
+ updateAlertPreviewLimit();
  const from=q('#alertDateFrom')?.value||'',to=q('#alertDateTo')?.value||'',severity=q('#alertSeverity')?.value||'all',status=q('#alertState')?.value||'all';
  const filtered=list.filter(x=>{const day=x.dataOcorrencia||(Number.isFinite(x.criadoEm)?new Date(x.criadoEm).toLocaleDateString('en-CA'):new Date().toLocaleDateString('en-CA'));return (!from||day>=from)&&(!to||day<=to)&&(severity==='all'||x.nivel===severity)&&(status==='all'||x.status===status)});
  const box=q('#alertsList');box.innerHTML=filtered.length?filtered.map(x=>'<article class="alert-entry" data-level="'+esc(x.nivel)+'"><span class="alert-level">'+(levels[x.nivel]||'ℹ')+' '+esc(x.nivel)+(demo?' · Demonstração':'')+'</span><p>'+esc(x.mensagem)+'</p><p class="alerts-guidance"><strong>Por que importa:</strong> '+esc(why(x)[0])+'</p><p class="alerts-guidance"><strong>O que verificar:</strong> '+esc(why(x)[1])+'</p><small>'+fmtDate(x.criadoEm)+' · '+esc(x.status)+'</small><div class="alert-actions">'+(x.status==='ativo'?'<button type="button" data-alert-action="read" data-alert-id="'+esc(x.id)+'">Entendi</button><button type="button" data-alert-action="mute" data-alert-id="'+esc(x.id)+'">Silenciar por hoje</button>':'')+'<button type="button" data-alert-action="detail" data-alert-id="'+esc(x.id)+'">Ver detalhe</button></div></article>').join(''):'<p>'+empty+'</p>';
