@@ -1,5 +1,7 @@
 # 💧 HydroCasa
 
+> **Navegação do repositório:** [Estrutura das pastas, nomes das páginas e responsabilidades](docs/ESTRUTURA_DO_PROJETO.md).
+
 ### Sistema inteligente de monitoramento do consumo residencial de água
 
 O **HydroCasa** é um projeto de IoT desenvolvido para monitorar o consumo de água em ambientes residenciais utilizando sensores de fluxo e um **ESP32**.
