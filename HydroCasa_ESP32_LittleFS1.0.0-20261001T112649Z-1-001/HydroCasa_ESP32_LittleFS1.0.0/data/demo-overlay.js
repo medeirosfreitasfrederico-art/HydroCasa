@@ -161,7 +161,16 @@ function renderWeekSummary(){
 }
 function applyWeek(){
  try{
-  const o=readWeekForm();demoInfoActivated=true;weekly=o;simulation=null;
+  const o=readWeekForm();
+  // A quantidade usada na demonstração também passa a ser o perfil ativo da residência.
+  // Reutiliza o fluxo existente do formulário para persistir o perfil sem tocar no histórico real.
+  const residentsInput=$('residentsInput'),householdForm=$('householdForm');
+  if(residentsInput&&householdForm){
+   residentsInput.value=String(o.residents);
+   residentsInput.dispatchEvent(new Event('input',{bubbles:true}));
+   householdForm.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));
+  }
+  demoInfoActivated=true;weekly=o;simulation=null;
   try{sessionStorage.setItem(WEEK_KEY,JSON.stringify(o));sessionStorage.removeItem(KEY);}catch{}
   blockedAfterClear=false;update();renderWeekSummary();showUpdatedPopup();
  }catch(e){const box=$('demoWeekSummary');if(box)box.textContent=e.message;}
