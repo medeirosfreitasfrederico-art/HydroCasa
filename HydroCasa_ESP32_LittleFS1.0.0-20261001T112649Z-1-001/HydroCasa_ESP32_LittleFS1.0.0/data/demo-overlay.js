@@ -8,7 +8,7 @@ const frame=$('simulatorFrame'),notice=$('demoNotice'),clear=$('demoClear');
 const limits=[[1,10],[1,30],[1,4],[3,20],[7,365]];
 let simulation=null,weekly=null,source='nenhuma',hadReal=false,prompted=false,dialog=null,blockedAfterClear=false,wasWeeklyDemo=false;
 const valid=v=>Array.isArray(v)&&v.length===5&&v.every((n,i)=>typeof n==='number'&&Number.isFinite(n)&&n>=limits[i][0]&&n<=limits[i][1])&&[7,30,365].includes(v[4]);
-const validWeekly=o=>!!o&&o.version===1&&Number.isInteger(o.residents)&&o.residents>=1&&o.residents<=100&&[7,14,30,90].includes(o.days)&&Array.isArray(o.values)&&o.values.length===7&&o.values.every(d=>Array.isArray(d)&&d.length===2&&d.every(n=>Number.isFinite(n)&&n>=0&&n<=100000));
+const validWeekly=o=>!!o&&o.version===1&&Number.isInteger(o.residents)&&o.residents>=1&&o.residents<=100&&Number.isInteger(o.days)&&o.days>=1&&o.days<=366&&Array.isArray(o.values)&&o.values.length===7&&o.values.every(d=>Array.isArray(d)&&d.length===2&&d.every(n=>Number.isFinite(n)&&n>=0&&n<=100000));
 function hasRealHistory(){
  try{
   const raw=localStorage.getItem('hydrocasa_ledger_v2'),ledger=raw?JSON.parse(raw):null;
@@ -91,6 +91,8 @@ function erase(){
  form?.querySelectorAll('[data-demo-weekday]').forEach(input=>input.value='0');
  if($('demoResidents'))$('demoResidents').value='1';
  if($('demoPeriod'))$('demoPeriod').value='7';
+ if($('demoCustomPeriod'))$('demoCustomPeriod').value='14';
+ if($('demoCustomPeriodWrap'))$('demoCustomPeriodWrap').hidden=true;
  renderWeekSummary();
  drawWeeklyCalendar(false);
 }
@@ -121,10 +123,10 @@ window.addEventListener('message',event=>{
 clear?.addEventListener('click',erase);
 $('demoUseReal')?.addEventListener('click',()=>erase());
 function readWeekForm(){
- const residents=Number($('demoResidents')?.value),days=Number($('demoPeriod')?.value);
+ const residents=Number($('demoResidents')?.value),periodValue=$('demoPeriod')?.value,days=periodValue==='custom'?Number($('demoCustomPeriod')?.value):Number(periodValue);
  const values=Array.from({length:7},(_,day)=>[1,2].map(r=>Number(document.querySelector('[data-demo-weekday="'+day+'"][data-demo-ramal="'+r+'"]')?.value)));
  if(!Number.isInteger(residents)||residents<1||residents>100)throw Error('Informe de 1 a 100 moradores.');
- if(![7,14,30,90].includes(days))throw Error('Escolha um período válido.');
+ if(!Number.isInteger(days)||days<1||days>366)throw Error('Escolha de 1 a 366 dias para a demonstração.');
  if(values.some(row=>row.some(v=>!Number.isFinite(v)||v<0||v>100000)))throw Error('Cada ramal deve ficar entre 0 e 100.000 litros por dia.');
  return {version:1,residents,days,values};
 }
@@ -144,7 +146,11 @@ function applyWeek(){
 }
 $('demoApplyWeek')?.addEventListener('click',applyWeek);
 $('demoClearWeek')?.addEventListener('click',erase);
+const customPeriodWrap=$('demoCustomPeriodWrap'),periodSelect=$('demoPeriod');
+function syncCustomPeriod(){if(customPeriodWrap)customPeriodWrap.hidden=periodSelect?.value!=='custom';renderWeekSummary();}
+periodSelect?.addEventListener('change',syncCustomPeriod);
 $('demoDataStudio')?.querySelectorAll('input,select').forEach(el=>el.addEventListener('input',renderWeekSummary));
+syncCustomPeriod();
 function drawWeeklyCalendar(real){
  const grid=$('calendarGrid');if(!grid)return;
  const active=!!weekly;
