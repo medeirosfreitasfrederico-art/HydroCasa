@@ -64,3 +64,6 @@
 .demo-day-value{padding:3px 6px!important;margin-top:3px!important;width:max-content;max-width:100%;border-radius:7px;background:linear-gradient(100deg,#7165ff20,#31aaff20)!important;color:color-mix(in srgb,#8b7bff 75%,var(--text))!important;border:1px solid #8b7bff2b}
 .day.demo-day-has-data{background:color-mix(in srgb,#635bff 5%,var(--surface))!important}
 @media(max-width:600px){#modalBody #demoDataDetails .demo-data-content{padding-top:14px}#modalBody #demoDataDetails>summary::after{display:none}}
+
+/* No editor demonstrativo, manter apenas o X próprio do editor. */
+#modal.demo-editor-open>.modal-box>.modal-close{display:none!important}
