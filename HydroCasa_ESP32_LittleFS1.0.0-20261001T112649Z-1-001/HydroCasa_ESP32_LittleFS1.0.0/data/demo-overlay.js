@@ -44,6 +44,29 @@ function showUpdatedPopup(){let toast=$('demoUpdatedToast');if(!toast){toast=doc
 let popupTimer=null;
 const reportIds=['rawAnalysis','justifiedValue','contextualValue','analysisBars'];
 const reportOriginals=new Map(reportIds.map(id=>[id,$(id)]).filter(x=>x[1]).map(([id,node])=>[id,{node,html:node.innerHTML,className:node.className}]));
+function drawDemoChart(){
+ const canvas=$('dailyChart');if(!canvas||document.body.dataset.demoActive!=='true'||(!weekly&&!simulation))return;
+ const ctx=canvas.getContext('2d'),rect=canvas.getBoundingClientRect(),ratio=window.devicePixelRatio||1;
+ if(!rect.width)return;
+ canvas.width=rect.width*ratio;canvas.height=190*ratio;ctx.setTransform(ratio,0,0,ratio,0,0);
+ const w=rect.width,h=190,left=34,right=10,top=14,bottom=28,pw=w-left-right,ph=h-top-bottom;
+ ctx.clearRect(0,0,w,h);
+ const now=new Date(),labels=[],vals=[];
+ for(let i=6;i>=0;i--){
+  const d=new Date(now);d.setHours(0,0,0,0);d.setDate(now.getDate()-i);labels.push(d.toLocaleDateString('pt-BR',{weekday:'short'}).replace('.',''));
+  if(weekly){const row=weekly.values[d.getDay()];vals.push(row[0]+row[1]);}
+  else vals.push(simulation[0]*simulation[1]*simulation[2]*simulation[3]);
+ }
+ const max=Math.max(10,...vals),line=getComputedStyle(document.body).getPropertyValue('--line').trim(),primary=getComputedStyle(document.body).getPropertyValue('--primary').trim(),secondary=getComputedStyle(document.body).getPropertyValue('--primary2').trim();
+ ctx.font='10px system-ui';ctx.textAlign='right';ctx.textBaseline='middle';ctx.strokeStyle=line;ctx.fillStyle=getComputedStyle(document.body).getPropertyValue('--muted').trim()||'#777';ctx.lineWidth=1;
+ for(let i=0;i<=3;i++){const y=top+ph*i/3;ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(w-right,y);ctx.stroke();ctx.fillText((max*(1-i/3)/1000).toLocaleString('pt-BR',{maximumFractionDigits:2}),left-5,y);}
+ ctx.textAlign='center';ctx.textBaseline='top';
+ labels.forEach((label,i)=>ctx.fillText(label,left+i*pw/6,top+ph+7));
+ ctx.beginPath();vals.forEach((v,i)=>{const x=left+i*pw/6,y=top+ph-(v/max)*ph;i?ctx.lineTo(x,y):ctx.moveTo(x,y);});
+ ctx.strokeStyle=primary;ctx.lineWidth=2.5;ctx.stroke();
+ vals.forEach((v,i)=>{const x=left+i*pw/6,y=top+ph-(v/max)*ph;ctx.beginPath();ctx.arc(x,y,3.5,0,Math.PI*2);ctx.fillStyle=secondary||primary;ctx.fill();});
+}
+window.drawHydroCasaDemoChart=drawDemoChart;
 function updateDemoReport(useDemo){
  if(!useDemo){for(const item of reportOriginals.values()){item.node.innerHTML=item.html;item.node.className=item.className;}return;}
  const row=weekly?.values?.[new Date().getDay()];
@@ -95,6 +118,7 @@ function update(){
   if(label)label.textContent=weekly?'◈ Demonstração: padrão semanal personalizado. Valores fictícios, sem alterar as medições reais.':'◈ Demonstração: dados fictícios de banhos. Conecte o ESP32 para ver medições reais.';
  }else for(const {node,shown} of overlays.values()){node.classList.remove('demo-covered');shown.hidden=true;}
  updateDemoReport(useDemo);
+ if(useDemo)drawDemoChart();
  const chart=$('dailyChart');
  if(chart)chart.parentElement.classList.toggle('demo-chart-empty',useDemo);
  const estimated=$('demoRecentPreview');
@@ -247,7 +271,7 @@ function drawWeeklyCalendar(real){
   if(active&&age>=0&&age<weekly.days){
    const row=weekly.values[date.getDay()],liters=row[0]+row[1];
    if(!badge){badge=document.createElement('span');badge.className='demo-day-value';badge.setAttribute('aria-label','Valor fictício de demonstração');total.insertAdjacentElement('afterend',badge);}
-   badge.textContent='◈ Demo · '+fmt(liters/1000);
+   badge.textContent='◈ Demo · '+fmt(liters);
    cell.classList.add('demo-day-has-data');
    cell.title='Demonstração fictícia: Ramal 1 '+fmt(row[0])+' L; Ramal 2 '+fmt(row[1])+' L. O valor real, se houver, permanece acima.';
   }else{
