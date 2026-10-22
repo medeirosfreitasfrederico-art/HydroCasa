@@ -33,7 +33,7 @@ function update(){
   for(const [id,fn] of map){
    const p=overlays.get(id);if(!p)continue;
    if(weekly){
-    const custom={todayTotal:fmt(weekDaily)+' L',perPersonValue:fmt(weekDaily/weekly.residents)+' L',householdTarget:'—',comparisonStatus:'Padrão semanal simulado',sensor1Total:'—',sensor2Total:'—',flow1:'—',flow2:'—',ratio1:'—'};
+    const custom={todayTotal:fmt(weekDaily),perPersonValue:fmt(weekDaily/weekly.residents),householdTarget:'—',comparisonStatus:'Padrão semanal simulado',sensor1Total:'—',sensor2Total:'—',flow1:'—',flow2:'—',ratio1:'—'};
     p.shown.textContent=custom[id]??'—';
    }else p.shown.textContent=fn(v);
    p.shown.hidden=false;p.node.classList.add('demo-covered');
@@ -113,7 +113,7 @@ function renderWeekSummary(){
  const box=$('demoWeekSummary');if(!box)return;
  try{
   const o=readWeekForm(),week=o.values.reduce((s,v)=>s+v[0]+v[1],0),daily=week/7;
-  box.textContent='Padrão semanal: '+fmt(week)+' L · média diária: '+fmt(daily)+' L · período de '+o.days+' dias: aproximadamente '+fmt(daily*o.days)+' L ('+fmt(daily*o.days/1000)+' m³).';
+  box.textContent='Padrão semanal: '+week.toLocaleString('pt-BR',{maximumFractionDigits:1})+' L · média diária: '+daily.toLocaleString('pt-BR',{maximumFractionDigits:1})+' L · período de '+o.days+' dias: aproximadamente '+(daily*o.days).toLocaleString('pt-BR',{maximumFractionDigits:1})+' L ('+fmt(daily*o.days)+' no total).';
  }catch(e){box.textContent=e.message;}
 }
 function applyWeek(){
@@ -148,7 +148,7 @@ function drawWeeklyCalendar(real){
 }
 renderWeekSummary();
 const calendarGrid=$('calendarGrid');
-if(calendarGrid)new MutationObserver(()=>drawWeeklyCalendar(hasRealHistory()||isRealOnline())).observe(calendarGrid,{childList:true,subtree:true});
+if(calendarGrid)new MutationObserver(()=>drawWeeklyCalendar(hasRealHistory()||isRealOnline())).observe(calendarGrid,{childList:true});
 
 frame?.addEventListener('load',()=>{blockedAfterClear=false;});
 new MutationObserver(watch).observe(document.body,{attributes:true,attributeFilter:['data-connection-state']});
