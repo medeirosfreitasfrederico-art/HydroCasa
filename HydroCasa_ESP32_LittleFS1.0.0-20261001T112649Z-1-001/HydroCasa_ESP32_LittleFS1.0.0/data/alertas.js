@@ -25,7 +25,7 @@ function consumoDiario(d,p){
  const day=d.today, h=d.history?.[day];if(!h||!(h.readings>0)||!Number.isFinite(h.total1)||!Number.isFinite(h.total2)||h.total1<0||h.total2<0)return null;
  const base=p.referenceLiters*p.residents,threshold=base*(1+Math.max(C.dailyTolerancePercent,Number(p.tolerance)||0)/100),volume=h.total1+h.total2;
  if(volume<=threshold)return null;
- return result('consumo:'+day,'sensor','Acima do padrão','Residência',volume,threshold,'Consumo de '+fmt(volume)+' L, '+fmt((volume/threshold-1)*100)+'% acima da faixa de '+fmt(threshold)+' L para '+p.residents+' moradores. Confira os ramais.');
+ return result('consumo:'+day,'sensor','Acima do padrão','Residência',volume,threshold,(h.partial?'Até o momento, o volume registrado é ':'Consumo registrado de ')+fmt(volume)+' L, '+fmt((volume/threshold-1)*100)+'% acima da faixa de '+fmt(threshold)+' L para '+p.residents+' moradores.'+(h.partial?' A coleta do dia ainda é parcial.':'')+' Confira os ramais.');
 }
 function fluxoContinuo(d){
  if(!d.online||!Array.isArray(d.observations))return [];
