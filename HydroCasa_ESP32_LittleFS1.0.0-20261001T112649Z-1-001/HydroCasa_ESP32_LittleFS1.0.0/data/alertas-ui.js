@@ -97,14 +97,42 @@ function handleAlertAction(e){
 }
 backdrop.addEventListener('click',handleAlertAction);
 card.addEventListener('click',handleAlertAction);
+function demoConsumptionAlerts(d){
+ const alerts=[];
+ let weekly;try{weekly=JSON.parse(sessionStorage.getItem('hydrocasa:semana-demo')||'null');}catch{return alerts;}
+ if(!weekly||weekly.version!==1||!Number.isInteger(weekly.days)||weekly.days<1||weekly.days>366||!Number.isInteger(weekly.residents)||weekly.residents<1||!Array.isArray(weekly.values)||weekly.values.length!==7)return alerts;
+ const mode=q('#referenceMode')?.value||'snis';
+ const perPerson=mode==='user'?Number(q('#referenceM3')?.value)*1000:152.1;
+ const residents=weekly.residents;
+ const tolerance=Math.max(0,Number(q('#toleranceInput')?.value??10)||0);
+ if(!Number.isFinite(perPerson)||perPerson<=0)return alerts;
+ const limit=perPerson*residents*(1+tolerance/100);
+ const now=new Date();now.setHours(12,0,0,0);
+ for(let age=0;age<weekly.days;age++){
+  const date=new Date(now);date.setDate(date.getDate()-age);
+  const key=[date.getFullYear(),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0')].join('-');
+  const real=d?.history?.[key];
+  // A simulação nunca substitui nem duplica um dia com leituras reais.
+  if(real&&real.readings>0)continue;
+  const row=weekly.values[date.getDay()];
+  if(!Array.isArray(row)||row.length!==2||!row.every(v=>Number.isFinite(v)&&v>=0))continue;
+  const volume=row[0]+row[1];
+  if(volume<=limit)continue;
+  const pct=Math.round((volume/limit-1)*100);
+  alerts.push({id:'demo-consumo:'+key,tipo:'consumo',nivel:'Acima do padrão',alvo:'Residência · '+key,valor:volume,referencia:limit,diferenca:pct,mensagem:'Demonstração de '+key.split('-').reverse().join('/')+': '+fmt(volume)+' L/dia, '+pct+'% acima da faixa ilustrativa de '+fmt(limit)+' L/dia ('+residents+' morador(es), tolerância de '+tolerance+'%). Valores fictícios, não são medições do ESP32.'});
+ }
+ return alerts;
+}
 function tick(){
  const d=realData();if(!d)return;
  lastOnline=d.online;
  const demo=document.body.dataset.demoActive==='true';
- // Dados demonstrativos nunca são tratados como sensores.
- const active=HydroAlerts.avaliar({...d,online:!demo&&d.online},d.profile,d.activities).filter(x=>x.tipo==='atividade'||(!demo&&d.online));
- // Na demonstração não há avaliação de sensores: nunca transformar suposições em medições.
- if(!demo){reconcile(false,active,Date.now());}
+ // Dados demonstrativos são avaliados separadamente; nunca são apresentados como leituras do ESP32.
+ if(demo)reconcile(true,demoConsumptionAlerts(d),Date.now());
+ else {
+  const active=HydroAlerts.avaliar(d,d.profile,d.activities);
+  reconcile(false,active,Date.now());
+ }
  // Marcadores apenas visuais nas atividades efetivamente listadas.
  const alertNames=new Set(history.filter(x=>x.status==='ativo'&&x.tipo==='atividade').map(x=>x.alvo));
  document.querySelectorAll('#activityLog .activity-entry').forEach(entry=>{
