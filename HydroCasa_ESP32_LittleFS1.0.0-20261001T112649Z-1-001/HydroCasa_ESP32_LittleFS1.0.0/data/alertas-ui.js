@@ -12,6 +12,10 @@ history=safeRead(localStorage,key);demoHistory=safeRead(sessionStorage,demoKey);
 const readRemoved=(storage,k)=>{try{const v=JSON.parse(storage.getItem(k)||'[]');return new Set(Array.isArray(v)?v.filter(x=>typeof x==='string').slice(-2000):[])}catch{return new Set()}};
 const removedReal=readRemoved(localStorage,removedKey),removedDemo=readRemoved(sessionStorage,demoRemovedKey);
 const removedSet=demo=>demo?removedDemo:removedReal;
+// A exclusão bloqueia apenas a mesma versão do alerta. Se o valor/referência mudar,
+// uma nova ocorrência pode ser mostrada normalmente.
+const alertSignature=a=>String(a.id)+'|'+String(a.valor??'')+'|'+String(a.referencia??'')+'|'+String(a.mensagem??'');
+const isRemoved=(demo,a)=>removedSet(demo).has(alertSignature(a));
 const persistRemoved=demo=>{try{(demo?sessionStorage:localStorage).setItem(demo?demoRemovedKey:removedKey,JSON.stringify([...removedSet(demo)].slice(-2000)))}catch{}};
 // Carrega separadamente as exclusões: elas não podem desaparecer quando o histórico atingir seu limite.
 try{const v=JSON.parse(localStorage.getItem(removedKey)||'[]');if(Array.isArray(v))v.filter(x=>typeof x==='string').slice(-2000).forEach(x=>removedReal.add(x))}catch{}
@@ -79,7 +83,7 @@ function reconcile(demo,active,now){
  const list=demo?demoHistory:history,found=new Set(active.map(a=>a.id));let changed=false;
  for(const a of active){
   // Exclusões ficam num registro separado e prevalecem sobre qualquer reconciliação automática.
-  if(removedSet(demo).has(a.id))continue;
+  if(isRemoved(demo,a))continue;
   let item=list.find(x=>x.id===a.id&&x.status!=='resolvido');
   if(item){item.valor=a.valor;item.referencia=a.referencia;item.diferenca=a.diferenca;item.nivel=a.nivel;item.dataOcorrencia=a.dataOcorrencia||item.dataOcorrencia;item.mensagem=a.mensagem;continue;}
   let recent=list.find(x=>x.id===a.id&&now-x.criadoEm<HydroAlertConfig.repeatMinutes*60000);
@@ -96,7 +100,7 @@ function reconcile(demo,active,now){
  if(changed)persist(demo);
 }
 function render(){
- const demo=document.body.dataset.demoActive==='true',removed=removedSet(demo),list=(demo?demoHistory:history).filter(x=>x.status!=='removido'&&!removed.has(x.id)).slice().sort((a,b)=>b.criadoEm-a.criadoEm);
+ const demo=document.body.dataset.demoActive==='true',removed=removedSet(demo),list=(demo?demoHistory:history).filter(x=>x.status!=='removido'&&!isRemoved(demo,x)).slice().sort((a,b)=>b.criadoEm-a.criadoEm);
  const snapshot=realData();const day=snapshot?.history?.[snapshot?.today];
  const comparable=!!(snapshot?.online&&snapshot.profile?.scope==='whole'&&snapshot.profile?.referenceLiters>0&&snapshot.profile?.residents>0&&day?.readings>0&&Number.isFinite(day.total1)&&Number.isFinite(day.total2)&&day.total1>=0&&day.total2>=0&&!day.profileMixed);
  const active=list.filter(a=>a.status==='ativo'&&(!a.silenciadoAte||Date.now()>a.silenciadoAte)),isComparable=comparable;
@@ -118,7 +122,7 @@ function handleAlertAction(e){
  const demo=document.body.dataset.demoActive==='true',list=demo?demoHistory:history,item=list.find(x=>x.id===btn.dataset.alertId);if(!item)return;
  if(btn.dataset.alertAction==='remove'){
   // Mantém uma marca persistente para impedir que o tick recrie o alerta ativo.
-  item.status='removido';item.removidoEm=Date.now();removedSet(demo).add(item.id);persistRemoved(demo);persist(demo);render();return;
+  item.status='removido';item.removidoEm=Date.now();removedSet(demo).add(alertSignature(item));persistRemoved(demo);persist(demo);render();return;
  }
  item.status=btn.dataset.alertAction==='read'?'lido':'silenciado';if(item.status==='silenciado')item.silenciadoAte=new Date().setHours(23,59,59,999);
  persist(demo);render();
