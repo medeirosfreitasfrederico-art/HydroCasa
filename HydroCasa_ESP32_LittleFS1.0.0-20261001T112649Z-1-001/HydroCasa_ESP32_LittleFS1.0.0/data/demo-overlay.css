@@ -34,3 +34,9 @@ body[data-demo-active="true"] #dailyChart{opacity:.2}
 
 body[data-demo-active="true"][data-demo-weekly="true"] #dashboard-page #donut{opacity:1}
 body[data-demo-active="true"][data-demo-weekly="true"] #dashboard-page #donut::after{content:none}
+
+/* Dias de demonstração no histórico: visualmente distintos das leituras do ESP32. */
+.history-demo-row{background:color-mix(in srgb,var(--primary) 7%,transparent)}
+.history-demo-row th:first-child::after{content:' ◈';color:var(--primary);font-size:.8em}
+.history-demo-row td:nth-child(5){color:var(--primary);font-weight:650}
+#demoCustomPeriodWrap[hidden]{display:none!important}
