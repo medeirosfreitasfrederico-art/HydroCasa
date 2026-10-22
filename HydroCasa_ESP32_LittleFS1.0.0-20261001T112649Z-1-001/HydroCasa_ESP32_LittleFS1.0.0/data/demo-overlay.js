@@ -18,6 +18,11 @@ function hasRealHistory(){
 function isRealOnline(){return document.body.dataset.connectionState==='online'&&$('statusDetail')?.textContent.includes('Última leitura');}
 function fmt(l){return (l/1000).toLocaleString('pt-BR',{minimumFractionDigits:3,maximumFractionDigits:3})+' m³';}
 const map=[['todayTotal',v=>fmt(v[0]*v[1]*v[2]*v[3])],['perPersonValue',v=>fmt(v[1]*v[2]*v[3])],['householdTarget',v=>'—'],['comparisonStatus',v=>'Apenas cenário de banhos'],['sensor1Total',v=>'—'],['sensor2Total',v=>'—'],['flow1',v=>'—'],['flow2',v=>'—'],['ratio1',v=>'—']];
+const directIds=['split1','split2','targetDetail','perPersonDetail','comparisonDetail','alertContent'];
+const directOriginals=new Map(directIds.map(id=>[id,$(id)]).filter(x=>x[1]).map(([id,node])=>[id,{node,text:node.textContent,className:node.className}]));
+function demoProfile(residents){const mode=$('referenceMode')?.value||'snis';const ref=mode==='user'?Number($('referenceM3')?.value)*1000:152.1;const people=Number(residents||$('residentsInput')?.value||3);const tolerance=Number($('toleranceInput')?.value??10);return {residents:Number.isInteger(people)&&people>0?people:3,reference:Number.isFinite(ref)&&ref>0?ref:152.1,tolerance:Number.isFinite(tolerance)&&tolerance>=0?tolerance:10,mode};}
+function showUpdatedPopup(){let toast=$('demoUpdatedToast');if(!toast){toast=document.createElement('div');toast.id='demoUpdatedToast';toast.className='demo-updated-toast';toast.setAttribute('role','status');toast.setAttribute('aria-live','polite');toast.innerHTML='<span aria-hidden="true">✓</span><div><strong>Dados simulados atualizados</strong><small>O painel foi atualizado com os valores personalizados.</small></div>';document.body.append(toast);}toast.classList.add('is-visible');clearTimeout(popupTimer);popupTimer=setTimeout(()=>toast?.classList.remove('is-visible'),3600);}
+let popupTimer=null;
 const overlays=new Map();
 for(const [id] of map){const node=$(id);if(!node)continue;const parent=node.parentElement;const shown=document.createElement('span');shown.className='demo-value';shown.hidden=true;shown.setAttribute('aria-label','Demonstração, valor fictício');parent.append(shown);overlays.set(id,{node,shown});}
 function update(){
@@ -28,16 +33,26 @@ function update(){
  notice.hidden=!useDemo;
  const weekToday=weekly?.values?.[new Date().getDay()];
  const weekDaily=weekToday?weekToday[0]+weekToday[1]:0;
+ const profile=demoProfile(weekly?.residents),referenceTotal=profile.residents*profile.reference;
+ const excessive=!!weekly&&weekDaily>referenceTotal*(1+profile.tolerance/100);
  if(useDemo){
   const v=simulation;
   for(const [id,fn] of map){
    const p=overlays.get(id);if(!p)continue;
    if(weekly){
-    const custom={todayTotal:fmt(weekDaily),perPersonValue:fmt(weekDaily/weekly.residents),householdTarget:'—',comparisonStatus:'Padrão semanal simulado',sensor1Total:'—',sensor2Total:'—',flow1:'—',flow2:'—',ratio1:'—'};
+    const custom={todayTotal:fmt(weekDaily),perPersonValue:fmt(weekDaily/weekly.residents),householdTarget:fmt(referenceTotal),comparisonStatus:excessive?'Acima da referência ilustrativa':'Dentro da faixa ilustrativa',sensor1Total:fmt(weekToday[0]),sensor2Total:fmt(weekToday[1]),flow1:fmt(weekToday[0]/1440)+'/min',flow2:fmt(weekToday[1]/1440)+'/min',ratio1:(weekDaily?Math.round(weekToday[0]/weekDaily*100):0)+'%'};
     p.shown.textContent=custom[id]??'—';
    }else p.shown.textContent=fn(v);
    p.shown.hidden=false;p.node.classList.add('demo-covered');
   }
+  if(weekly){
+   const setText=(id,value)=>{const node=$(id);if(node)node.textContent=value;};
+   setText('split1',fmt(weekToday[0]));setText('split2',fmt(weekToday[1]));
+   setText('targetDetail',profile.residents+' morador(es) × '+fmt(profile.reference)+' por pessoa/dia · '+(profile.mode==='user'?'referência personalizada':'referência histórica SNIS 2020'));
+   setText('perPersonDetail','Volume simulado ÷ '+weekly.residents+' morador(es). Não representa consumo individual medido.');
+   setText('comparisonDetail',(excessive?'O cenário ultrapassa a referência em '+Math.round((weekDaily/referenceTotal-1)*100)+'%. ':'')+'Comparação ilustrativa com tolerância de '+profile.tolerance+'%; '+(profile.mode==='user'?'hipótese definida no perfil.':'referência histórica, não meta universal.'));
+   const alert=$('alertContent');if(alert){alert.className='alert-content '+(excessive?'warning':'neutral');alert.textContent=excessive?'⚠ Consumo simulado elevado: '+fmt(weekDaily)+' no dia, acima da faixa ilustrativa de '+fmt(referenceTotal*(1+profile.tolerance/100))+' ('+profile.tolerance+'% de tolerância). Revise os valores personalizados; isso não é uma medição real nem diagnóstico de desperdício.':'Demonstração: o consumo personalizado está dentro da faixa ilustrativa configurada. Os valores não são medições reais.';}
+  }else{for(const [id,item] of directOriginals){item.node.textContent=item.text;item.node.className=item.className;}}
   $('demoNotice')?.setAttribute('data-volume',String(weekly?weekDaily:v[0]*v[1]*v[2]*v[3]));
   const label=$('demoNotice')?.querySelector('span');
   if(label)label.textContent=weekly?'◈ Demonstração: padrão semanal personalizado. Valores fictícios, sem alterar as medições reais.':'◈ Demonstração: dados fictícios de banhos. Conecte o ESP32 para ver medições reais.';
@@ -120,7 +135,7 @@ function applyWeek(){
  try{
   const o=readWeekForm();weekly=o;simulation=null;
   try{sessionStorage.setItem(WEEK_KEY,JSON.stringify(o));sessionStorage.removeItem(KEY);}catch{}
-  blockedAfterClear=false;update();renderWeekSummary();
+  blockedAfterClear=false;update();renderWeekSummary();showUpdatedPopup();
  }catch(e){const box=$('demoWeekSummary');if(box)box.textContent=e.message;}
 }
 $('demoApplyWeek')?.addEventListener('click',applyWeek);
