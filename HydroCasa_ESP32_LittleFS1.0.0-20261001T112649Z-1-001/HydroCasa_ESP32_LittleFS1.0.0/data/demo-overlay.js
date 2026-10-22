@@ -6,7 +6,7 @@ const WEEK_KEY='hydrocasa:semana-demo';
 const $=id=>document.getElementById(id);
 const frame=$('simulatorFrame'),notice=$('demoNotice'),clear=$('demoClear');
 const limits=[[1,10],[1,30],[1,4],[3,20],[7,365]];
-let simulation=null,weekly=null,source='nenhuma',hadReal=false,prompted=false,dialog=null,blockedAfterClear=false;
+let simulation=null,weekly=null,source='nenhuma',hadReal=false,prompted=false,dialog=null,blockedAfterClear=false,wasWeeklyDemo=false;
 const valid=v=>Array.isArray(v)&&v.length===5&&v.every((n,i)=>typeof n==='number'&&Number.isFinite(n)&&n>=limits[i][0]&&n<=limits[i][1])&&[7,30,365].includes(v[4]);
 const validWeekly=o=>!!o&&o.version===1&&Number.isInteger(o.residents)&&o.residents>=1&&o.residents<=100&&[7,14,30,90].includes(o.days)&&Array.isArray(o.values)&&o.values.length===7&&o.values.every(d=>Array.isArray(d)&&d.length===2&&d.every(n=>Number.isFinite(n)&&n>=0&&n<=100000));
 function hasRealHistory(){
@@ -73,6 +73,8 @@ function update(){
  const demoLink=$('demoUseReal');
  if(demoLink)demoLink.hidden=!((simulation||weekly)&&real);
  drawWeeklyCalendar(real&&hasRealHistory()||real&&isRealOnline());
+ if(!useDemo&&wasWeeklyDemo){for(const [id,item] of directOriginals){item.node.textContent=item.text;item.node.className=item.className;}wasWeeklyDemo=false;}
+ if(useDemo&&weekly)wasWeeklyDemo=true;
 }
 function store(v){
  simulation=v;weekly=null;
@@ -108,7 +110,7 @@ function showDecision(){
 }
 try{const o=JSON.parse(sessionStorage.getItem(KEY)||'null');if(o?.version===1&&valid(o.v))simulation=o.v;}catch{}
 try{const o=JSON.parse(sessionStorage.getItem(WEEK_KEY)||'null');if(validWeekly(o))weekly=o;}catch{}
-function watch(){const real=hasRealHistory()||isRealOnline();if(real&&!hadReal&&simulation&&!prompted){let asked=false;try{asked=sessionStorage.getItem(KEY+':asked')==='1'}catch{}if(!asked)showDecision();}hadReal=real;update();}
+function watch(){const real=hasRealHistory()||isRealOnline();if(real&&!hadReal&&(simulation||weekly)&&!prompted){let asked=false;try{asked=sessionStorage.getItem(KEY+':asked')==='1'}catch{}if(!asked)showDecision();}hadReal=real;update();}
 window.addEventListener('message',event=>{
  if(event.source!==frame?.contentWindow||event.origin!=='null'||!event.data||typeof event.data!=='object')return;
  if(event.data.type==='hydrocasa-demo-clear'){erase();return;}
