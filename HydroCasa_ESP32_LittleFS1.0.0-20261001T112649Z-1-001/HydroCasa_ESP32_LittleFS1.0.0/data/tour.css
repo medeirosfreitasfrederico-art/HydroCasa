@@ -83,3 +83,6 @@
 .hydro-tour-backdrop:not([hidden]){background:transparent;backdrop-filter:none}
 .hydro-tour-spotlight:not([hidden]){position:fixed;z-index:101;pointer-events:none;border:3px solid var(--primary2,#8b7bff);border-radius:14px;box-sizing:border-box;box-shadow:0 0 0 200vmax rgba(4,10,25,.65),0 0 0 5px rgba(139,123,255,.22);transition:left .15s,top .15s,width .15s,height .15s}
 .hydro-tour-focus{outline:0!important;z-index:auto!important}
+
+/* No celular, ocultar o alerta flutuante apenas durante o tour guiado. */
+@media (max-width:700px){body:has(.hydro-tour-dialog:not([hidden])) .demo-info-fab{display:none!important}}
