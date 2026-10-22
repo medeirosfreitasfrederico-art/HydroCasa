@@ -423,7 +423,10 @@ document.addEventListener('click',event=>{
       const recorded=rows.filter(r=>r.h),total=recorded.reduce((sum,r)=>sum+r.h.total1+r.h.total2,0);
       return {rows,total,count:recorded.length,partial:recorded.filter(r=>r.h.partial!==false).length,average:recorded.length?total/recorded.length:null};
     }
-    let saved={},selected=null,activeDays=[];
+    let saved={},selected=null,activeDays=[],viewHistory={},userChangedHistoryFilter=false;
+    const DEMO_WEEK_KEY='hydrocasa:semana-demo';
+    function readDemoHistory(realHistory={}){try{const o=JSON.parse(sessionStorage.getItem(DEMO_WEEK_KEY)||'null');if(!o||o.version!==1||!Number.isInteger(o.residents)||o.residents<1||o.residents>100||!Number.isInteger(o.days)||o.days<1||o.days>366||!Array.isArray(o.values)||o.values.length!==7||o.values.some(row=>!Array.isArray(row)||row.length!==2||row.some(v=>!Number.isFinite(v)||v<0||v>100000)))return {};const mode=q('referenceMode')?.value||'snis',referenceLiters=mode==='user'?Number(q('referenceM3')?.value)*1000:152.1,tolerance=Number(q('toleranceInput')?.value??10);const profile=M.maybeProfile({residents:o.residents,referenceMode:mode,referenceLiters,tolerance:Number.isFinite(tolerance)?tolerance:10,scope:'branches',ramal1:q('ramal1Input')?.value||'Ramal 01',ramal2:q('ramal2Input')?.value||'Ramal 02'});const rows={},today=new Date();today.setHours(12,0,0,0);for(let age=0;age<o.days;age++){const d=new Date(today);d.setDate(d.getDate()-age);const day=dateKey(d),real=realHistory[day];if(real&&real.readings>0)continue;const values=o.values[d.getDay()];rows[day]={total1:values[0],total2:values[1],readings:1,partial:false,snapshots:[],profile,profileMixed:false,demo:true};}return rows;}catch{return {};}}
+    function hasDemoHistory(){try{const o=JSON.parse(sessionStorage.getItem(DEMO_WEEK_KEY)||'null');return !!(o&&o.version===1&&Number.isInteger(o.days)&&o.days>=1&&o.days<=366);}catch{return false;}}
     function readHistory(){
       const raw=localStorage.getItem('hydrocasa_ledger_v2');
       if(!raw)return {history:{},activityRecords:{}};
@@ -434,12 +437,13 @@ document.addEventListener('click',event=>{
     function presets(){
       const now=new Date(),start=new Date(now),period=q('historyPeriod').value;
       if(period==='custom')return;
+      if(period==='demo'){let days=7;try{const o=JSON.parse(sessionStorage.getItem(DEMO_WEEK_KEY)||'null');if(Number.isInteger(o?.days)&&o.days>=1&&o.days<=366)days=o.days;}catch{}start.setDate(start.getDate()-(days-1));q('historyFrom').value=dateKey(start);q('historyTo').value=dateKey(now);return;}
       if(period==='week')start.setDate(start.getDate()-6);
       if(period==='month')start.setDate(1);
       q('historyFrom').value=dateKey(start);q('historyTo').value=dateKey(now);
     }
     function showDay(day,focus=false){
-      const h=saved.history[day];if(!h)return;
+      const h=viewHistory[day]||saved.history[day];if(!h)return;
       selected=day;q('historyDayDetails').hidden=false;
       q('historyDayTitle').textContent='Detalhes de '+day.split('-').reverse().join('/');
       const p=M.maybeProfile(h.profile),result=M.compareDay(h,null,{closed:day<dateKey(new Date())});
@@ -461,16 +465,17 @@ document.addEventListener('click',event=>{
     function render(){
       try{
         const days=datesBetween(q('historyFrom').value,q('historyTo').value);
-        saved=readHistory();const summary=summarize(saved.history,days);activeDays=days;
-        q('historyFilterMessage').textContent=summary.count?'Histórico consultado.':'Sem leituras neste período.';q('historyFilterMessage').className='muted-note';
+        saved=readHistory();viewHistory={...saved.history,...readDemoHistory(saved.history)};const summary=summarize(viewHistory,days);activeDays=days;
+        const demoCount=summary.rows.filter(r=>r.h?.demo).length;
+        q('historyFilterMessage').textContent=summary.count?'Histórico consultado.'+(demoCount?' Inclui '+demoCount+' dia(s) simulados, identificados na tabela; os dados reais foram preservados.':''):'Sem leituras neste período.';q('historyFilterMessage').className='muted-note';
         q('periodVolume').textContent=summary.count?M.m3(summary.total):'—';q('periodAverage').textContent=M.m3(summary.average);
         q('periodCoverage').textContent=summary.count+' de '+days.length;
         q('periodCoverageNote').textContent=summary.partial+' dia(s) com coleta parcial; '+(days.length-summary.count)+' sem leituras.';
-        q('historyRows').innerHTML=summary.rows.map(({day,h})=>`<tr><th scope="row">${day.split('-').reverse().join('/')}</th><td>${h?M.m3(h.total1):'—'}</td><td>${h?M.m3(h.total2):'—'}</td><td>${h?M.m3(h.total1+h.total2):'—'}</td><td>${h?(h.partial!==false?'Coleta parcial':'Completa'):'Sem dados'}</td><td>${h?'<button type="button" class="ghost-btn" data-history-day="'+day+'" aria-label="Ver detalhes de '+day+'">Ver dia</button>':'—'}</td></tr>`).join('');
+        q('historyRows').innerHTML=summary.rows.map(({day,h})=>`<tr class="${h?.demo?'history-demo-row':''}"><th scope="row">${day.split('-').reverse().join('/')}</th><td>${h?M.m3(h.total1):'—'}</td><td>${h?M.m3(h.total2):'—'}</td><td>${h?M.m3(h.total1+h.total2):'—'}</td><td>${h?(h.demo?'Simulação (fictícia)':h.partial!==false?'Coleta parcial':'Completa'):'Sem dados'}</td><td>${h?'<button type="button" class="ghost-btn" data-history-day="'+day+'" aria-label="Ver detalhes de '+day+'">Ver dia</button>':'—'}</td></tr>`).join('');
         q('historyEmpty').hidden=summary.count>0;
         q('historyChart').hidden=summary.count===0;
         draw(summary.rows);
-        if(selected&&activeDays.includes(selected)&&saved.history[selected])showDay(selected);else{selected=null;q('historyDayDetails').hidden=true;}
+        if(selected&&activeDays.includes(selected)&&viewHistory[selected])showDay(selected);else{selected=null;q('historyDayDetails').hidden=true;}
       }catch(e){q('historyEmpty').hidden=true;q('historyChart').hidden=false;q('historyFilterMessage').textContent='Não foi possível consultar o histórico: '+e.message;q('historyFilterMessage').className='form-error';q('historyRows').textContent='';q('historyChart').textContent='Consulta indisponível.';['periodVolume','periodAverage','periodCoverage'].forEach(id=>q(id).textContent='—');q('periodCoverageNote').textContent='';q('historyDayDetails').hidden=true;}
     }
     function route(focus=false){
@@ -480,7 +485,7 @@ document.addEventListener('click',event=>{
       q('tourLaunchWrap').hidden=page!=='dashboard';
       document.querySelectorAll('[data-page]').forEach(link=>{if(link.dataset.page===page)link.setAttribute('aria-current','page');else link.removeAttribute('aria-current');});
       document.title=page==='about'?'Sobre nós | HydroCasa':page==='consumption'?'Meu consumo | HydroCasa':page==='simulator'?'Simulador | HydroCasa':page==='sources'?'Fontes e estudos | HydroCasa':'HydroCasa | Monitoramento Inteligente de Água';
-      if(page==='consumption'){render();if(focus)q('consumptionTitle').focus();}
+      if(page==='consumption'){if(hasDemoHistory()&&!userChangedHistoryFilter&&q('historyPeriod').value==='week'){q('historyPeriod').value='demo';presets();}render();if(focus)q('consumptionTitle').focus();}
       else if(page==='about'){if(focus)q('aboutTitle').focus();}
       else if(page==='simulator'){if(focus)q('simulatorFrameTitle').focus();}
       else if(page==='sources'){if(focus)q('sourcesTitle').focus();}
@@ -492,8 +497,8 @@ document.addEventListener('click',event=>{
     }));
     window.addEventListener('popstate',()=>route(true));
     q('historyFilters').addEventListener('submit',e=>{e.preventDefault();render();});
-    q('historyPeriod').addEventListener('change',()=>{presets();render();});
-    ['historyFrom','historyTo'].forEach(id=>q(id).addEventListener('input',()=>q('historyPeriod').value='custom'));
+    q('historyPeriod').addEventListener('change',()=>{userChangedHistoryFilter=true;presets();render();});
+    ['historyFrom','historyTo'].forEach(id=>q(id).addEventListener('input',()=>{q('historyPeriod').value='custom';userChangedHistoryFilter=true;}));
     q('historyRows').addEventListener('click',e=>{const button=e.target.closest('[data-history-day]');if(button)showDay(button.dataset.historyDay,true);});
     q('refreshConsumption').addEventListener('click',render);
     window.addEventListener('storage',e=>{if(e.key==='hydrocasa_ledger_v2'&&!q('consumption-page').hidden)render();});
