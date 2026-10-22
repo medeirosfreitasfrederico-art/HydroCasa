@@ -3,7 +3,7 @@
 'use strict';
 const q=s=>document.querySelector(s),key='hydrocasa:alertas',demoKey='hydrocasa:alertas:demonstracao';
 const fmtDate=t=>new Date(t).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'});
-const levels={'Informativo':'ℹ','Atenção':'⚠','Acima do padrão':'▲'};
+const levels={'Informativo':'ℹ','Atenção':'⚠','Acima do padrão':'▲','Leve':'●','Moderado':'▲','Crítico':'⬆'};
 const guidance={sensor:['O sensor pode ter parado de enviar leituras.','Verifique energia, cabo e conexão do ESP32.'],atividade:['Uma atividade registrada ultrapassou a referência configurada.','Confira duração e quantidade informadas no registro.'],consumo:['O volume registrado está acima da referência configurada.','Confira o perfil da residência e os hábitos do período.'],fluxo:['Foi detectado um comportamento de fluxo que merece verificação.','Verifique torneiras, chuveiros e possíveis vazamentos.']};
 const why=a=>guidance[a.tipo]||['Uma condição do monitoramento merece sua atenção.','Confira as leituras, as conexões e as configurações do painel.'];
 let history=[],demoHistory=[],observations=[],lastCursor='',focusBefore=null,dialogOpen=false,lastOnline=false;
@@ -20,7 +20,7 @@ else {const dashboard=q('#dashboard .section-heading');if(dashboard)dashboard.af
 card.setAttribute('aria-label','Situação e avisos do monitoramento');
 const stateLine=document.createElement('p');stateLine.className='alerts-state-line';stateLine.setAttribute('role','status');stateLine.setAttribute('aria-live','polite');card.querySelector('.alerts-heading').after(stateLine);
 const filters=document.createElement('form');filters.className='alerts-filters';filters.setAttribute('aria-label','Filtros do histórico de alertas');
-filters.innerHTML='<label>Período <select id="alertPeriod"><option value="all">Todo o histórico</option><option value="7">Últimos 7 dias</option><option value="30">Últimos 30 dias</option></select></label><label>Gravidade <select id="alertSeverity"><option value="all">Todas</option><option value="Acima do padrão">Acima do padrão</option><option value="Atenção">Atenção</option><option value="Informativo">Informativo</option></select></label><label>Situação <select id="alertState"><option value="all">Todas</option><option value="ativo">Ativos</option><option value="lido">Lidos</option><option value="silenciado">Silenciados</option><option value="resolvido">Resolvidos</option></select></label>';
+filters.innerHTML='<label>De <input type="date" id="alertDateFrom"></label><label>Até <input type="date" id="alertDateTo"></label><label>Gravidade <select id="alertSeverity"><option value="all">Todas</option><option value="Crítico">Críticos</option><option value="Moderado">Moderados</option><option value="Leve">Leves</option><option value="Acima do padrão">Outros acima do padrão</option><option value="Atenção">Atenção</option><option value="Informativo">Informativo</option></select></label><label>Situação <select id="alertState"><option value="all">Todas</option><option value="ativo">Ativos</option><option value="lido">Lidos</option><option value="silenciado">Silenciados</option><option value="resolvido">Resolvidos</option></select></label>';
 const backdrop=document.createElement('div');backdrop.className='alerts-backdrop';backdrop.hidden=true;
 backdrop.innerHTML='<section class="alerts-drawer" role="dialog" aria-modal="true" aria-labelledby="alertsDrawerTitle"><header><h2 id="alertsDrawerTitle">Alertas do HydroCasa</h2><button type="button" class="icon-btn" id="alertsClose" aria-label="Fechar alertas">×</button></header><div id="alertsList" class="alerts-list"></div></section>';document.body.append(backdrop);q('#alertsList')?.before(filters);filters.addEventListener('change',render);
 const toast=document.createElement('div');toast.className='alerts-toast';toast.hidden=true;toast.setAttribute('role','status');toast.setAttribute('aria-live','polite');document.body.append(toast);let toastTimer=null;
@@ -81,8 +81,8 @@ function render(){
  const priority={'Acima do padrão':0,'Atenção':1,'Informativo':2};
  const ordered=active.slice().sort((a,b)=>(priority[a.nivel]??3)-(priority[b.nivel]??3)||b.criadoEm-a.criadoEm);
  preview.innerHTML=ordered.length?ordered.map(x=>'<article class="alerts-inline-item" data-level="'+esc(x.nivel)+'"><div class="alerts-inline-icon" aria-hidden="true">'+(levels[x.nivel]||'ℹ')+'</div><div class="alerts-inline-body"><div class="alerts-inline-meta"><strong>'+esc(x.nivel)+'</strong><time>'+fmtDate(x.criadoEm)+'</time></div><p>'+esc(x.mensagem)+'</p><div class="alerts-inline-actions"><button type="button" data-alert-action="detail" data-alert-id="'+esc(x.id)+'">Ver detalhes</button><button type="button" data-alert-action="read" data-alert-id="'+esc(x.id)+'">Entendi</button><button type="button" data-alert-action="mute" data-alert-id="'+esc(x.id)+'">Silenciar hoje</button></div></div></article>').join(''):'<p class="alerts-inline-empty">'+esc(empty)+'</p>';
- const period=q('#alertPeriod')?.value||'all',severity=q('#alertSeverity')?.value||'all',status=q('#alertState')?.value||'all';
- const filtered=list.filter(x=>(period==='all'||Date.now()-x.criadoEm<=Number(period)*86400000)&&(severity==='all'||x.nivel===severity)&&(status==='all'||x.status===status));
+ const from=q('#alertDateFrom')?.value||'',to=q('#alertDateTo')?.value||'',severity=q('#alertSeverity')?.value||'all',status=q('#alertState')?.value||'all';
+ const filtered=list.filter(x=>{const day=x.dataOcorrencia||(Number.isFinite(x.criadoEm)?new Date(x.criadoEm).toLocaleDateString('en-CA'):new Date().toLocaleDateString('en-CA'));return (!from||day>=from)&&(!to||day<=to)&&(severity==='all'||x.nivel===severity)&&(status==='all'||x.status===status)});
  const box=q('#alertsList');box.innerHTML=filtered.length?filtered.map(x=>'<article class="alert-entry" data-level="'+esc(x.nivel)+'"><span class="alert-level">'+(levels[x.nivel]||'ℹ')+' '+esc(x.nivel)+(demo?' · Demonstração':'')+'</span><p>'+esc(x.mensagem)+'</p><p class="alerts-guidance"><strong>Por que importa:</strong> '+esc(why(x)[0])+'</p><p class="alerts-guidance"><strong>O que verificar:</strong> '+esc(why(x)[1])+'</p><small>'+fmtDate(x.criadoEm)+' · '+esc(x.status)+'</small><div class="alert-actions">'+(x.status==='ativo'?'<button type="button" data-alert-action="read" data-alert-id="'+esc(x.id)+'">Entendi</button><button type="button" data-alert-action="mute" data-alert-id="'+esc(x.id)+'">Silenciar por hoje</button>':'')+'<button type="button" data-alert-action="detail" data-alert-id="'+esc(x.id)+'">Ver detalhe</button></div></article>').join(''):'<p>'+empty+'</p>';
 }
 function handleAlertAction(e){
@@ -97,14 +97,45 @@ function handleAlertAction(e){
 }
 backdrop.addEventListener('click',handleAlertAction);
 card.addEventListener('click',handleAlertAction);
+function dailyConsumptionAnomalies(d){
+ const out=[],demo=document.body.dataset.demoActive==='true';
+ const profile=d?.profile;
+ let weekly=null;try{weekly=JSON.parse(sessionStorage.getItem('hydrocasa:semana-demo')||'null')}catch{}
+ const reference=Number(profile?.referenceLiters),residents=Number(profile?.residents);
+ const tolerance=Math.max(0,Number(profile?.tolerance)||0);
+ if(!Number.isFinite(reference)||reference<=0||!Number.isInteger(residents)||residents<1)return out;
+ const threshold=reference*residents*(1+Math.max(HydroAlertConfig.dailyTolerancePercent,tolerance)/100);
+ const add=(date,total,source)=>{
+  if(!Number.isFinite(total)||total<0||total<=threshold)return;
+  const excess=(total/threshold-1)*100;
+  const nivel=excess>=50?'Crítico':excess>=25?'Moderado':'Leve';
+  const id='anomalia-consumo:'+date;
+  out.push({id,tipo:'consumo',nivel,alvo:'Residência · '+date,valor:total,referencia:threshold,diferenca:Math.round(excess),dataOcorrencia:date,mensagem:(source==='demo'?'Demonstração fictícia · ':'')+date.split('-').reverse().join('/')+': '+fmt(total)+' L no dia, '+Math.round(excess)+'% acima da referência de '+fmt(threshold)+' L. Classificação: '+nivel+'.'+(source==='demo'?' Este valor é simulado, não uma leitura do ESP32.':'')});
+ };
+ for(const [date,row] of Object.entries(d?.history||{})){
+  if(row&&row.readings>0&&!row.profileMixed&&Number.isFinite(row.total1)&&Number.isFinite(row.total2))add(date,row.total1+row.total2,'real');
+ }
+ if(weekly&&weekly.version===1&&Number.isInteger(weekly.days)&&weekly.days>=1&&weekly.days<=366&&Array.isArray(weekly.values)&&weekly.values.length===7){
+  const today=new Date();today.setHours(12,0,0,0);
+  for(let age=0;age<weekly.days;age++){
+   const date=new Date(today);date.setDate(date.getDate()-age);
+   const key=[date.getFullYear(),String(date.getMonth()+1).padStart(2,'0'),String(date.getDate()).padStart(2,'0')].join('-');
+   const real=d?.history?.[key];if(real&&real.readings>0)continue;
+   const row=weekly.values[date.getDay()];
+   if(Array.isArray(row)&&row.length===2&&row.every(v=>Number.isFinite(v)&&v>=0))add(key,row[0]+row[1],'demo');
+  }
+ }
+ return out;
+}
 function tick(){
  const d=realData();if(!d)return;
  lastOnline=d.online;
  const demo=document.body.dataset.demoActive==='true';
  // Dados demonstrativos nunca são tratados como sensores.
  const active=HydroAlerts.avaliar({...d,online:!demo&&d.online},d.profile,d.activities).filter(x=>x.tipo==='atividade'||(!demo&&d.online));
- // Na demonstração não há avaliação de sensores: nunca transformar suposições em medições.
- if(!demo){reconcile(false,active,Date.now());}
+ const anomalies=dailyConsumptionAnomalies(d);
+ reconcile(demo,[...active,...anomalies],Date.now());
+
  // Marcadores apenas visuais nas atividades efetivamente listadas.
  const alertNames=new Set(history.filter(x=>x.status==='ativo'&&x.tipo==='atividade').map(x=>x.alvo));
  document.querySelectorAll('#activityLog .activity-entry').forEach(entry=>{
