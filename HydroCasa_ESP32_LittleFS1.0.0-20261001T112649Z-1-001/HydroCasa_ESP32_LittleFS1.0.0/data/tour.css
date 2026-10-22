@@ -70,3 +70,11 @@
 /* O X de fechar aparece somente dentro do modal, nunca no botão de abertura. */
 #demoDataStudio .demo-modal-close{display:none!important}
 #modalBody #demoDataDetails .demo-modal-close{display:inline-flex!important;align-items:center;justify-content:center}
+
+/* Tour guiado mobile: painel compacto fora da area de destaque. */
+@media(max-width:700px){
+ .hydro-tour-dialog:not([hidden]){box-sizing:border-box;width:calc(100vw - 24px);max-width:420px;left:12px!important;padding:14px 16px;border-radius:16px;max-height:min(45dvh,310px);overflow-y:auto;overscroll-behavior:contain;animation:none;}
+ .hydro-tour-meta span{font-size:9px}.hydro-tour-count{margin:8px 0 4px}.hydro-tour-dialog h2{font-size:17px;margin:4px 0 6px}.hydro-tour-dialog p:not(.hydro-tour-count){font-size:12px;line-height:1.45}
+ .hydro-tour-progress{margin:10px 0}.hydro-tour-actions button{padding:9px 10px}
+ .hydro-tour-focus{scroll-margin-top:24px;scroll-margin-bottom:calc(45dvh + 24px)}
+}
