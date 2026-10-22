@@ -43,3 +43,16 @@
 .day.demo-day-has-data{border-style:dashed!important;border-color:var(--primary2)!important}
 .day.demo-day-has-data .day-total{color:var(--primary2)!important}
 @media(max-width:600px){.demo-data-content{padding:0 12px 14px}.demo-week-heading,.demo-week-table>label{grid-template-columns:minmax(88px,1.1fr) minmax(0,1fr) minmax(0,1fr);gap:6px;padding:8px}.demo-week-table input{padding:7px 4px}.demo-week-heading{font-size:10px}.demo-week-table>label{font-size:11px}.demo-data-options{grid-template-columns:1fr}.demo-data-actions{flex-direction:column}.demo-data-actions button{width:100%}}
+
+/* Acesso à demonstração com destaque visual e edição em janela modal */
+#demoDataStudio{margin:14px 0 22px;background:transparent;border:0;box-shadow:none;overflow:visible}
+#demoDataDetails>summary{border:1px solid color-mix(in srgb,var(--primary2) 30%,var(--line));border-radius:14px;background:color-mix(in srgb,var(--primary2) 12%,var(--surface));transition:background .18s,border-color .18s}
+#demoDataDetails>summary:hover{background:color-mix(in srgb,var(--primary2) 19%,var(--surface));border-color:var(--primary2)}
+#demoDataDetails[open]{position:fixed;z-index:10050;inset:50% auto auto 50%;transform:translate(-50%,-50%);width:min(760px,calc(100vw - 28px));max-height:calc(100dvh - 32px);overflow:auto;border:1px solid var(--line);border-radius:18px;background:var(--surface);box-shadow:0 24px 90px #0006}
+#demoDataDetails[open]::before{content:"";position:fixed;inset:-100vh -100vw;background:#071020a8;z-index:-1;backdrop-filter:blur(4px)}
+#demoDataDetails[open]>summary{position:sticky;top:0;z-index:2;background:var(--surface);border:0;border-bottom:1px solid var(--line);border-radius:0;padding:18px 20px}
+#demoDataDetails[open] .demo-data-content{padding:0 20px 20px}
+#demoDataDetails .demo-modal-close{margin-left:auto;flex:0 0 auto;border:1px solid var(--line);border-radius:10px;background:var(--surface2);color:var(--text);width:38px;height:38px;font-size:20px;cursor:pointer}
+.demo-day-value{padding:3px 6px!important;margin-top:3px!important;width:max-content;border-radius:6px;background:color-mix(in srgb,var(--primary2) 17%,var(--surface))!important;color:var(--primary2)!important}
+.day.demo-day-has-data{background:color-mix(in srgb,var(--primary2) 7%,var(--surface))!important}
+@media(max-width:600px){#demoDataDetails[open]{width:calc(100vw - 16px);max-height:calc(100dvh - 16px)}#demoDataDetails[open] .demo-data-content{padding:0 12px 14px}#demoDataDetails[open]>summary{padding:14px 12px}}
