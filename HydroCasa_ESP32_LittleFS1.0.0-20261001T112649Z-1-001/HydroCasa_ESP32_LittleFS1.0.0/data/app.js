@@ -305,7 +305,7 @@ function activityContext(dayKey,h){
  const actual=h&&h.readings>0?h.total1+h.total2:null;
  const profile=h?M.dayProfile(h,state.household):state.household;
  const reference=profile?profile.residents*profile.referenceLiters:null;
- const referenceResult=h&&profile?M.compareDay(h,profile,{closed:dayKey<todayKey(),connected:state.connected}):null;
+ const referenceResult=h&&profile?M.compareDay(h,profile,{closed:dayKey<todayKey(),connected:dayKey<todayKey()||state.connected}):null;
  return {records,justified,actual,profile,reference,referenceResult,hasJustification:justified>0};
 }
 function activityContextHtml(dayKey,h){
@@ -372,7 +372,7 @@ function openDayModal(d){
        referenceVersion:"2026-10-13",tolerance:state.household?.tolerance??10,
        comparison:null,at:Date.now()
      });
-     save();renderCalendar();renderActivityLog();updateAnalysis();openDayModal(d);
+     save();renderCalendar();renderActivityLog();updateAnalysis();updateHousehold();openDayModal(d);
      const feedback=$("#modalBody").querySelector("#calendarAddToggle");
      feedback?.focus();
    }catch(error){$("#calendarActivityFeedback").textContent=error.message;}
@@ -439,7 +439,7 @@ function updateHousehold(){
   $("#comparisonStatus").textContent=contextualOk?"Dentro do volume justificado":hasActual&&context.hasJustification&&total>context.justified?"Acima do volume justificado":result.label;
   $("#comparisonStatus").className=contextualOk?"comparison-context-ok":result.code==="above"?"comparison-above":"";
   $("#comparisonDetail").textContent=(context.hasJustification?"Atividades estimadas: "+volume(context.justified)+". ":"")+(result.percent!==undefined?`${fmt(Math.abs(result.percent))}% ${result.percent<0?"abaixo":"acima"} da referência central.`:result.label+".")+" Volume observado, sem projeção do restante do dia.";
-  const contextDetails=$("#comparisonActivityDetails");
+  const contextDetails=$("#comparisonActivityDetails div");
   if(contextDetails)contextDetails.innerHTML=activityContextHtml(todayKey(),h);
   const names=p||M.defaults;
   $$('[data-ramal]').forEach(el=>el.textContent=names['ramal'+el.dataset.ramal]);
@@ -497,6 +497,7 @@ function selectActivity(){
   if(a.minutes)$("#activityMinutes").value=a.minutes;
   $("#customActivityLabel").hidden=a.liters!==null;
   $("#customActivityM3").required=a.liters===null;
+  $("#customActivityM3").max=a.id==="pool"?"100":a.id==="cleaning"?"1":"100";
   $("#customActivityM3").disabled=a.liters!==null;
   $("#activitySource").textContent="";
   updateActivityPreview();
@@ -506,7 +507,7 @@ function renderActivityLog(){
   const records=Array.isArray(state.activityRecords[todayKey()])?state.activityRecords[todayKey()]:[];
   const legacy=Array.isArray(state.justifications[todayKey()])?state.justifications[todayKey()]:[];
   $("#activityLog").innerHTML=(records.length?records.map((r,i)=>`<div class="activity-entry"><b>${escapeHtml(r.name)}</b><br>Estimativa: ${volume(r.liters)}. <br><small>${r.residentsUsed?escapeHtml(r.residentsUsed)+" morador(es); ":""}${escapeHtml(r.quantity)} ocorrência(s)${r.minutes?"; "+escapeHtml(r.minutes)+" min":""}. Fonte: ${escapeHtml(r.sourceName)}.</small><br><button class="ghost-btn" type="button" data-remove-activity="${i}">Remover registro</button></div>`).join(""):"<p>Nenhuma atividade registrada hoje.</p>")+(legacy.length?`<details><summary>Registros anteriores à atualização (${legacy.length})</summary><p>Preservados como estimativas antigas, sem fonte validada. Não entram na nova comparação.</p>${legacy.map(x=>`<p>${escapeHtml(x.name)}: ${volume(x.liters)}</p>`).join("")}</details>`:"");
-  $$('[data-remove-activity]').forEach(b=>b.onclick=()=>{records.splice(Number(b.dataset.removeActivity),1);save();renderActivityLog();updateAnalysis();});
+  $$('[data-remove-activity]').forEach(b=>b.onclick=()=>{records.splice(Number(b.dataset.removeActivity),1);save();renderActivityLog();updateAnalysis();updateHousehold();});
 }
 
 // Check vetorial inteiro: entrada suave de opacidade e escala ao confirmar o salvamento.
@@ -584,7 +585,7 @@ function setupConsumptionUI(){
       const {a,params,liters,observed}=activityInput(),k=todayKey(),tolerance=state.household?state.household.tolerance:10;
       if(!Array.isArray(state.activityRecords[k]))state.activityRecords[k]=[];
       state.activityRecords[k].push({name:a.name,id:a.id,liters,observed,quantity:params.quantity,minutes:a.minutes?params.minutes:null,residentsUsed:a.perPerson?params.residents:null,sourceName:M.sources[a.source].name,sourceId:a.source,referenceVersion:"2026-10-13",tolerance,comparison:observed===null?null:M.classify(observed,liters,tolerance,{complete:true}),at:Date.now()});
-      save();renderActivityLog();updateAnalysis();
+      save();renderActivityLog();updateAnalysis();updateHousehold();
       $("#activityMessage").textContent=state.storageError?"Registro mantido nesta sessão; falha ao salvar no navegador.":"Atividade registrada. O volume dos sensores não foi alterado.";
     }catch(err){$("#activityMessage").textContent=err.message;}
   };
