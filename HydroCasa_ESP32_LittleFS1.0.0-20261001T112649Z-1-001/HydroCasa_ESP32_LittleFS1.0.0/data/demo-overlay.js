@@ -94,7 +94,8 @@ function update(){
   const label=$('demoNotice')?.querySelector('span');
   if(label)label.textContent=weekly?'◈ Demonstração: padrão semanal personalizado. Valores fictícios, sem alterar as medições reais.':'◈ Demonstração: dados fictícios de banhos. Conecte o ESP32 para ver medições reais.';
  }else for(const {node,shown} of overlays.values()){node.classList.remove('demo-covered');shown.hidden=true;}
- updateDemoReport(useDemo);\n const chart=$('dailyChart');
+ updateDemoReport(useDemo);
+ const chart=$('dailyChart');
  if(chart)chart.parentElement.classList.toggle('demo-chart-empty',useDemo);
  const estimated=$('demoRecentPreview');
  if(estimated){
@@ -246,7 +247,7 @@ function drawWeeklyCalendar(real){
   if(active&&age>=0&&age<weekly.days){
    const row=weekly.values[date.getDay()],liters=row[0]+row[1];
    if(!badge){badge=document.createElement('span');badge.className='demo-day-value';badge.setAttribute('aria-label','Valor fictício de demonstração');total.insertAdjacentElement('afterend',badge);}
-   badge.textContent='◈ Demo · '+fmt(liters/1000);\n   total.textContent='◈ Demonstração';
+   badge.textContent='◈ Demo · '+fmt(liters/1000);
    cell.classList.add('demo-day-has-data');
    cell.title='Demonstração fictícia: Ramal 1 '+fmt(row[0])+' L; Ramal 2 '+fmt(row[1])+' L. O valor real, se houver, permanece acima.';
   }else{
