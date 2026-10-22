@@ -10,8 +10,8 @@ let history=[],demoHistory=[],observations=[],lastCursor='',focusBefore=null,dia
 const safeRead=(storage,k)=>{try{let v=JSON.parse(storage.getItem(k)||'[]');return Array.isArray(v)?v.filter(x=>x&&typeof x.id==='string').slice(0,250):[]}catch{return []}};
 history=safeRead(localStorage,key);demoHistory=safeRead(sessionStorage,demoKey);
 const persist=demo=>{try{(demo?sessionStorage:localStorage).setItem(demo?demoKey:key,JSON.stringify((demo?demoHistory:history).slice(0,250)))}catch{}};
-const bell=document.createElement('button');bell.id='hydroAlertBell';bell.type='button';bell.className='icon-btn alert-bell';bell.setAttribute('aria-haspopup','dialog');bell.setAttribute('aria-label','Abrir alertas');bell.innerHTML='<span class="hydro-header-icon hydro-header-icon-alert" aria-hidden="true"></span><span id="hydroAlertCount" class="alert-count" hidden>0</span>';
-q('.header-actions')?.insertBefore(bell,q('#themeBtn'));
+const bell=q('#hydroAlertBell')||document.createElement('button');
+if(!bell.id){bell.id='hydroAlertBell';bell.type='button';bell.className='icon-btn alert-bell';bell.setAttribute('aria-haspopup','dialog');bell.setAttribute('aria-label','Abrir alertas');bell.innerHTML='<span class="hydro-header-icon hydro-header-icon-alert" aria-hidden="true"></span><span id="hydroAlertCount" class="alert-count" hidden>0</span>';q('.header-actions')?.insertBefore(bell,q('#themeBtn'));}
 const card=document.createElement('section');card.className='glass-card alerts-overview';card.id='alertsOverview';card.setAttribute('aria-labelledby','alertsOverviewTitle');
 card.innerHTML='<div class="alerts-heading"><div><span class="alerts-kicker">ACOMPANHAMENTO</span><h3 id="alertsOverviewTitle">Alertas e orientações</h3><p class="alerts-subtitle">Ocorrências ordenadas por prioridade, sem precisar abrir outra janela.</p></div><button type="button" class="ghost-btn" data-open-alerts>Histórico de alertas</button></div><div id="alertsTopList" class="alerts-inline-list" role="region" aria-label="Alertas atuais">Dados insuficientes para comparar.</div>';
 const quickAccess=q('#dashboard-page .dashboard-shortcuts-area');
