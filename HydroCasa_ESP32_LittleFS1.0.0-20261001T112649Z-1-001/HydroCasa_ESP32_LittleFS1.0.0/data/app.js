@@ -263,6 +263,7 @@ function updateChart(){
   vals.forEach((v,i)=>{if(v===null){previousValid=false;return;}const x=i*(w/(vals.length-1)),y=h-28-(v/max)*(h-55);previousValid?ctx.lineTo(x,y):ctx.moveTo(x,y);previousValid=true;});
   ctx.lineWidth=3;ctx.strokeStyle=getComputedStyle(document.body).getPropertyValue("--primary");ctx.stroke();
   vals.forEach((v,i)=>{if(v===null)return;const x=i*(w/(vals.length-1)),y=h-28-(v/max)*(h-55);ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fillStyle=getComputedStyle(document.body).getPropertyValue("--primary2");ctx.fill()});
+  if(typeof window.drawHydroCasaDemoChart==="function")window.drawHydroCasaDemoChart();
 }
 
 function updateAlert(){
