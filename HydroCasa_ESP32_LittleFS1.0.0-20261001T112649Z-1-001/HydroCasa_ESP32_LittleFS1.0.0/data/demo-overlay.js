@@ -5,6 +5,24 @@ const KEY='hydrocasa:simulacao';
 const WEEK_KEY='hydrocasa:semana-demo';
 const $=id=>document.getElementById(id);
 const frame=$('simulatorFrame'),notice=$('demoNotice'),clear=$('demoClear');
+const demoInfoButton=document.createElement('button');
+demoInfoButton.type='button';demoInfoButton.id='demoInfoButton';demoInfoButton.className='demo-info-fab';
+demoInfoButton.setAttribute('aria-label','Aviso sobre dados simulados');demoInfoButton.setAttribute('aria-haspopup','dialog');demoInfoButton.title='Sobre os dados simulados';demoInfoButton.textContent='!';
+demoInfoButton.hidden=true;
+document.body.appendChild(demoInfoButton);
+const demoInfoOverlay=document.createElement('div');
+demoInfoOverlay.className='demo-info-overlay';demoInfoOverlay.hidden=true;
+demoInfoOverlay.innerHTML='<section class="demo-info-dialog" role="dialog" aria-modal="true" aria-labelledby="demoInfoTitle" aria-describedby="demoInfoDescription"><button type="button" class="demo-info-close" aria-label="Fechar aviso" title="Fechar">×</button><span class="demo-info-kicker">HYDROCASA · MODO DEMONSTRAÇÃO</span><h2 id="demoInfoTitle">Estes dados são simulados</h2><p id="demoInfoDescription">As informações exibidas neste momento são fictícias e servem apenas para demonstrar as funções do HydroCasa. Elas não representam o consumo real de uma residência.</p><div class="demo-info-note"><strong>Quer usar o HydroCasa na sua casa?</strong><p>Para acompanhar medições reais, é necessário conectar um ESP32 equipado com sensores de vazão instalados na tubulação e configurar o dispositivo para enviar as leituras ao painel. O ESP32 e o site precisam estar configurados para se comunicar pela rede; dependendo da hospedagem e do navegador, pode ser necessário ajustar a conexão local.</p></div><p class="demo-info-foot">Enquanto a demonstração estiver ativa, considere os números, gráficos e comparações como exemplos — não como medições reais.</p><button type="button" class="primary-btn demo-info-understood">Entendi</button></section>';
+document.body.appendChild(demoInfoOverlay);
+const demoInfoClose=demoInfoOverlay.querySelector('.demo-info-close'),demoInfoOk=demoInfoOverlay.querySelector('.demo-info-understood');
+let demoInfoReturnFocus=null;
+function closeDemoInfo(){demoInfoOverlay.hidden=true;document.body.classList.remove('demo-info-open');demoInfoReturnFocus?.focus?.();}
+function openDemoInfo(){demoInfoReturnFocus=document.activeElement;demoInfoOverlay.hidden=false;document.body.classList.add('demo-info-open');demoInfoClose?.focus();}
+demoInfoButton.addEventListener('click',openDemoInfo);
+demoInfoClose.addEventListener('click',closeDemoInfo);demoInfoOk.addEventListener('click',closeDemoInfo);
+demoInfoOverlay.addEventListener('click',event=>{if(event.target===demoInfoOverlay)closeDemoInfo();});
+document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!demoInfoOverlay.hidden){event.preventDefault();closeDemoInfo();}});
+
 const limits=[[1,10],[1,30],[1,4],[3,20],[7,365]];
 let simulation=null,weekly=null,source='nenhuma',hadReal=false,prompted=false,dialog=null,blockedAfterClear=false,wasWeeklyDemo=false;
 const valid=v=>Array.isArray(v)&&v.length===5&&v.every((n,i)=>typeof n==='number'&&Number.isFinite(n)&&n>=limits[i][0]&&n<=limits[i][1])&&[7,30,365].includes(v[4]);
@@ -30,6 +48,8 @@ function update(){
  const useDemo=!!(simulation||weekly)&&!real;
  source=real?'esp32':useDemo?'simulacao':'nenhuma';
  document.body.dataset.demoActive=useDemo?'true':'false';
+ demoInfoButton.hidden=!useDemo;
+ if(!useDemo&&!demoInfoOverlay.hidden)closeDemoInfo();
  document.body.dataset.demoWeekly=useDemo&&!!weekly?'true':'false';
  notice.hidden=!useDemo;
  const weekToday=weekly?.values?.[new Date().getDay()];
