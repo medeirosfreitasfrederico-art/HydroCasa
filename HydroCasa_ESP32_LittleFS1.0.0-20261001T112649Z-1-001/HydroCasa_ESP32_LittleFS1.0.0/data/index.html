@@ -56,6 +56,19 @@
 
   <nav class="page-nav shell" aria-label="Páginas do HydroCasa"><a href="?" data-page="dashboard">Painel</a><a href="?pagina=consumo" data-page="consumption"><svg class="ui-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2 7M3 4v7h7M12 7v5l3 2"/></svg>Meu consumo</a><a href="?pagina=simulador" data-page="simulator">Simulador</a><a href="?pagina=sobre" data-page="about">Sobre nós</a><a href="?pagina=fontes" data-page="sources">Fontes e estudos</a></nav>
   <main class="shell" id="dashboard-page">
+    <section class="hydro-start" id="hydroInicio" aria-labelledby="hydroStartTitle">
+      <div class="hydro-start-heading">
+        <span class="eyebrow">COMECE POR AQUI · 3 ETAPAS</span>
+        <h1 id="hydroStartTitle">Seu primeiro acesso ao HydroCasa</h1>
+        <p>Este painel mostra o volume de água medido por sensores conectados a um ESP32. Primeiro, informe quantas pessoas moram na residência para personalizar as comparações; depois consulte as leituras e explore o histórico.</p>
+      </div>
+      <div class="hydro-start-steps" aria-label="Como começar">
+        <div><span class="hydro-step-num">01</span><strong>Informe os moradores</strong><p>Preencha o campo abaixo e salve o perfil. Essa informação ajusta a referência de comparação, sem modificar as medições.</p></div>
+        <div><span class="hydro-step-num">02</span><strong>Consulte os dados</strong><p>Em <b>Visão geral</b>, veja vazão e volume dos dois ramais. Sem conexão, os valores reais podem ficar indisponíveis.</p></div>
+        <div><span class="hydro-step-num">03</span><strong>Explore o consumo</strong><p>Use <b>Calendário</b> e <b>Meu consumo</b> para acompanhar registros; use <b>Simulador</b> apenas para testar hipóteses.</p></div>
+      </div>
+      <div class="hydro-start-profile" id="hydroStartProfile" aria-label="Configuração inicial da residência"></div>
+    </section>
     <section class="hero hero-premium" aria-labelledby="hydroHeroTitle">
       <div class="hero-intro">
         <span class="eyebrow hero-kicker"><span class="hero-kicker-dot" aria-hidden="true"></span> PROJETO ACADÊMICO · MONITORAMENTO DE ÁGUA</span>
