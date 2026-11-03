@@ -34,8 +34,10 @@ dismiss.addEventListener('click',()=>{guideDismissed=true;try{localStorage.setIt
 const help=document.createElement('button');help.type='button';help.className='ghost-btn ux-help';help.textContent='? Ajuda';help.setAttribute('aria-haspopup','dialog');
 area.insertBefore(help,nav);
 const personalize=document.createElement('details');personalize.className='ux-personalize';personalize.id='personalizar';
-const summary=document.createElement('summary');summary.textContent='Personalizar residência';summary.setAttribute('aria-label','Abrir ou fechar perfil da residência');personalize.append(summary);
-area.after(personalize);personalize.append(house);
+const summary=document.createElement('summary');summary.textContent='Etapa 1 — Quantas pessoas moram na residência?';summary.setAttribute('aria-label','Abrir ou fechar perfil da residência');personalize.append(summary);
+const startProfile=q('#hydroStartProfile');
+if(startProfile){startProfile.append(personalize);}else{area.after(personalize);}
+personalize.append(house);
 const ledgerProfile=(()=>{try{return JSON.parse(localStorage.getItem('hydrocasa_ledger_v2')||'{}').household}catch{return null}})();
 personalize.open=true;
 const overlay=document.createElement('div');overlay.className='ux-drawer';overlay.hidden=true;overlay.innerHTML='<section class="ux-drawer-content" role="dialog" aria-modal="true" aria-labelledby="uxHelpTitle"><button type="button" class="ux-help-close" aria-label="Fechar ajuda">×</button><h2 id="uxHelpTitle">Como usar seu painel</h2><div class="ux-help-body"></div></section>';
