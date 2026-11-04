@@ -196,7 +196,26 @@ function verdict(sum){
  return {code:'within',title:'Consumo dentro da faixa de referência',text:`O consumo dos dias medidos ficou dentro da faixa de ±${percent(tol)} da referência.${scope}`};
 }
 
-const api={STORAGE_KEY,defaults,MAX_DAYS,PERIODS,settings,maybeSettings,read,write,priceFromBill,money,m3,liters,percent,dateLabel,costOf,keyOf,parseKey,daysInMonth,range,resolvePeriod,summarize,verdict};
+/**
+ * Nível de gasto para o tom visual do site.
+ * percent = quanto o consumo ficou acima da referência (ex.: 30 = 30% acima).
+ * Até a tolerância do perfil é "normal"; as faixas seguintes nunca começam antes dela.
+ */
+const LEVELS=[
+ {id:'leve',label:'Levemente acima',upTo:25},
+ {id:'moderado',label:'Moderadamente acima',upTo:50},
+ {id:'alto',label:'Gasto alto',upTo:100},
+ {id:'extremo',label:'Extremamente acima',upTo:Infinity}
+];
+function spendingLevel(percent,tolerance=10){
+ if(!isNum(percent))return null;
+ const tol=isNum(tolerance)&&tolerance>=0?tolerance:10;
+ if(percent<=tol)return {id:'normal',label:'Dentro da referência',percent};
+ const level=LEVELS.find(l=>percent<=Math.max(l.upTo,tol))||LEVELS.at(-1);
+ return {id:level.id,label:level.label,percent};
+}
+
+const api={STORAGE_KEY,defaults,MAX_DAYS,PERIODS,LEVELS,spendingLevel,settings,maybeSettings,read,write,priceFromBill,money,m3,liters,percent,dateLabel,costOf,keyOf,parseKey,daysInMonth,range,resolvePeriod,summarize,verdict};
 root.HydroFinance=api;
 if(typeof module==='object'&&module.exports)module.exports=api;
 })(typeof globalThis!=='undefined'?globalThis:this);
