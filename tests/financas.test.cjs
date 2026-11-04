@@ -90,3 +90,14 @@ test('formatters use Brazilian conventions',()=>{
   assert.equal(F.money(1234.5).replace(/\s/g,' '),'R$ 1.234,50');
   assert.equal(F.m3(456),'0,456 m³');assert.equal(F.liters(1234.4),'1.234 L');
 });
+test('spending level picks the tint band from the percent above the reference',()=>{
+  const id=(p,t)=>F.spendingLevel(p,t)?.id;
+  assert.equal(id(-20),'normal');assert.equal(id(10),'normal');
+  assert.equal(id(11),'leve');assert.equal(id(25),'leve');
+  assert.equal(id(26),'moderado');assert.equal(id(50),'moderado');
+  assert.equal(id(51),'alto');assert.equal(id(100),'alto');
+  assert.equal(id(101),'extremo');assert.equal(id(400),'extremo');
+  assert.equal(id(30,40),'normal','tolerância maior que a faixa leve');
+  assert.equal(id(45,40),'moderado');
+  assert.equal(F.spendingLevel(NaN),null);
+});

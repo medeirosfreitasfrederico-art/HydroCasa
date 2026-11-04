@@ -1,5 +1,11 @@
 # Histórico de versões
 
+## 1.2.1 — 2026-11-04
+
+### Adicionado
+- Tom visual do site conforme o gasto em relação à referência dos moradores: **levemente acima** (até 25%) amarelado, **moderadamente** (até 50%) laranja, **alto** (até 100%) vermelho e **extremamente acima** (mais que o dobro) vermelho escuro. Uma faixa sob o cabeçalho explica o motivo. Dentro da tolerância do perfil, o site fica no tom normal.
+- Usa o consumo de hoje (ou o dia mais recente com leituras); com a semana demonstrativa ativa, usa o dia simulado.
+
 ## 1.2.0 — 2026-11-04
 
 ### Adicionado
