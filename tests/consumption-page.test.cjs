@@ -27,7 +27,7 @@ test('invalid readings do not become zero consumption in period statistics',()=>
 test('about route selects one page and preserves navigation to consumption and dashboard',()=>{
  const elements=new Map(),links=['dashboard','consumption','about'].map(page=>({dataset:{page},setAttribute(k,v){this[k]=v},removeAttribute(k){delete this[k]}}));
  const q=id=>{if(!elements.has(id))elements.set(id,{hidden:false,focus(){this.focused=true}});return elements.get(id)};
- const context=vm.createContext({q,URLSearchParams,location:{search:'?pagina=sobre'},document:{querySelectorAll:()=>links},render:()=>{},window:{dispatchEvent:()=>{}},Event:function(){}});
+ const context=vm.createContext({q,URLSearchParams,location:{search:'?pagina=sobre'},document:{querySelectorAll:()=>links},render:()=>{},presets:()=>{},hasDemoHistory:()=>false,userChangedHistoryFilter:false,window:{dispatchEvent:()=>{}},Event:function(){}});
  const start=script.indexOf('function route(focus=false)'),end=script.indexOf("document.querySelectorAll('[data-page]').forEach(link=>link.addEventListener",start);
  vm.runInContext(script.slice(start,end)+'globalThis.route=route;',context);
  context.route(true);assert.equal(q('about-page').hidden,false);assert.equal(q('dashboard-page').hidden,true);assert.equal(q('consumption-page').hidden,true);assert.equal(context.document.title,'Sobre nós | HydroCasa');
