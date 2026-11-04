@@ -1,5 +1,13 @@
 # Histórico de versões
 
+## 1.2.2 — 2026-11-04
+
+### Corrigido
+- A pasta `data/` não cabia na partição LittleFS padrão do ESP32 (1.441.792 bytes): o upload falhava com "File system is full".
+  - `hydrocasa-symbol.png` reduzido de 1254 px (794 KB) para 512 px (148 KB), sem perda visível (a maior exibição no site é de 180 px).
+  - Removido `hydrocasa-logo.jpeg` (115 KB), que o site não usava, e sua rota no firmware.
+  - A pasta passou de 1,38 MB para 0,61 MB (cerca de 43% da partição).
+
 ## 1.2.1 — 2026-11-04
 
 ### Adicionado

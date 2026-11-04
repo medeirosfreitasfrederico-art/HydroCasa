@@ -268,7 +268,6 @@ void setup() {
   server.serveStatic("/app.js", LittleFS, "/app.js");
   server.serveStatic("/consumption.js", LittleFS, "/consumption.js");
   server.serveStatic("/hydrocasa-symbol.png", LittleFS, "/hydrocasa-symbol.png");
-  server.serveStatic("/hydrocasa-logo.jpeg", LittleFS, "/hydrocasa-logo.jpeg");
   server.serveStatic("/hero.css", LittleFS, "/hero.css");
   server.serveStatic("/mobile.css", LittleFS, "/mobile.css");
   server.serveStatic("/tour.css", LittleFS, "/tour.css");

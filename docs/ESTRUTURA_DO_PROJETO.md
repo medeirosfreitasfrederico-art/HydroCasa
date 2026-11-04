@@ -43,7 +43,7 @@ HydroCasa/
             ├── dashboard-ux.js / dashboard-ux.css
             ├── demo-overlay.js / demo-overlay.css
             ├── hero.css / system-improvements.css
-            ├── hydrocasa-logo.jpeg / hydrocasa-symbol.png / hydrocasa-og.svg
+            ├── hydrocasa-symbol.png (512 px) / hydrocasa-og.svg
             ├── icon-alerta.svg / icon-perfil.svg
             ├── alertas.test.js
             └── README_LITTLEFS.txt
