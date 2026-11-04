@@ -12,7 +12,9 @@ assert.equal(A.rules.atividadeTotal(base,profile,{[today]:[entry]}).length,1,'vo
 assert.equal(A.rules.atividadeDuracao(base,profile,{[today]:[{...entry,minutes:15}]}).length,0,'duração dentro do limite');
 const day={readings:4,partial:false,total1:200,total2:200};
 assert.ok(A.rules.consumoDiario({...base,history:{[today]:day}},profile),'consumo acima do limite');
-assert.equal(A.rules.consumoDiario({...base,history:{[today]:{...day,partial:true}}},profile),null,'coleta parcial');
+// Volume só cresce ao longo do dia: com coleta parcial já acima da faixa, o alerta antecipa e avisa que é parcial.
+assert.match(A.rules.consumoDiario({...base,history:{[today]:{...day,partial:true}}},profile).mensagem,/parcial/,'coleta parcial acima da faixa');
+assert.equal(A.rules.consumoDiario({...base,history:{[today]:{...day,partial:true,total1:100,total2:100}}},profile),null,'coleta parcial dentro da faixa');
 assert.equal(A.rules.consumoDiario({...base,history:{[today]:day}}, {...profile,scope:'branches'}),null,'abrangência restrita');
 assert.equal(A.rules.consumoDiario({...base,history:{[today]:day},online:false},profile),null,'offline');
 const now=Date.now(),observations=[{t:now-10*60000,flow1:1,pulse1:5,flow2:2,pulse2:15},{t:now-5*60000,flow1:1,pulse1:5,flow2:2,pulse2:20},{t:now,flow1:1,pulse1:5,flow2:2,pulse2:25}];

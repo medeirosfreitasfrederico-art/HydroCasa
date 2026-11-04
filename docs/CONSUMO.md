@@ -46,15 +46,16 @@ g++ -std=c++11 -Wall -Wextra -pedantic tests/flow_sample.cpp -o /tmp/hydrocasa-f
 /tmp/hydrocasa-flow-test
 ```
 
-Resultado em 14/10/2026: **31 testes JavaScript aprovados** e teste C++ aprovado. Cobertura: conversão, fórmulas, limites de comparação, fonte de referências, histórico, mudança de perfil, reinício/reset, respostas inválidas e falhas de conexão/armazenamento.
+Resultado em 04/11/2026: **52 testes JavaScript aprovados** (`node --test tests/*.test.cjs`), regras de alertas aprovadas (`node HydroCasa_ESP32_LittleFS1.0.0-20261001T112649Z-1-001/HydroCasa_ESP32_LittleFS1.0.0/data/alertas.test.js`) e teste C++ aprovado. Cobertura: conversão, fórmulas, limites de comparação, fonte de referências, histórico, mudança de perfil, respostas inválidas, falhas de conexão/armazenamento, períodos e custos do relatório, gerador de PDF e seções do relatório.
 
-Teste adicional de navegador, com Playwright instalado e Chromium disponível:
+Teste adicional de navegador, com Playwright instalado (Chrome do sistema opcional via `CHROME_PATH`):
 
 ```sh
 node tests/ui-smoke.cjs
+CHROME_PATH=/usr/bin/google-chrome node tests/ui-smoke.cjs
 ```
 
-Esse teste usa servidor local e API simulada. **Não foi concluído neste ambiente:** download do Chromium retornou arquivo inválido/truncado. Não houve compilação integral do firmware nem teste físico no ESP32. Validação visual, upload LittleFS, funcionamento offline, calibração e medição de volumes conhecidos continuam pendentes.
+Esse teste usa servidor local e API simulada (nunca o ESP32 físico) e cobre: conexão, perfil no Painel e no painel lateral, valores da conta, relatório em PDF (período, checklist, cálculo pela conta, download e estrutura do arquivo), atalho em Meu consumo, atividades, largura mobile e tema escuro. **Aprovado em 04/11/2026.** Continuam pendentes: compilação integral do firmware, upload LittleFS e teste físico no ESP32 (calibração e volumes conhecidos).
 
 ## Reversão
 

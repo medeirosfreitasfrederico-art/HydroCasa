@@ -61,23 +61,29 @@ test('malformed JSON and storage quota failure do not stop in-memory collection'
   assert.equal(a.state.history[day].total1,3);assert.equal(a.state.storageError,true);
 });
 
-test('profile changes preserve measured totals and historical residents across reload',()=>{
+test('profile changes preserve measured totals and keep each day with the profile applied on it',()=>{
   const a=setup(),t=new Date(2026,9,13,12).getTime();
   a.applyProfile({residents:2,scope:'whole'},t);
   a.addSnapshot(day,sample(0),t);a.addSnapshot(day,sample(20),t+2000);
   a.applyProfile({residents:4,scope:'whole'},t+3000);
+  // O volume medido nunca muda; o dia passa a ser avaliado com o perfil aplicado por último
+  // e a alteração fica registrada em profileChanges para auditoria.
   assert.equal(a.state.history[day].total1,20);
-  assert.equal(a.state.history[day].profile.residents,2);
-  assert.equal(a.state.history[day].profileMixed,true);
+  assert.equal(a.state.history[day].profile.residents,4);
+  assert.equal(a.state.history[day].profileMixed,false);
+  assert.equal(a.state.history[day].profileChanges.map(c=>c.profile.residents).join(),"2,4");
   const b=setup(Object.fromEntries(a.storage));
   assert.equal(b.state.household.residents,4);
-  assert.equal(b.state.history[day].profile.residents,2);
+  assert.equal(b.state.history[day].profile.residents,4);
+  b.applyProfile({residents:1,scope:'whole'},t+86400000);
+  assert.equal(b.state.history[day].profile.residents,4,'dias anteriores mantêm o próprio perfil');
   b.addSnapshot('2026-10-14',sample(25),t+86400000);
-  assert.equal(b.state.history['2026-10-14'].profile.residents,4);
+  assert.equal(b.state.history['2026-10-14'].profile.residents,1);
 });
-test('first profile after collection starts cannot retroactively classify the day',()=>{
+test('first profile after collection starts makes today comparable without changing volumes',()=>{
   const a=setup(),t=new Date(2026,9,13,12).getTime();
-  a.addSnapshot(day,sample(0),t);a.applyProfile({residents:3,scope:'whole'},t+1000);
-  assert.equal(a.state.history[day].profileMixed,true);
-  assert.equal(HydroConsumption.compareDay(a.state.history[day],a.state.household).code,'unknown');
+  a.addSnapshot(day,sample(0),t);a.addSnapshot(day,sample(4),t+1000);a.applyProfile({residents:3,scope:'whole'},t+1000);
+  assert.equal(a.state.history[day].profileMixed,false);
+  assert.equal(a.state.history[day].total1,4);
+  assert.notEqual(HydroConsumption.compareDay(a.state.history[day],a.state.household).label,'Configure os moradores');
 });

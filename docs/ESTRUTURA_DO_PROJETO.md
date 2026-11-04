@@ -14,7 +14,8 @@ HydroCasa/
 │   ├── CONSUMO.md
 │   ├── demo-overlay.md
 │   ├── interface-review.md
-│   └── reset-security.md
+│   ├── reset-security.md
+│   └── RELATORIO.md            # Relatório em PDF: cálculos e decisões
 ├── scripts/                      # Ferramentas auxiliares
 │   └── export-og-image.py
 ├── tests/                        # Testes automatizados
@@ -35,6 +36,10 @@ HydroCasa/
             ├── tour.js / tour.css
             ├── alertas.js / alertas-ui.js / alertas-config.js / alertas.css
             ├── consumption.js / consumption-status.js / consumption-status.css
+            ├── financas.js           # Períodos, custos e previsões (regras puras)
+            ├── pdf-simples.js        # Gerador de PDF sem dependências (funciona offline)
+            ├── relatorio.js / relatorio.css  # Relatório em PDF: janela, checklist e montagem
+            ├── perfil.js / perfil.css        # Perfil da residência dinâmico
             ├── dashboard-ux.js / dashboard-ux.css
             ├── demo-overlay.js / demo-overlay.css
             ├── hero.css / system-improvements.css
@@ -49,7 +54,7 @@ HydroCasa/
 | Nome exibido no site | Endereço / navegação | Arquivo principal | Descrição |
 | --- | --- | --- | --- |
 | Painel / Visão geral | `/` | `data/index.html` | Dashboard de leituras, indicadores e acompanhamento |
-| Meu consumo | `/?pagina=consumo` | `data/index.html` | Histórico e análise de consumo |
+| Meu consumo | `/?pagina=consumo` | `data/index.html` | Histórico e análise de consumo; atalho para o relatório PDF do período |
 | Simulador | `/?pagina=simulador` | `data/index.html` + `data/simulador.html` | Estimativas isoladas de medições reais |
 | Sobre nós | `/?pagina=sobre` | `data/index.html` | Apresentação e equipe do projeto |
 | Fontes e estudos | `/?pagina=fontes` | `data/index.html` | Referências e metodologia |
@@ -62,6 +67,8 @@ HydroCasa/
 - **Navegação e leituras:** `index.html`, `app.js`, `consumption.js`, `consumption-status.js`.
 - **Tour guiado:** `tour.js`, `tour.css`.
 - **Alertas:** `alertas.js`, `alertas-ui.js`, `alertas-config.js`, `alertas.css`.
+- **Perfil da residência:** `perfil.js`, `perfil.css` (painel lateral do botão de perfil, pré-visualização no cartão de moradores e faixa de perfil configurado).
+- **Relatório e finanças:** `financas.js` (regras), `pdf-simples.js` (PDF), `relatorio.js`, `relatorio.css` (interface). Valores da conta em `localStorage` (`hydrocasa:financeiro`).
 - **Simulação:** `simulador.html`, `demo-overlay.js`, `demo-overlay.css`; valores simulados não devem substituir medições reais.
 - **Imagens:** nomes `hydrocasa-*`, `icon-*` e arquivos de representação do produto. Os caminhos no HTML precisam corresponder a arquivos publicados.
 - **Firmware:** `HydroCasa.ino` e `FlowSample.h`.

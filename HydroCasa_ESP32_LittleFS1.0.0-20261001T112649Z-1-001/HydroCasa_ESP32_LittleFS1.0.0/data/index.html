@@ -33,6 +33,8 @@
   <link rel="stylesheet" href="dashboard-ux.css">
   <link rel="stylesheet" href="alertas.css">
   <link rel="stylesheet" href="demo-overlay.css">
+  <link rel="stylesheet" href="relatorio.css">
+  <link rel="stylesheet" href="perfil.css">
 </head>
 <body id="top" data-connection-state="carregando">
   <div class="ambient ambient-a"></div>
@@ -161,7 +163,7 @@
         <p id="profileDayNotice" class="muted-note" hidden></p>
       </form>
       <div id="householdSource" class="source-inline" hidden></div>
-      <p class="muted-note">Configuração salva neste navegador. Alterações ficam registradas por dia; um dia com perfis diferentes não recebe uma classificação única.</p>
+      <p class="muted-note">Configuração salva neste navegador. Ao aplicar um novo perfil, o dia atual passa a ser comparado com ele; os volumes medidos e os dias anteriores não mudam.</p>
     </section>
 
     <section class="consumption-status-card" id="consumptionStatusCard" data-status="unknown" aria-labelledby="consumptionStatusTitle">
@@ -406,6 +408,8 @@ document.addEventListener('click',event=>{
 });
 </script>
   <script src="consumption.js"></script>
+  <script src="financas.js"></script>
+  <script src="pdf-simples.js"></script>
 <script src="consumption-status.js" defer></script>
   <script src="demo-overlay.js" defer></script>
   <script src="app.js"></script>
@@ -414,6 +418,8 @@ document.addEventListener('click',event=>{
   <script src="alertas.js"></script>
   <script src="alertas-ui.js" defer></script>
   <script src="dashboard-ux.js" defer></script>
+  <script src="relatorio.js" defer></script>
+  <script src="perfil.js" defer></script>
 
   <script id="consumptionPageScript">
   // Navegação interna por URL: não recriar app.js, não duplicar polling e nunca escrever no ledger.

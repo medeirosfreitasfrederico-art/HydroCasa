@@ -430,6 +430,12 @@ Facens — Sorocaba/SP
 
 Projeto desenvolvido para fins acadêmicos e educacionais.
 
+## Atualização 1.2.0 — relatório em PDF e perfil dinâmico
+
+O botão **Relatório PDF** (cabeçalho, Painel e Meu consumo) gera no próprio navegador, sem internet, um relatório completo do período escolhido: dia específico, hoje, mês atual, mês passado, ano passado ou datas personalizadas. Um checklist define o que entra no arquivo. O relatório traz água medida, gasto até agora, previsão do período, valor esperado para os moradores, meta mensal, gráfico, tabela, ramais, atividades, alertas, dicas e metodologia. O **Perfil da residência** ganhou um painel lateral dinâmico, com edição rápida, valores da conta de água e acompanhamento ao vivo.
+
+- [Relatório em PDF: cálculos e decisões](docs/RELATORIO.md)
+
 ## Atualização 1.1.0 — moradores, referências e m³
 
 O painel inclui perfil da residência e atividades com fontes consultáveis. A referência por pessoa é multiplicada pelo número de moradores; usos compartilhados são calculados por ocorrência. Volumes aparecem em m³. Dias parciais e medições limitadas a ramais têm restrições explícitas de comparação.
@@ -438,4 +444,4 @@ O painel inclui perfil da residência e atividades com fontes consultáveis. A r
 - [Backlog priorizado e evidências para a AC2](docs/BACKLOG.md)
 - [Histórico de versões](CHANGELOG.md)
 
-A implantação requer atualizar firmware **e** a pasta `data/` no LittleFS. Os recursos efetivamente implementados e as limitações estão documentados acima; os objetivos conceituais deste README, como custo financeiro e detecção automática de vazamentos, não constituem comprovação de funcionamento.
+A implantação requer atualizar firmware **e** a pasta `data/` no LittleFS. Os recursos efetivamente implementados e as limitações estão documentados acima; o custo financeiro é uma estimativa baseada no preço por m³ informado pelo usuário; a detecção automática de vazamentos continua sendo um objetivo conceitual, sem comprovação de funcionamento.

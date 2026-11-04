@@ -25,7 +25,7 @@ demoInfoOverlay.addEventListener('click',event=>{if(event.target===demoInfoOverl
 document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!demoInfoOverlay.hidden){event.preventDefault();closeDemoInfo();}});
 
 const limits=[[1,10],[1,30],[1,4],[3,20],[7,365]];
-let simulation=null,weekly=null,source='nenhuma',hadReal=false,prompted=false,dialog=null,blockedAfterClear=false,wasWeeklyDemo=false;
+let simulation=null,autoSimulation=false,weekly=null,source='nenhuma',hadReal=false,prompted=false,dialog=null,blockedAfterClear=false,wasWeeklyDemo=false;
 const valid=v=>Array.isArray(v)&&v.length===5&&v.every((n,i)=>typeof n==='number'&&Number.isFinite(n)&&n>=limits[i][0]&&n<=limits[i][1])&&[7,30,365].includes(v[4]);
 const validWeekly=o=>!!o&&o.version===1&&Number.isInteger(o.residents)&&o.residents>=1&&o.residents<=100&&Number.isInteger(o.days)&&o.days>=1&&o.days<=366&&Array.isArray(o.values)&&o.values.length===7&&o.values.every(d=>Array.isArray(d)&&d.length===2&&d.every(n=>Number.isFinite(n)&&n>=0&&n<=100000));
 function hasRealHistory(){
@@ -136,14 +136,17 @@ function update(){
  if(!useDemo&&wasWeeklyDemo){for(const [id,item] of directOriginals){item.node.textContent=item.text;item.node.className=item.className;}wasWeeklyDemo=false;}
  if(useDemo&&weekly)wasWeeklyDemo=true;
 }
-function store(v){
+function store(v,auto=false){
+ // A publicação inicial do simulador (valores padrão) não é uma escolha do usuário:
+ // ela nunca substitui uma demonstração já configurada nem pede confirmação ao conectar.
+ if(auto&&((simulation&&!autoSimulation)||weekly))return;
  demoInfoActivated=true;
- simulation=v;weekly=null;
- try{sessionStorage.setItem(KEY,JSON.stringify({version:1,v}));sessionStorage.removeItem(WEEK_KEY);}catch{}
+ simulation=v;autoSimulation=auto;weekly=null;
+ try{sessionStorage.setItem(KEY,JSON.stringify({version:1,v,auto}));sessionStorage.removeItem(WEEK_KEY);}catch{}
  update();
 }
 function erase(){
- simulation=null;weekly=null;
+ simulation=null;autoSimulation=false;weekly=null;
  blockedAfterClear=true;
  try{sessionStorage.removeItem(KEY);sessionStorage.removeItem(WEEK_KEY);}catch{}
  update();
@@ -171,15 +174,15 @@ function showDecision(){
  dialog.addEventListener('keydown',e=>{if(e.key==='Escape'){e.preventDefault();close(true)}else if(e.key==='Tab'){const i=controls.indexOf(document.activeElement);if(e.shiftKey&&i===0){e.preventDefault();controls[1].focus()}else if(!e.shiftKey&&i===1){e.preventDefault();controls[0].focus()}}});
  controls[0].focus();
 }
-try{const o=JSON.parse(sessionStorage.getItem(KEY)||'null');if(o?.version===1&&valid(o.v))simulation=o.v;}catch{}
+try{const o=JSON.parse(sessionStorage.getItem(KEY)||'null');if(o?.version===1&&valid(o.v)){simulation=o.v;autoSimulation=o.auto===true;}}catch{}
 try{const o=JSON.parse(sessionStorage.getItem(WEEK_KEY)||'null');if(validWeekly(o))weekly=o;}catch{}
-function watch(){const real=hasRealHistory()||isRealOnline();if(real&&!hadReal&&(simulation||weekly)&&!prompted){let asked=false;try{asked=sessionStorage.getItem(KEY+':asked')==='1'}catch{}if(!asked)showDecision();}hadReal=real;update();}
+function watch(){const real=hasRealHistory()||isRealOnline();if(real&&simulation&&autoSimulation&&!weekly){simulation=null;autoSimulation=false;try{sessionStorage.removeItem(KEY);}catch{}}if(real&&!hadReal&&(simulation||weekly)&&!prompted){let asked=false;try{asked=sessionStorage.getItem(KEY+':asked')==='1'}catch{}if(!asked)showDecision();}hadReal=real;update();}
 window.addEventListener('message',event=>{
  if(event.source!==frame?.contentWindow||event.origin!=='null'||!event.data||typeof event.data!=='object')return;
  if(event.data.type==='hydrocasa-demo-clear'){erase();return;}
  if(event.data.type!=='hydrocasa-demo-values'||!valid(event.data.v)||blockedAfterClear)return;
  // Dados hipotéticos não atravessam a fronteira do histórico real.
- store(event.data.v);
+ store(event.data.v,event.data.auto===true);
 });
 clear?.addEventListener('click',erase);
 $('demoUseReal')?.addEventListener('click',()=>erase());

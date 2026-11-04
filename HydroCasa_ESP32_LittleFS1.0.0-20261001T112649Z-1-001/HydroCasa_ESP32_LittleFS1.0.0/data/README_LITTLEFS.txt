@@ -3,9 +3,10 @@ LITTLEFS — GUIA RÁPIDO
 A pasta `data/` precisa ser enviada ao sistema LittleFS do ESP32.
 
 Arquivos:
-- index.html
-- style.css
-- app.js
+Envie a pasta data/ inteira. Cada arquivo do site precisa de uma rota
+serveStatic correspondente no HydroCasa.ino (ex.: financas.js, pdf-simples.js,
+relatorio.js, relatorio.css, perfil.js, perfil.css). O relatório em PDF é
+gerado no próprio navegador, sem internet e sem bibliotecas externas.
 
 No Arduino IDE, utilize o método de upload LittleFS compatível com a versão do core ESP32 instalada.
 
