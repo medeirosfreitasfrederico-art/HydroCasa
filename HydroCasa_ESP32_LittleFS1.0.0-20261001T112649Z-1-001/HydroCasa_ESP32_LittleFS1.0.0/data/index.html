@@ -323,6 +323,15 @@
         <article class="glass-card setting-card"><span>Persistência</span><strong>LittleFS + navegador</strong><p>O ESP32 guarda snapshots e o navegador mantém o histórico visual.</p></article>
         <article class="glass-card setting-card"><span>Manutenção</span><strong>Modo técnico</strong><p>O reset remoto está desabilitado até que o ESP32 exija autenticação no próprio dispositivo.</p><details class="technical-area"><summary>Orientações para administradores</summary><p>O firmware deve exigir autorização em <code>/api/reset</code>. Não coloque PIN nem token no código da página. Consulte a documentação de segurança do repositório.</p></details></article>
       </div>
+      <article class="glass-card hydro-reset-card" aria-labelledby="hydroResetTitle">
+        <div>
+          <span class="eyebrow">MANUTENÇÃO DO NAVEGADOR</span>
+          <h3 id="hydroResetTitle">Recomeçar os dados do HydroCasa</h3>
+          <p>Apague o perfil, as atividades do calendário, os alertas, os históricos de consumo recebidos e os cenários simulados salvos <strong>neste navegador</strong>.</p>
+          <p>O ESP32 continuará funcionando. Seus contadores e arquivos internos não serão apagados; novas medições poderão aparecer após a limpeza.</p>
+        </div>
+        <button type="button" id="hydroResetOpen" class="ghost-btn hydro-reset-button">Zerar dados deste navegador</button>
+      </article>
       <article class="glass-card report-card"><h3>Entenda os dados</h3><p>Confira as fontes e limitações da análise.</p><div id="methodologyContent"></div><a href="?pagina=fontes#limitations">Fontes e metodologia →</a></article>
     </section>
   </main>
@@ -381,6 +390,17 @@
     <section class="about-section about-closing" aria-label="Conheça o painel"><span class="eyebrow">CONHEÇA NA PRÁTICA</span><h2>Comece pelas informações da sua casa.</h2><p>Explore os recursos do HydroCasa e acompanhe as leituras disponíveis.</p><a class="primary-btn" href="?" data-page="dashboard">Explorar o painel</a><p class="about-project-link"><a href="https://github.com/medeirosfreitasfrederico-art/HydroCasa" target="_blank" rel="noopener noreferrer">Código e documentação do projeto ↗</a></p></section>
   </main>
 
+  <dialog id="hydroResetDialog" class="hydro-reset-dialog" aria-labelledby="hydroResetDialogTitle" aria-describedby="hydroResetDialogDesc">
+    <h2 id="hydroResetDialogTitle">Confirmar limpeza dos dados?</h2>
+    <p id="hydroResetDialogDesc">Esta ação apagará permanentemente os dados do HydroCasa salvos <strong>neste navegador</strong>, incluindo perfil, registros, calendário, histórico de leituras recebidas, alertas, simulações e preferências.</p>
+    <p class="hydro-reset-warning"><strong>Não será possível recuperar os dados locais.</strong> O ESP32 e os registros armazenados nele não serão zerados. Se houver conexão, novos dados voltarão a ser coletados.</p>
+    <label class="hydro-reset-agree"><input type="checkbox" id="hydroResetAgree"> Entendi que os dados locais serão apagados.</label>
+    <p id="hydroResetFeedback" role="alert" class="hydro-reset-feedback" hidden></p>
+    <div class="hydro-reset-dialog-actions">
+      <button type="button" id="hydroResetCancel" class="ghost-btn">Cancelar</button>
+      <button type="button" id="hydroResetConfirm" class="hydro-reset-danger" disabled>Sim, zerar dados do site</button>
+    </div>
+  </dialog>
   <div id="modal" class="modal" aria-hidden="true">
     <div class="modal-backdrop"></div>
     <div class="modal-box" role="dialog" aria-modal="true" aria-label="Detalhes do HydroCasa">
