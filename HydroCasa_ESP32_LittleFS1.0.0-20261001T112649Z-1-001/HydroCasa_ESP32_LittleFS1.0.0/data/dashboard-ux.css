@@ -182,3 +182,25 @@ body.dark #themeBtn .theme-moon-symbol{display:inline}
 #dashboard-page .hydro-start-profile .household-card{margin:10px 0 0}
 #dashboard-page .hydro-start-profile #residentsInput{font-size:18px;font-weight:750}
 @media(max-width:760px){#dashboard-page .hydro-start{padding:15px;margin-top:12px}#dashboard-page .hydro-start-steps{grid-template-columns:1fr;gap:7px;margin:12px 0}#dashboard-page .hydro-start-steps>div{padding:10px 12px}}
+
+/* Reset local no Sistema: isolado da lógica e dos controles de medição. */
+#settings .hydro-reset-card{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:22px;margin:20px 0}
+#settings .hydro-reset-card>div{flex:1 1 320px;min-width:0}
+#settings .hydro-reset-card h3{font-size:20px;margin:7px 0 10px}
+#settings .hydro-reset-card p{font-size:13px;line-height:1.55;margin:7px 0;color:var(--muted)}
+#settings .hydro-reset-button{min-height:44px;border-color:#dc6060;color:#d44848;font-weight:750}
+body.dark #settings .hydro-reset-button{color:#fca5a5}
+.hydro-reset-dialog{position:fixed;max-width:min(520px,calc(100vw - 32px));width:100%;max-height:calc(100vh - 40px);overflow:auto;padding:25px;border:1px solid var(--line);border-radius:18px;background:var(--surface2);color:var(--text);box-shadow:0 22px 75px rgba(4,8,30,.36)}
+.hydro-reset-dialog::backdrop{background:rgba(5,10,30,.7);backdrop-filter:blur(3px)}
+.hydro-reset-dialog h2{font-size:23px;margin:0 0 12px}
+.hydro-reset-dialog p{font-size:14px;color:var(--muted);line-height:1.55}
+.hydro-reset-dialog .hydro-reset-warning{border-left:3px solid #d94848;padding:10px 12px;background:var(--surface);border-radius:8px}
+.hydro-reset-agree{display:flex;align-items:flex-start;gap:9px;font-size:14px;font-weight:650;line-height:1.45;margin:18px 0;cursor:pointer}
+.hydro-reset-agree input{width:18px;height:18px;flex:none;accent-color:#dc4040}
+.hydro-reset-dialog-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+.hydro-reset-dialog-actions button{min-height:43px}
+.hydro-reset-danger{border:0;border-radius:10px;background:#b91c1c;color:#fff;font-weight:750;padding:10px 15px;cursor:pointer}
+.hydro-reset-danger:disabled{opacity:.45;cursor:not-allowed}
+.hydro-reset-dialog button:focus-visible,#hydroResetOpen:focus-visible{outline:3px solid var(--primary2);outline-offset:3px}
+.hydro-reset-feedback{color:#d44848!important}
+@media(max-width:540px){#settings .hydro-reset-card{padding:18px}.hydro-reset-dialog{padding:18px}.hydro-reset-dialog-actions button{flex:1}}
