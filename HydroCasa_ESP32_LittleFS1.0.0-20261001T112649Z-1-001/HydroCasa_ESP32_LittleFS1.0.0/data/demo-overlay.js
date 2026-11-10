@@ -137,6 +137,11 @@ function update(){
  if(useDemo&&weekly)wasWeeklyDemo=true;
 }
 function store(v,auto=false){
+ // Após o reset local, não repovoar automaticamente os painéis com o cenário padrão.
+ let resetPendente=false;
+ try{resetPendente=sessionStorage.getItem('hydrocasa:reset-local-pendente')==='1';}catch{}
+ if(auto&&resetPendente)return;
+ if(!auto&&resetPendente)try{sessionStorage.removeItem('hydrocasa:reset-local-pendente');}catch{}
  // A publicação inicial do simulador (valores padrão) não é uma escolha do usuário:
  // ela nunca substitui uma demonstração já configurada nem pede confirmação ao conectar.
  if(auto&&((simulation&&!autoSimulation)||weekly))return;
