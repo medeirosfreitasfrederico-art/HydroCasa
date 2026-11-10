@@ -125,3 +125,45 @@ setInterval(repaint,1500);repaint();
 const legend=q('.diagram-legend');
 if(legend){legend.innerHTML='<span>Entrada: abastecimento</span><span>Y: divisão da água</span><span>S1: sensor do ramal 01</span><span>S2: sensor do ramal 02</span><span>Depósito / reuso: saída da maquete</span>';}
 })();
+
+
+/* Reset local independente: não chama APIs, não toca na lógica do ESP32 nem altera cálculos. */
+(()=>{
+'use strict';
+const open=document.getElementById('hydroResetOpen');
+const dialog=document.getElementById('hydroResetDialog');
+const agree=document.getElementById('hydroResetAgree');
+const confirm=document.getElementById('hydroResetConfirm');
+const cancel=document.getElementById('hydroResetCancel');
+const feedback=document.getElementById('hydroResetFeedback');
+if(!open||!dialog||!agree||!confirm||!cancel||!feedback)return;
+const keyPattern=/^hydrocasa(?:[.:_-]|$)/i;
+function removeProjectKeys(storage){
+ const keys=[];
+ for(let i=0;i<storage.length;i++){const key=storage.key(i);if(key&&keyPattern.test(key))keys.push(key);}
+ keys.forEach(key=>storage.removeItem(key));
+}
+open.addEventListener('click',()=>{
+ agree.checked=false;confirm.disabled=true;feedback.hidden=true;feedback.textContent='';
+ if(typeof dialog.showModal==='function')dialog.showModal();
+ else if(window.confirm('Apagar os dados do HydroCasa salvos neste navegador? Essa ação não apaga os dados internos do ESP32.')){
+  performReset();
+ }
+});
+agree.addEventListener('change',()=>{confirm.disabled=!agree.checked;});
+cancel.addEventListener('click',()=>dialog.close());
+function performReset(){
+ confirm.disabled=true;cancel.disabled=true;
+ try{
+  removeProjectKeys(window.localStorage);
+  removeProjectKeys(window.sessionStorage);
+  // Impede apenas que o cenário automático padrão reapareça após a limpeza.
+  window.sessionStorage.setItem('hydrocasa:reset-local-pendente','1');
+  window.location.replace(window.location.pathname);
+ }catch(e){
+  feedback.textContent='Não foi possível concluir a limpeza neste navegador. Verifique as permissões de armazenamento e tente novamente.';
+  feedback.hidden=false;cancel.disabled=false;confirm.disabled=!agree.checked;
+ }
+}
+confirm.addEventListener('click',()=>{if(!agree.checked)return;performReset();});
+})();
