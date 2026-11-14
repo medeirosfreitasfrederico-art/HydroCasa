@@ -294,6 +294,7 @@ void setup() {
   server.serveStatic("/relatorio.css", LittleFS, "/relatorio.css");
   server.serveStatic("/perfil.js", LittleFS, "/perfil.js");
   server.serveStatic("/perfil.css", LittleFS, "/perfil.css");
+  server.serveStatic("/ajuda.js", LittleFS, "/ajuda.js");
   server.serveStatic("/atividades.js", LittleFS, "/atividades.js");
   server.serveStatic("/atividades.css", LittleFS, "/atividades.css");
   server.serveStatic("/inicio.js", LittleFS, "/inicio.js");

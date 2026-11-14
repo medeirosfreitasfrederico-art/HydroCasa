@@ -1,5 +1,15 @@
 # Histórico de versões
 
+## 1.5.0 — 2026-11-14
+
+### Adicionado
+- **Ajuda "?"** (`ajuda.js`): círculo com "?" ao lado de títulos e números. Ao clicar, abre a explicação; ela fecha com Esc, com clique fora ou com o ×, não fecha sozinha durante as atualizações ao vivo e, no celular, abre como uma folha na parte de baixo da tela. Pode ser usada em HTML estático com `data-ajuda="..."`.
+- Explicações mais completas dentro das ajudas: o que entra no total do dia e por que o dia pode ser parcial, o que é m³, como o esperado é calculado (SNIS, margem) e como ler o círculo, o quadro "Agora", como ler cada gráfico e as cores, como a previsão e o valor em reais são calculados, o ritmo atual, ideias de economia com valores das fontes, como funciona o Justificar consumo (de onde vêm os valores de cada atividade), alertas, aviso de água correndo, conectividade, calibração do sensor e onde os dados ficam.
+
+### Alterado
+- Textos de apoio secundários saíram da tela e foram para as ajudas: subtítulos dos gráficos, nota de cálculo da conta, explicação do simulador, nota das atividades e descrições da aba Sistema. Números, situação do dia, previsão, avisos e passos do Justificar consumo continuam visíveis.
+- Os ícones "!" de informação da área técnica passaram a "?".
+
 ## 1.4.0 — 2026-11-14
 
 ### Adicionado

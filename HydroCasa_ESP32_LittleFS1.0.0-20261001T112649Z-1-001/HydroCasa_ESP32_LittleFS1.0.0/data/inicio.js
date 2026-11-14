@@ -10,6 +10,18 @@ const dash=document.getElementById('dashboard-page');
 if(!A||!M||!F||!dash)return;
 const {state}=A,esc=A.escapeHtml;
 const q=s=>document.querySelector(s);
+const T_HOJE='<strong>O que entra neste número?</strong>Toda a água que passou pelos sensores desde a meia-noite de hoje. O número sobe sozinho a cada leitura do ESP32 (a cada 2 segundos).<br><br><b>Atenção:</b> se o ESP32 ficou desligado ou sem Wi-Fi em algum momento, a água desse intervalo não é contada. Por isso o dia aparece como “parcial” no histórico até terminar.';
+const T_M3='<strong>O que é m³?</strong>A conta de água cobra por metro cúbico (m³). <b>1 m³ = 1.000 litros</b>, mais ou menos 100 baldes de 10 litros. Por exemplo, 350 litros aparecem na conta como 0,350 m³.<br><br>Aqui mostramos em litros porque é mais fácil de imaginar no dia a dia.';
+const T_GAUGE='<strong>Como calculamos o esperado</strong>Multiplicamos o número de moradores pela média brasileira de <b>152,1 litros por pessoa por dia</b> (SNIS 2020, Ministério das Cidades), ou pelo valor personalizado no perfil. Essa média já inclui banho, cozinha, descarga, limpeza e roupa.<br><br><strong>Como ler o círculo</strong>Ele enche conforme a casa usa água no dia. Até a margem de tolerância (10%, ajustável no perfil), o consumo é considerado normal. Passando de 100%, aparece um arco vermelho por fora.<br><br>É uma referência para comparar, não um limite oficial.';
+const T_AGORA='<strong>O que é este quadro?</strong>Mostra se a água está passando pelos sensores <b>neste momento</b>, em litros por minuto, e em qual ponto da casa. Atualiza a cada 2 segundos.<br><br>Se a água ficar correndo sem pausa pelo tempo escolhido em <b>Sistema</b> (20 minutos, por padrão), aparece um aviso vermelho no topo, com um passo a passo para verificar.';
+const T_HORAS='<strong>Como ler</strong>Cada barra mostra quantos litros passaram pelos sensores naquela hora. A barra azul-clara é a hora atual; as barras cinzas são as horas que ainda não chegaram. Passe o mouse ou toque numa barra para ver o valor exato.<br><br><strong>Para que serve</strong>Mostra os horários de pico, como banhos de manhã e louça à noite. Também ajuda a notar uso de madrugada, quando normalmente ninguém está usando água.<br><br>O gráfico só registra enquanto o painel está aberto recebendo as leituras.';
+const T_SEMANA='<strong>Como ler</strong>Cada barra é o total de um dia, e a linha tracejada é o esperado para os moradores.<br><br><b>Cores:</b> verde, dentro do esperado; amarelo, até 25% acima; laranja, até 50% acima; vermelho, até o dobro; vermelho escuro, mais que o dobro.<br><br>A barra de hoje fica mais clara porque o dia ainda não terminou. Dias sem barra não têm medição.';
+const T_PONTOS='<strong>Como ler</strong>Cada sensor fica em um ponto da tubulação; os nomes são os que você escolheu no perfil. A barra mostra a parte da água de hoje que passou por cada um.<br><br>“● correndo” indica que a água está passando por aquele ponto agora. Se um ponto costuma gastar pouco e de repente passa a gastar muito, vale conferir.';
+const T_CUSTO='<strong>Como a previsão é feita</strong>Calculamos a média de litros por dia dos dias já medidos no período e completamos os dias que faltam com essa média. Hoje, que ainda não terminou, conta pelo menos como a média dos outros dias. Se hoje é o único dia medido, seguimos o ritmo de hoje.<br><br><strong>Como chegamos ao valor em reais</strong>Litros ÷ 1.000 × preço do m³, mais a taxa fixa mensal dividida pelos dias. <span class="hc-help-dyn" id="hcCustoHelpPrice"></span><br><br><strong>Esperado e meta</strong>O esperado é o consumo de referência dos moradores, convertido em reais. A meta é o valor que você definiu no perfil, proporcional ao período.<br><br>A conta real pode ter faixas de preço progressivas, esgoto e outras taxas, então use estes valores como estimativa. <button type="button" class="hc-inline-link" data-hc="price">Alterar preço e taxas</button>';
+const T_RITMO='<strong>O que é o ritmo atual?</strong>É quanto a casa gastaria se todos os dias fossem iguais à média dos <b>últimos 7 dias com medição</b> (sem contar hoje, que ainda não terminou). Sem dias anteriores, usamos o ritmo de hoje.<br><br>Os quadros em laranja estão acima do esperado para os moradores. “Por pessoa” divide o mês pelo número de moradores: é uma média, não o gasto de cada pessoa. A taxa fixa mensal já está incluída.';
+const T_SIM='<strong>Como usar</strong>Escolha quantos litros a casa deixaria de usar por dia. O cálculo multiplica essa economia pelos dias do mês (e por 365 no ano) e pelo preço do m³.<br><br><strong>Ideias e quanto economizam</strong>(valores do SAAE e da Câmara/Sabesp):<br>• 1 minuto a menos de ducha: cerca de 9 L<br>• lavar a louça na cuba em vez de com a torneira aberta por 15 min: cerca de 97 L<br>• regar com regador em vez de 10 min de mangueira: boa parte de 186 L<br>• juntar roupa e lavar com a máquina cheia: 135 L por ciclo evitado';
+const T_VAZ="<strong>Como funciona</strong>Se um sensor medir água passando <b>sem pausa</b> pelo tempo escolhido, aparece um aviso vermelho no topo do Painel e a barra do cabeçalho fica vermelha.<br><br><strong>O que pode ser</strong>torneira ou chuveiro esquecido aberto, descarga com defeito, boia da caixa d'água ou cano com vazamento.<br><br>Se for um uso normal e longo (encher um balde grande, regar), clique em “Está tudo bem” e o aviso some até a água parar. O botão de teste só mostra a aparência do aviso; ele não mede nada.<br><br>Para a apresentação, use 1 minuto.";
+const H=(t,l)=>window.HydroAjuda?window.HydroAjuda.html(t,l):'';
 const store={get(k,s=localStorage){try{return s.getItem(k);}catch{return null;}},set(k,v,s=localStorage){try{s.setItem(k,v);}catch{}},del(k,s=localStorage){try{s.removeItem(k);}catch{}}};
 const reduce=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -70,9 +82,9 @@ hoje.innerHTML=`
 <div class="hc-leak" id="hcLeak" role="alert" hidden></div>
 <div class="hc-hoje-grid">
   <div class="hc-main">
-    <div class="hc-kicker"><span class="hc-live-dot" aria-hidden="true"></span><span id="hcHojeTitle">HOJE NA SUA CASA</span><span class="hc-date" id="hcDate"></span><span class="hc-demo-tag" id="hcDemoTag" hidden>DEMONSTRAÇÃO</span></div>
+    <div class="hc-kicker"><span class="hc-live-dot" aria-hidden="true"></span><span id="hcHojeTitle">HOJE NA SUA CASA</span>${H(T_HOJE,"O que entra neste número?")}<span class="hc-date" id="hcDate"></span><span class="hc-demo-tag" id="hcDemoTag" hidden>DEMONSTRAÇÃO</span></div>
     <div class="hc-big"><strong id="hcLiters">—</strong><span id="hcLitersUnit">litros</span></div>
-    <p class="hc-sub" id="hcSub">Aguardando as leituras do ESP32…</p>
+    <p class="hc-sub"><span id="hcSub">Aguardando as leituras do ESP32…</span>${H(T_M3,"O que é m³?")}</p>
     <div class="hc-money" id="hcMoney"></div>
     <div class="hc-verdict" id="hcVerdict" data-tone="neutral"></div>
   </div>
@@ -81,10 +93,10 @@ hoje.innerHTML=`
       <svg viewBox="0 0 120 120" aria-hidden="true"><circle class="hc-g-track" cx="60" cy="60" r="50"/><circle class="hc-g-fill" id="hcGaugeFill" cx="60" cy="60" r="50" pathLength="100"/><circle class="hc-g-over" id="hcGaugeOver" cx="60" cy="60" r="50" pathLength="100"/></svg>
       <div class="hc-g-center"><strong id="hcGaugePct">—</strong><span>do esperado</span></div>
     </div>
-    <p class="hc-gauge-cap" id="hcGaugeCap">Informe os moradores para comparar.</p>
+    <p class="hc-gauge-cap"><span id="hcGaugeCap">Informe os moradores para comparar.</span>${H(T_GAUGE,"Como o esperado é calculado")}</p>
   </div>
   <div class="hc-now" id="hcNow" aria-live="polite">
-    <span class="hc-now-title">AGORA</span>
+    <span class="hc-now-title">AGORA ${H(T_AGORA,"O que é este quadro?")}</span>
     <div class="hc-now-body" id="hcNowBody"></div>
   </div>
 </div>
@@ -102,9 +114,9 @@ const $=id=>document.getElementById(id);
 /* Gráficos no início da aba Visão geral. */
 const charts=document.createElement('div');charts.className='hc-charts';charts.id='usoGraficos';
 charts.innerHTML=`
-<article class="glass-card hc-chart-card hc-hours"><div class="hc-chart-head"><div><h3>Quando a água foi usada hoje</h3><p id="hcHoursSub">Litros em cada hora do dia.</p></div><span class="hc-chip" id="hcHoursPeak"></span></div><div class="hc-bars hc-bars-24" id="hcHours" role="img"></div><div class="hc-axis hc-axis-24" aria-hidden="true">${[0,3,6,9,12,15,18,21].map(h=>`<span style="left:${(h+.5)/24*100}%">${h}h</span>`).join('')}</div></article>
-<article class="glass-card hc-chart-card hc-week"><div class="hc-chart-head"><div><h3>Últimos 7 dias</h3><p>Cada barra é um dia. A linha tracejada é o esperado para os moradores.</p></div></div><div class="hc-bars hc-bars-7" id="hcWeek" role="img"></div><div class="hc-legend" id="hcWeekLegend"></div></article>
-<article class="glass-card hc-chart-card hc-split"><div class="hc-chart-head"><div><h3>Onde a água foi usada hoje</h3><p>Cada sensor mede um ponto da casa.</p></div></div><div id="hcSplit"></div></article>`;
+<article class="glass-card hc-chart-card hc-hours"><div class="hc-chart-head"><div><h3>Quando a água foi usada hoje ${H(T_HORAS,"Como ler este gráfico")}</h3><p id="hcHoursSub" hidden></p></div><span class="hc-chip" id="hcHoursPeak"></span></div><div class="hc-bars hc-bars-24" id="hcHours" role="img"></div><div class="hc-axis hc-axis-24" aria-hidden="true">${[0,3,6,9,12,15,18,21].map(h=>`<span style="left:${(h+.5)/24*100}%">${h}h</span>`).join('')}</div></article>
+<article class="glass-card hc-chart-card hc-week"><div class="hc-chart-head"><div><h3>Últimos 7 dias ${H(T_SEMANA,"Como ler este gráfico")}</h3></div></div><div class="hc-bars hc-bars-7" id="hcWeek" role="img"></div><div class="hc-legend" id="hcWeekLegend"></div></article>
+<article class="glass-card hc-chart-card hc-split"><div class="hc-chart-head"><div><h3>Onde a água foi usada hoje ${H(T_PONTOS,"Como ler este gráfico")}</h3></div></div><div id="hcSplit"></div></article>`;
 hoje.after(charts);
 
 /* ---------- Quanto sua água custa: gasto, previsão e ritmo ---------- */
@@ -113,15 +125,15 @@ const COST_KEY='hydrocasa:custo-periodo',SAVE_KEY='hydrocasa:custo-economia';
 let costPeriod=COST_PERIODS.some(p=>p[0]===store.get(COST_KEY))?store.get(COST_KEY):'thisMonth';
 let saveLiters=(()=>{const v=Number(store.get(SAVE_KEY));return v>=10&&v<=300?v:50;})();
 const custo=document.createElement('section');custo.id='hcCusto';custo.className='hc-custo';custo.setAttribute('aria-labelledby','hcCustoTitle');
-custo.innerHTML=`<div class="hc-custo-head"><div><span class="hc-kicker-plain">QUANTO SUA ÁGUA CUSTA</span><h2 id="hcCustoTitle">Gasto e previsão</h2><p>Quanto já foi gasto e quanto deve custar se a casa continuar no ritmo de agora.</p></div>
+custo.innerHTML=`<div class="hc-custo-head"><div><span class="hc-kicker-plain">QUANTO SUA ÁGUA CUSTA</span><h2 id="hcCustoTitle">Gasto e previsão ${H(T_CUSTO,"Como a previsão é calculada")}</h2><p>Quanto já foi gasto e quanto deve custar se a casa continuar no ritmo de agora.</p></div>
 <div class="hc-seg" role="tablist" aria-label="Período da previsão">${COST_PERIODS.map(([id,l])=>`<button type="button" role="tab" id="hcCp-${id}" data-cp="${id}" aria-controls="hcCustoBody">${l}</button>`).join('')}</div></div>
 <div class="hc-price-cta" id="hcPriceCta" hidden><span>Os valores estão em litros. <b>Informe o preço da água</b> para ver tudo em reais.</span><button type="button" class="primary-btn" data-hc="price">Informar preço</button></div>
 <div class="hc-custo-body" id="hcCustoBody" role="tabpanel"></div>
 <div class="hc-ritmo" id="hcRitmo"></div>
-<div class="hc-sim" id="hcSim"><div class="hc-sim-head"><h3>E se a casa economizar?</h3><p>Arraste para ver quanto uma pequena economia por dia representa no fim do mês e do ano.</p></div>
+<div class="hc-sim" id="hcSim"><div class="hc-sim-head"><h3>E se a casa economizar? ${H(T_SIM,"Como usar o simulador")}</h3></div>
 <div class="hc-sim-ctrl"><label for="hcSimRange">Economizar <output id="hcSimOut"></output> por dia</label><input type="range" id="hcSimRange" min="10" max="300" step="10"><small id="hcSimEq"></small></div>
 <div class="hc-sim-res" id="hcSimRes" aria-live="polite"></div></div>
-<p class="hc-custo-note" id="hcCustoNote"></p>`;
+`;
 hoje.after(custo);
 const simRange=$('hcSimRange');simRange.value=saveLiters;
 simRange.addEventListener('input',()=>{saveLiters=Number(simRange.value);store.set(SAVE_KEY,String(saveLiters));renderSim();});
@@ -178,9 +190,7 @@ function renderCusto(){
         return `<div class="hc-cb hc-cb-${r[3]}"><div class="hc-cb-top"><span>${r[0]}</span><b>${v.main}</b></div><div class="hc-cb-track"><i style="width:${(Number(metric(r))||0)/max*100}%"></i></div>${v.sub?`<small>${v.sub}</small>`:''}</div>`;}).join('')}</div>`;
   }
   renderRitmo();renderSim();
-  const fx=s.fixedMonthly?` e taxa fixa de ${money(s.fixedMonthly)} por mês`:'';
-  const note=$('hcCustoNote'),noteHtml=priced?`Calculado com ${money(s.pricePerM3)} por m³${fx}. A conta real pode ter faixas de preço e outras taxas. <button type="button" class="hc-inline-link" data-hc="price">Alterar valores</button>`:'';
-  if(note.dataset.h!==noteHtml){note.innerHTML=noteHtml;note.dataset.h=noteHtml;}
+  const hp=$('hcCustoHelpPrice');if(hp)hp.textContent=priced?`Hoje o cálculo usa ${money(s.pricePerM3)} por m³${s.fixedMonthly?` e taxa fixa de ${money(s.fixedMonthly)} por mês`:''}.`:'Informe o preço da água no perfil para ver os valores em reais.';
 }
 function renderRitmo(){
   const r=F.rates({history:calcHistory(),currentProfile:calcProfile(),settings:settings(),now:new Date()}),box=$('hcRitmo');
@@ -192,7 +202,8 @@ function renderRitmo(){
     const up=x.expectedLiters!==null&&x.liters>x.expectedLiters*(1+(calcProfile()?.tolerance??10)/100);
     return `<div class="${up?'is-up':''}"><span>${l}</span><b>${v.main}</b><small>${v.sub}${e?`<br>esperado: ${e}`:''}</small></div>`;});
   if(r.perPersonMonth!==null&&hasPrice())cells.push(`<div><span>Por pessoa, no mês</span><b>${money(r.perPersonMonth)}</b><small>${r.residents} morador${r.residents>1?'es':''}</small></div>`);
-  box.innerHTML=`<h3>Quanto custa no ritmo atual</h3><p>Com base na ${head}.</p><div class="hc-ritmo-grid">${cells.join('')}</div>`;
+  if(!box.dataset.ready){box.innerHTML=`<h3>Quanto custa no ritmo atual ${H(T_RITMO,'O que é o ritmo atual?')}</h3><p id="hcRitmoBase"></p><div class="hc-ritmo-grid" id="hcRitmoGrid"></div>`;box.dataset.ready='1';}
+  $('hcRitmoBase').innerHTML=`Com base na ${head}.`;$('hcRitmoGrid').innerHTML=cells.join('');
 }
 function renderSim(){
   const now=new Date(),s=settings(),sv=F.savings(saveLiters,s,now),r=F.rates({history:calcHistory(),currentProfile:calcProfile(),settings:s,now});
@@ -225,7 +236,7 @@ function renderHoje(){
   hoje.dataset.demo=t?.demo?'true':'false';
   // Total
   if(t){$('hcLiters').textContent=num(Math.round(t.total));$('hcLitersUnit').textContent=Math.round(t.total)===1?'litro':'litros';
-    $('hcSub').innerHTML=`É o mesmo que <b>${m3(t.total)}</b> — a unidade usada na conta de água.`;}
+    $('hcSub').innerHTML=`É o mesmo que <b>${m3(t.total)}</b> na conta de água`;}
   else{$('hcLiters').textContent='—';$('hcLitersUnit').textContent='litros';
     $('hcSub').textContent=state.demoMode?'Este endereço não recebe dados do ESP32. Abra o site pelo endereço do ESP32 para ver as medições.':liveFresh()?'Nenhuma água passou pelos sensores hoje.':'Aguardando as leituras do ESP32…';}
   // Dinheiro
@@ -255,7 +266,7 @@ function renderHoje(){
     fill.style.strokeDasharray=`${a} 100`;over.style.strokeDasharray=`${b} 100`;fill.style.opacity=a<1?0:1;over.style.opacity=b<1?0:1;
     $('hcGaugePct').textContent=num(Math.round(pct))+'%';$('hcGauge').dataset.tone=$('hcVerdict').dataset.tone;
     $('hcGauge').setAttribute('aria-label',`Hoje: ${num(Math.round(pct))}% do esperado para os moradores`);
-    $('hcGaugeCap').innerHTML=`Esperado: até <b>${L(exp)}</b> por dia<br><small>${p.residents} × ${num(p.referenceLiters,1)} L por pessoa (média nacional SNIS)</small>`;}
+    $('hcGaugeCap').innerHTML=`Esperado: até <b>${L(exp)}</b> por dia<br><small>para ${p.residents} morador${p.residents>1?'es':''}</small>`;}
   renderNow(t);renderFacts(t,exp);renderTip(t);
 }
 function renderNow(t){
@@ -301,11 +312,11 @@ function renderHours(){
   const t=dayData(A.todayKey()),box=$('hcHours'),hours=t?.hours,cur=new Date().getHours();
   if(!hours||!hours.some(v=>v>0)){
     box.innerHTML=`<p class="hc-empty">${t?'Este gráfico começa a ser preenchido a partir de agora, a cada leitura do ESP32.':'Sem medições hoje ainda.'}</p>`;$('hcHoursPeak').hidden=true;
-    $('hcHoursSub').textContent='Litros em cada hora do dia.';box.setAttribute('aria-label','Sem dados por hora');return;}
+    $('hcHoursSub').hidden=true;box.setAttribute('aria-label','Sem dados por hora');return;}
   const max=Math.max(...hours,1),peak=hours.indexOf(Math.max(...hours));
   box.innerHTML=hours.map((v,i)=>`<div class="hc-bar${i===cur?' is-now':''}${i>cur?' is-future':''}${i===peak?' is-peak':''}" style="--h:${v/max*100}%"><span class="hc-bar-fill"></span><span class="hc-tt">${i}h–${i+1}h: <b>${L(v)}</b></span></div>`).join('');
   $('hcHoursPeak').hidden=false;$('hcHoursPeak').textContent=`Maior uso: ${peak}h–${peak+1}h (${L(hours[peak])})`;
-  $('hcHoursSub').textContent=t.demo?'Distribuição ilustrativa ao longo do dia (demonstração).':'Litros em cada hora do dia. Passe o mouse sobre as barras.';
+  $('hcHoursSub').hidden=!t.demo;$('hcHoursSub').textContent='Distribuição ilustrativa ao longo do dia (demonstração).';
   box.setAttribute('aria-label',`Uso por hora hoje; maior uso entre ${peak}h e ${peak+1}h, com ${L(hours[peak])}`);
 }
 function renderWeek(){
@@ -430,7 +441,7 @@ function wizard(){
 }
 
 /* ---------- Configuração do aviso na aba Sistema ---------- */
-const leakCard=document.createElement('article');leakCard.className='glass-card hc-leak-settings';leakCard.innerHTML=`<div><span class="eyebrow">AVISO DE ÁGUA CORRENDO</span><h3>Avisar quando a água ficar correndo sem parar</h3><p>O painel mostra um alerta vermelho no topo quando um sensor mede água passando, sem pausa, pelo tempo escolhido. Ajuda a perceber torneiras esquecidas e vazamentos.</p></div>
+const leakCard=document.createElement('article');leakCard.className='glass-card hc-leak-settings';leakCard.innerHTML=`<div><span class="eyebrow">AVISO DE ÁGUA CORRENDO</span><h3>Avisar quando a água ficar correndo sem parar ${H(T_VAZ,"Como funciona o aviso")}</h3><p>Ajuda a perceber torneiras esquecidas e vazamentos.</p></div>
 <div class="hc-leak-controls"><label>Avisar depois de<select id="hcLeakLimit">${[1,5,10,20,30,60].map(v=>`<option value="${v}">${v} minuto${v>1?'s':''}</option>`).join('')}</select></label><button type="button" class="ghost-btn" id="hcLeakTest">Mostrar um aviso de teste</button><button type="button" class="ghost-btn" id="hcWizAgain">Refazer configuração inicial</button></div>`;
 settingsPanel?.querySelector('.settings-grid')?.after(leakCard);
 const limitSel=$('hcLeakLimit');if(limitSel){limitSel.value=String(limitMin());limitSel.onchange=()=>{store.set(LIMIT_KEY,limitSel.value);renderLeak();};}
