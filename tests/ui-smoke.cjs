@@ -124,6 +124,14 @@ function seedLedger(){
 
     // Meu consumo oferece o relatório do período filtrado.
     await page.goto(base+'/?pagina=consumo');
+    // Meu consumo em litros, com custo, situação por cores e resumo do dia com "Justificar".
+    await page.waitForFunction(()=>document.querySelector('#periodVolume').textContent.includes(' L'));
+    assert.match(await page.locator('#periodAbove').textContent(),/\d+ de \d+/);
+    assert.ok(await page.locator('#historyRows .hc-pill').count()>0,'situação colorida na tabela');
+    assert.ok(await page.locator('#historyChart .hc-day').count()>0,'gráfico por dia com cores');
+    await page.locator('[data-history-day]').first().click();
+    assert.match(await page.locator('#historyDayBody').textContent(),/Esperado: até/);
+    assert.equal(await page.locator('#historyDayBody [data-justify-day]').count(),1);
     await page.locator('#consumptionReportBtn').click();
     assert.equal(await page.locator('[name=reportPeriod]:checked').inputValue(),'last7');
     await page.keyboard.press('Escape');
@@ -155,6 +163,13 @@ function seedLedger(){
     const records=await page.evaluate(()=>JSON.parse(localStorage.getItem('hydrocasa_ledger_v2')).activityRecords);
     assert.equal(Object.values(records).flat().length,2);
     // Aviso de água correndo (teste pela aba Sistema).
+    // Calendário: dias pintados pela faixa e resumo simples ao clicar.
+    await page.locator('[data-panel=calendar]').click();
+    assert.ok(await page.locator('#calendarGrid .day[data-level]').count()>0,'dias coloridos');
+    await page.locator('#calendarGrid .day[data-level]').first().click();
+    assert.match(await page.locator('#modalBody').textContent(),/Esperado: até.*Justificar consumo deste dia/s);
+    await page.locator('#closeModal').click();
+    assert.equal(await page.locator('#alertsOverview').isVisible(),false,'alertas só na Visão geral');
     await page.locator('[data-panel=settings]').click();
     await page.locator('#hcLeakTest').click();
     assert.match(await page.locator('#hcLeak').textContent(),/TESTE.*Água correndo sem parar/);

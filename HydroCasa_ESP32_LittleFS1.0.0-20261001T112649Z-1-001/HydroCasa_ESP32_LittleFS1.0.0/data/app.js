@@ -298,9 +298,10 @@ function renderCalendar(){
     if(dd.getTime()===today.getTime()) el.classList.add("today");
     const count=Array.isArray(state.activityRecords[k])?state.activityRecords[k].length:0;
     if(count)el.classList.add("has-activities");
-    let bottom=isFuture?"Aguardando coleta":h&&h.readings>0?volume(h.total1+h.total2)+(h.partial?" • parcial":""):"Sem informação";
-    el.innerHTML=`<span class="num">${day}</span><span class="day-total">${bottom}</span>${count?`<span class="day-activity-count" aria-hidden="true">◈ ${count} atividade${count!==1?"s":""}</span>`:""}`;
-    el.setAttribute("aria-label",`${day} de ${base.toLocaleDateString("pt-BR",{month:"long",year:"numeric"})}: ${bottom}${count?`, ${count} atividade(s) registrada(s)`:""}. Abrir detalhes e atividades.`);
+    const lv=!isFuture?dayLevel(h):null;if(lv&&lv.id)el.dataset.level=lv.id;
+    let bottom=isFuture?"":lv?litros(lv.total):"Sem medição";
+    el.innerHTML=`<span class="num">${day}</span><span class="day-total">${bottom}</span>${count?`<span class="day-activity-count" aria-hidden="true">✎ ${count}</span>`:""}`;
+    el.setAttribute("aria-label",`${day} de ${base.toLocaleDateString("pt-BR",{month:"long",year:"numeric"})}: ${isFuture?"ainda não chegou":bottom}${lv&&lv.label?", "+lv.label.toLowerCase():""}${count?`, ${count} atividade(s) registrada(s)`:""}. Abrir resumo do dia.`);
     el.addEventListener("click",()=>openDayModal(d));
     grid.appendChild(el);
   }
@@ -322,98 +323,35 @@ function activityContextHtml(dayKey,h){
  if(x.actual!==null)status=x.actual<=x.justified?'OK — o volume medido está dentro do volume estimado pelas atividades registradas.':'O volume medido supera a estimativa das atividades registradas.';
  return '<p><b>Volume medido:</b> '+(x.actual===null?'sem leitura':volume(x.actual))+'</p><p><b>Volume estimado pelas atividades:</b> '+volume(x.justified)+'</p><p>'+escapeHtml(status)+'</p><p><b>Comparação independente com a referência diária:</b> '+escapeHtml(x.referenceResult?.label||'Indisponível')+(x.reference!==null?' ('+volume(x.reference)+' para '+x.profile.residents+' morador(es)).':'.')+'</p><p class="muted-note">As atividades contextualizam o volume, mas são estimativas informadas e não substituem a medição nem comprovam a causa do consumo.</p>';
 }
+/* Situação de um dia em linguagem simples (mesmas faixas do Painel). */
+const litros=v=>Number.isFinite(v)?(v>0&&v<10?v.toLocaleString("pt-BR",{maximumFractionDigits:1}):Math.round(v).toLocaleString("pt-BR"))+" L":"—";
+function dayLevel(h){
+  if(!h||!(h.readings>0)||!Number.isFinite(h.total1)||!Number.isFinite(h.total2))return null;
+  const p=M.dayProfile(h,state.household),total=h.total1+h.total2;
+  if(!p)return {total,id:null,label:"Sem perfil para comparar",profile:null,expected:null};
+  const expected=p.residents*p.referenceLiters,F=window.HydroFinance;
+  const lv=F&&expected>0?F.spendingLevel((total/expected-1)*100,p.tolerance):null;
+  return {total,id:lv?lv.id:null,label:lv?lv.label:"",profile:p,expected};
+}
 function openDayModal(d){
  const k=keyForDate(d),h=state.history[k],future=d>new Date(),records=Array.isArray(state.activityRecords[k])?state.activityRecords[k]:[];
- if(future){showModal('<h3>Data futura</h3><p>A coleta ainda não está disponível.</p>');return;}
- let content='<span class="eyebrow">CALENDÁRIO</span><h3>'+escapeHtml(d.toLocaleDateString("pt-BR",{dateStyle:"full"}))+'</h3>';
- if(h&&h.readings){
-   const total=h.total1+h.total2;
-   content+='<p><b>Volume registrado pelos sensores: '+volume(total)+'</b></p><p>'+(h.partial?'Coleta parcial.':'Consumo registrado neste dia.')+'</p>';
-   content+='<p>'+escapeHtml(M.compareDay(h,null,{closed:k<todayKey()}).label)+'</p>';
- } else content+='<p>Sem leituras dos sensores neste dia.</p>';
- content+='<details class="activity-context-details" open><summary>Detalhamento da comparação com as atividades justificadas</summary>'+activityContextHtml(k,h)+'</details>';
- content+='<h4>Atividades registradas</h4>';
- content+=records.length?records.map((r,i)=>'<div class="activity-entry"><b>'+escapeHtml(r.name)+'</b><p>'+escapeHtml(r.quantity)+' ocorrência(s)'+(r.minutes?'; '+escapeHtml(r.minutes)+' min':'')+'</p><div class="activity-calendar-actions"><button class="ghost-btn" type="button" data-edit-day-activity="'+i+'">Editar</button><button class="ghost-btn" type="button" data-delete-day-activity="'+i+'">Remover</button></div></div>').join(''):'<p>Nenhuma atividade cadastrada para esta data.</p>';
- // O registro manual é descritivo e fica exclusivamente em activityRecords[k].
- // Não grava nem modifica leituras, totais, snapshots ou perfil dos sensores.
- content+='<button type="button" class="primary-btn calendar-add-toggle" id="calendarAddToggle" aria-expanded="false" aria-controls="calendarAddForm">+ Justificar consumo deste dia</button>';
- content+='<form id="calendarAddForm" class="calendar-add-form" hidden><h4>Adicionar atividade</h4>'+
- '<label for="calendarActivitySelect">Atividade<select id="calendarActivitySelect" name="activity" required>'+M.activities.map(a=>'<option value="'+escapeHtml(a.id)+'">'+escapeHtml(a.name)+'</option>').join('')+'</select></label>'+
- '<label for="calendarActivityQuantity">Ocorrências<input id="calendarActivityQuantity" name="quantity" type="number" min="1" max="100" step="1" value="1" required></label>'+
- '<label id="calendarMinutesLabel" for="calendarActivityMinutes" hidden>Duração (minutos)<input id="calendarActivityMinutes" name="minutes" type="number" min="0.1" max="240" step="any"></label>'+
- '<label id="calendarCustomLabel" for="calendarActivityCustom" hidden>Volume estimado por ocorrência (m³)<input id="calendarActivityCustom" name="custom" type="number" min="0.001" max="1000" step="any"></label>'+
- '<p class="muted-note">Estimativa de atividade: não altera os volumes medidos pelo ESP32.</p>'+
- '<div class="calendar-form-actions"><button type="submit" class="primary-btn">Salvar atividade</button><button type="button" class="ghost-btn" id="calendarCancelAdd">Cancelar</button></div><p id="calendarActivityFeedback" role="status" aria-live="polite"></p></form>';
- showModal(content);
- // Formulário local ao dia escolhido, reutilizando o mesmo catálogo e a função M.estimate.
- const addForm=$("#calendarAddForm"),addToggle=$("#calendarAddToggle");
- const syncFields=()=>{
-   const activity=M.activities.find(x=>x.id===addForm.elements.activity.value);
-   const duration=$("#calendarMinutesLabel"),custom=$("#calendarCustomLabel");
-   duration.hidden=!activity?.minutes;addForm.elements.minutes.required=!!activity?.minutes;
-   addForm.elements.quantity.max=activity?.id==="pool"?5:activity?.id==="cleaning"?10:activity?.id==="shower"||activity?.id==="shower-electric"?5:20;
-   custom.hidden=activity?.liters!==null;addForm.elements.custom.required=activity?.liters===null;
-   addForm.elements.custom.max=activity?.id==="pool"?"100":activity?.id==="cleaning"?"1":"100";
-   if(activity?.minutes)addForm.elements.minutes.value=activity.minutes;
- };
- addToggle.onclick=()=>{if(window.HydroAtividades){closeModal();window.HydroAtividades.open(k);return;}addForm.hidden=!addForm.hidden;addToggle.setAttribute("aria-expanded",String(!addForm.hidden));if(!addForm.hidden)addForm.elements.activity.focus();};
- $("#calendarCancelAdd").onclick=()=>{addForm.hidden=true;addToggle.setAttribute("aria-expanded","false");addToggle.focus();};
- addForm.elements.activity.onchange=syncFields;syncFields();
- addForm.onsubmit=event=>{
-   event.preventDefault();
-   try{
-     const activity=M.activities.find(x=>x.id===addForm.elements.activity.value);
-     if(!activity)throw Error("Selecione uma atividade válida.");
-     const params={
-       residents:state.household?.residents,
-       quantity:Number(addForm.elements.quantity.value),
-       minutes:activity.minutes?Number(addForm.elements.minutes.value):undefined,
-       customLiters:activity.liters===null?Number(addForm.elements.custom.value)*1000:undefined
-     };
-     const liters=M.estimate(activity.id,params);
-     if(!Number.isFinite(liters)||liters<0)throw Error("Estimativa inválida.");
-     if(!Array.isArray(state.activityRecords[k]))state.activityRecords[k]=[];
-     state.activityRecords[k].push({
-       name:activity.name,id:activity.id,liters,observed:null,quantity:params.quantity,
-       minutes:activity.minutes?params.minutes:null,
-       residentsUsed:activity.perPerson?params.residents:null,
-       sourceName:M.sources[activity.source].name,sourceId:activity.source,
-       referenceVersion:"2026-10-13",tolerance:state.household?.tolerance??10,
-       comparison:null,at:Date.now()
-     });
-     save();renderCalendar();renderActivityLog();updateAnalysis();updateHousehold();openDayModal(d);
-     const feedback=$("#modalBody").querySelector("#calendarAddToggle");
-     feedback?.focus();
-   }catch(error){$("#calendarActivityFeedback").textContent=error.message;}
- };
-
- $$('[data-delete-day-activity]').forEach(btn=>btn.onclick=()=>{
-   const i=Number(btn.dataset.deleteDayActivity);
-   if(!Number.isInteger(i)||!records[i]||!confirm('Remover esta atividade? Os dados dos sensores não serão alterados.'))return;
-   records.splice(i,1);save();updateAnalysis();renderActivityLog();openDayModal(d);
- });
- $$('[data-edit-day-activity]').forEach(btn=>btn.onclick=()=>{
-   const i=Number(btn.dataset.editDayActivity),record=records[i],activity=record&&M.activities.find(x=>x.id===record.id);
-   if(!activity)return;
-   const holder=btn.closest('.activity-entry');
-   const existing=holder.querySelector('.activity-calendar-form');if(existing){existing.remove();return;}
-   const form=document.createElement('form');form.className='activity-calendar-form';
-   form.innerHTML='<label>Ocorrências <input name="quantity" type="number" min="1" max="100" step="1" required></label>'+(activity.minutes?'<label>Duração (min) <input name="minutes" type="number" min="0.1" max="240" step="any" required></label>':'')+'<button type="submit" class="primary-btn">Salvar alterações</button><p role="status"></p>';
-   form.elements.quantity.value=record.quantity;
-   if(activity.minutes)form.elements.minutes.value=record.minutes||activity.minutes;
-   form.onsubmit=ev=>{
-     ev.preventDefault();
-     try {
-       const quantity=Number(form.elements.quantity.value),minutes=activity.minutes?Number(form.elements.minutes.value):undefined;
-       const liters=M.estimate(activity.id,{residents:record.residentsUsed||state.household?.residents,quantity,minutes,customLiters:activity.liters===null?record.liters/(record.quantity*(record.residentsUsed||1)):undefined});
-       if(!Number.isFinite(liters)||liters<0)throw Error('Estimativa inválida.');
-       record.quantity=quantity;record.minutes=activity.minutes?minutes:null;record.liters=liters;
-       record.observed=null;record.comparison=null;
-       save();updateAnalysis();renderActivityLog();openDayModal(d);
-     }catch(error){form.querySelector('[role="status"]').textContent=error.message;}
-   };
-   holder.appendChild(form);form.elements.quantity.focus();
- });
+ if(future){showModal('<span class="eyebrow">CALENDÁRIO</span><h3>'+escapeHtml(d.toLocaleDateString("pt-BR",{dateStyle:"full"}))+'</h3><p>Este dia ainda não chegou.</p>');return;}
+ const lv=dayLevel(h),F=window.HydroFinance,fin=F?F.read(localStorage):null,isToday=k===todayKey();
+ const cost=lv&&fin&&Number.isFinite(fin.pricePerM3)?F.money(lv.total/1000*fin.pricePerM3):null;
+ const names=state.household||M.defaults;
+ let c='<span class="eyebrow">CALENDÁRIO</span><h3 class="cal-modal-title">'+escapeHtml(d.toLocaleDateString("pt-BR",{dateStyle:"full"}))+'</h3>';
+ if(lv){
+   c+='<div class="cal-modal-main" data-level="'+(lv.id||"none")+'"><strong>'+litros(lv.total)+'</strong><span>'+escapeHtml(M.m3(lv.total))+(cost?' · '+escapeHtml(cost):'')+'</span></div>';
+   if(lv.expected)c+='<p class="cal-modal-status" data-level="'+(lv.id||"none")+'"><b>'+escapeHtml(isToday&&lv.id==="normal"&&lv.total<=lv.expected?"Até agora, dentro do esperado":lv.label)+'</b> Esperado: até '+litros(lv.expected)+' para '+lv.profile.residents+' morador'+(lv.profile.residents>1?'es':'')+'.'+(lv.profile.scope==="whole"?'':' Comparação ilustrativa.')+'</p>';
+   c+='<ul class="cal-modal-points"><li><i class="dot d1"></i>'+escapeHtml(names.ramal1)+'<b>'+litros(h.total1)+'</b></li><li><i class="dot d2"></i>'+escapeHtml(names.ramal2)+'<b>'+litros(h.total2)+'</b></li></ul>';
+   if(isToday)c+='<p class="muted-note">O dia ainda está em andamento.</p>';else if(h.partial!==false)c+='<p class="muted-note">Algumas leituras deste dia faltaram (painel fechado ou ESP32 sem conexão), então o total pode estar abaixo do real.</p>';
+ }else c+='<p>Não há medições neste dia.</p>';
+ const explained=records.reduce((s,r)=>s+(Number.isFinite(r.liters)&&r.liters>0?r.liters:0),0);
+ c+='<h4 class="cal-modal-sub">O que foi registrado</h4>';
+ c+=records.length?'<ul class="cal-modal-acts">'+records.map(r=>'<li>'+escapeHtml(r.name)+'<b>'+litros(r.liters)+'</b></li>').join('')+'</ul>'+(lv&&lv.total>0?'<p class="muted-note">As atividades explicam '+Math.min(100,Math.round(explained/lv.total*100))+'% da água medida.</p>':''):'<p class="muted-note">Nada registrado. Se algo diferente aconteceu, conte em “Justificar consumo”.</p>';
+ c+='<div class="cal-modal-actions"><button type="button" class="primary-btn" id="calendarAddToggle">Justificar consumo deste dia</button></div>';
+ showModal(c);
+ $("#calendarAddToggle").onclick=()=>{closeModal();if(window.HydroAtividades)window.HydroAtividades.open(k);};
 }
 
 function updateAnalysis(){
