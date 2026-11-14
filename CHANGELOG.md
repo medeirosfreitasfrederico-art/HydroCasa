@@ -1,5 +1,23 @@
 # Histórico de versões
 
+## 1.6.0 — 2026-11-14
+
+### Adicionado
+- **Sequência de dias dentro do esperado** em "Hoje na sua casa": ocupa o lugar do cartão "Equivale a baldes", em vez de criar um quadro novo. Mostra a sequência até ontem e o recorde do último ano, e avisa quando hoje já passou do esperado. A regra fica no "?".
+- **Convite para definir a meta de gasto** no quadro de custos quando não há meta. A meta em si continua aparecendo só lá, sem repetir em outros lugares.
+- **Calendário colorido:** cada dia aparece na cor da faixa (dentro, um pouco acima, acima, bem acima), com o total em litros e um ✎ com o número de atividades. A legenda e a ajuda foram atualizadas.
+- **Resumo do dia** (calendário e Meu consumo): litros, m³ e reais, situação em relação ao esperado, cada ponto da casa, atividades registradas com quanto da água elas explicam, e o botão "Justificar consumo deste dia".
+
+### Alterado
+- **Meu consumo** no padrão do Painel:
+  - quatro cartões: total em litros e reais, média por dia comparada ao esperado, dias acima do esperado e dias com medição;
+  - gráfico colorido por faixa, com a linha do esperado;
+  - tabela "Dia a dia" com custo, situação colorida e os nomes dos sensores;
+  - avisos técnicos movidos para o "?".
+- **Alertas** e o atalho do relatório aparecem só na Visão geral; nas outras abas, o sino e o botão do topo continuam disponíveis.
+- **Contraste:** textos em amarelo, laranja e verde ficaram mais escuros no tema claro, mais legíveis no projetor. As barras mantêm as cores.
+- A página não rola mais para os lados no celular; tabelas largas rolam dentro do próprio quadro.
+
 ## 1.5.0 — 2026-11-14
 
 ### Adicionado

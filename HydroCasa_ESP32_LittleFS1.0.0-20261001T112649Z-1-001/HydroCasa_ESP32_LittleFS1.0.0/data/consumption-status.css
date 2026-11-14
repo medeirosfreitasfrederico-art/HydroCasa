@@ -27,7 +27,7 @@ body[data-gasto] .metric-primary,body[data-gasto] .consumption-status-card{borde
 body[data-gasto] .metric-primary{box-shadow:0 0 0 1px color-mix(in srgb,var(--gasto) 18%,transparent),var(--shadow)}
 .gasto-faixa{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:9px 5vw;font-size:13px;line-height:1.45;color:var(--text);background:color-mix(in srgb,var(--gasto,#eab308) 13%,var(--surface2));border-bottom:1px solid color-mix(in srgb,var(--gasto,#eab308) 30%,var(--line))}
 .gasto-faixa[hidden]{display:none}
-.gasto-faixa strong{color:color-mix(in srgb,var(--gasto) 75%,var(--text))}
+.gasto-faixa strong{color:color-mix(in srgb,var(--gasto) 45%,var(--text))}
 body.dark .gasto-faixa strong{color:color-mix(in srgb,var(--gasto) 55%,#fff)}
 .gasto-faixa-dot{width:10px;height:10px;border-radius:50%;background:var(--gasto);box-shadow:0 0 0 4px color-mix(in srgb,var(--gasto) 22%,transparent)}
 body[data-gasto="extremo"] .gasto-faixa-dot{animation:gasto-pulse 1.8s ease-in-out infinite}

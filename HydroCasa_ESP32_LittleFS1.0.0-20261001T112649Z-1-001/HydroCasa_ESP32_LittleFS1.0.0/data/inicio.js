@@ -187,7 +187,7 @@ function renderCusto(){
       <p class="hc-custo-verdict">${verdict}</p>${goalNote?`<p class="hc-custo-goal">${goalNote}</p>`:''}
       <div class="hc-custo-progress" aria-label="${progress}"><span style="width:${Math.min(100,(costPeriod==='today'?F.dayFraction(now):elapsed/total)*100)}%"></span></div><small class="hc-custo-prog-label">${progress} · ${sum.forecastBasis==='today'?'previsão pelo ritmo de hoje':`média de ${num(sum.average,0)} L por dia medido`}</small></div>
       <div class="hc-custo-bars">${rows.map(r=>{const v=priced?{main:money(r[2]),sub:r[1]!==null?vol(r[1]):'meta proporcional ao período'}:{main:vol(r[1]),sub:''};
-        return `<div class="hc-cb hc-cb-${r[3]}"><div class="hc-cb-top"><span>${r[0]}</span><b>${v.main}</b></div><div class="hc-cb-track"><i style="width:${(Number(metric(r))||0)/max*100}%"></i></div>${v.sub?`<small>${v.sub}</small>`:''}</div>`;}).join('')}</div>`;
+        return `<div class="hc-cb hc-cb-${r[3]}"><div class="hc-cb-top"><span>${r[0]}</span><b>${v.main}</b></div><div class="hc-cb-track"><i style="width:${(Number(metric(r))||0)/max*100}%"></i></div>${v.sub?`<small>${v.sub}</small>`:''}</div>`;}).join('')}${priced&&goal===null?'<button type="button" class="hc-goal-invite" data-hc="price">+ Definir uma meta de gasto mensal</button>':''}</div>`;
   }
   renderRitmo();renderSim();
   const hp=$('hcCustoHelpPrice');if(hp)hp.textContent=priced?`Hoje o cálculo usa ${money(s.pricePerM3)} por m³${s.fixedMonthly?` e taxa fixa de ${money(s.fixedMonthly)} por mês`:''}.`:'Informe o preço da água no perfil para ver os valores em reais.';
@@ -279,17 +279,35 @@ function renderNow(t){
     ?`<div class="hc-now-flow">${ICON.tap}<div><b>Água correndo</b><span>${num(f[0]+f[1],1)} litros por minuto</span></div></div><ul>${[0,1].map(i=>`<li class="${running[i]?'on':''}"><i aria-hidden="true"></i>${esc(i?n2:n1)}<b>${running[i]?num(f[i],1)+' L/min':'parado'}</b></li>`).join('')}</ul>`
     :`<div class="hc-now-flow is-idle">${ICON.tap}<div><b>Nenhuma água correndo</b><span>Todas as saídas monitoradas estão fechadas.</span></div></div><ul>${[n1,n2].map(n=>`<li><i aria-hidden="true"></i>${esc(n)}<b>parado</b></li>`).join('')}</ul>`;
 }
+/* Sequência de dias dentro do esperado (antes de hoje) e o recorde do último ano. */
+function streakInfo(){
+  const within=k=>{const d=dayData(k);if(!d)return null;const p=d.profile||profile();if(!p)return null;const id=levelFor(d.total,expectedFor(p),p.tolerance??10);return id===null?null:id==='normal';};
+  let current=0;for(let i=1;i<=366;i++){const w=within(dayKey(-i));if(w!==true)break;current++;}
+  let best=0,run=0;for(let i=366;i>=1;i--){const w=within(dayKey(-i));if(w===true){run++;best=Math.max(best,run);}else run=0;}
+  const y=within(dayKey(-1)),t=dayData(A.todayKey()),tp=t?.profile||profile();
+  const todayAbove=t&&tp?levelFor(t.total,expectedFor(tp),tp.tolerance??10)!=='normal':false;
+  return {current,best,yesterdayAbove:y===false,todayAbove,known:y!==null};
+}
+const T_SEQ='<strong>Sequência</strong>Conta quantos dias seguidos, até ontem, a casa ficou dentro do esperado para os moradores (com a margem do perfil). Um dia acima do esperado ou sem medição recomeça a contagem. O recorde é a maior sequência do último ano.<br><br>Hoje ainda não entra na conta porque o dia não terminou; se já passou do esperado, o quadro avisa.';
+let factsHtml='';
 function renderFacts(t,exp){
   const out=[];
   if(t&&t.total>0){
-    const buckets=t.total/10;out.push(`<div><span>Equivale a</span><b>${num(Math.max(1,Math.round(buckets)))} balde${Math.round(buckets)>1?'s':''}</b><small>de 10 litros</small></div>`);
+    const sq=profile()||t.demo?streakInfo():null;
+    if(sq&&sq.known){
+      const main=sq.current?`${sq.current} dia${sq.current>1?'s':''} seguido${sq.current>1?'s':''}`:'Recomeçando';
+      const sub=sq.current?(sq.todayAbove?'hoje já passou do esperado':'dentro do esperado'):(sq.yesterdayAbove?'ontem passou do esperado':'sem sequência ainda');
+      out.push(`<div class="hc-streak${sq.current?'':' is-zero'}${sq.todayAbove?' is-warn':''}"><span>Sequência ${H(T_SEQ,'Como a sequência é contada')}</span><b>${main}</b><small>${sub}${sq.best>sq.current&&sq.best>1?` · recorde: ${sq.best}`:sq.current>1&&sq.current===sq.best?' · seu recorde!':''}</small></div>`);
+    }else{const buckets=t.total/10;out.push(`<div><span>Equivale a</span><b>${num(Math.max(1,Math.round(buckets)))} balde${Math.round(buckets)>1?'s':''}</b><small>de 10 litros</small></div>`);}
     const y=dayData(dayKey(-1));
-    if(y&&y.total>0){const n=new Date(),frac=t.demo?1:Math.max(.05,(n.getHours()*60+n.getMinutes())/1440);
-      out.push(`<div><span>Ontem, no dia todo</span><b>${L(y.total)}</b><small>${t.total>=y.total?'hoje já passou de ontem':'hoje: '+num(Math.round(t.total/y.total*100))+'% disso até agora'}</small></div>`);}
+    if(y&&y.total>0)out.push(`<div><span>Ontem, no dia todo</span><b>${L(y.total)}</b><small>${t.total>=y.total?'hoje já passou de ontem':'hoje: '+num(Math.round(t.total/y.total*100))+'% disso até agora'}</small></div>`);
     const days=[...Array(7)].map((_,i)=>dayData(dayKey(-(i+1)))).filter(Boolean);
     if(days.length>=2){const avg=days.reduce((s,d)=>s+d.total,0)/days.length;out.push(`<div><span>Média por dia</span><b>${L(avg)}</b><small>últimos ${days.length} dias</small></div>`);}
   }
-  $('hcFacts').innerHTML=out.join('');$('hcFacts').hidden=!out.length;
+  const html=out.join('');
+  // Só redesenha quando muda, para não fechar uma ajuda aberta.
+  const key=html.replace(/hcAjuda\d+/g,'');if(key!==factsHtml){$('hcFacts').innerHTML=html;factsHtml=key;}
+  $('hcFacts').hidden=!out.length;
 }
 /* Dica ligada ao ponto que mais gastou hoje (pelo nome que a pessoa deu ao sensor). */
 const TIPS=[
