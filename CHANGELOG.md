@@ -1,5 +1,22 @@
 # Histórico de versões
 
+## 1.3.0 — 2026-11-14
+
+Foco: deixar o site claro para quem não é técnico.
+
+### Adicionado
+- **Hoje na sua casa** (topo do Painel): consumo do dia em **litros** (com o equivalente em m³ da conta), situação em palavras simples com as mesmas faixas de cor do site, medidor circular do esperado para os moradores, custo de hoje e previsão da conta do mês, **água correndo agora** em cada sensor, comparação com ontem e com a média de 7 dias, e uma dica ligada ao ponto que mais gastou.
+- **Gráficos novos:** "Quando a água foi usada hoje" (litros por hora), "Últimos 7 dias" com linha do esperado e cor por faixa, e "Onde a água foi usada hoje" por sensor. O app passa a guardar o volume de cada hora do dia (`hours` no histórico), sem alterar os totais.
+- **Aviso de água correndo sem parar:** alerta vermelho no topo quando um sensor mede fluxo contínuo pelo tempo escolhido em Sistema (1 a 60 min; padrão 20), com passo a passo para verificar torneiras, descarga e vazamentos. Botão para mostrar um aviso de teste na apresentação.
+- **Boas-vindas guiada** no primeiro acesso (5 passos): moradores, nome dos sensores, se medem a casa toda, preço da água (com cálculo pela conta) e convite para o tour.
+
+### Alterado
+- **Justificar consumo** (antiga aba Atividades) refeito como assistente: escolher o dia (hoje, ontem ou outra data), tocar na atividade com ícone, ajustar pessoas, vezes e minutos com botões, ver os litros e o custo antes de salvar e acompanhar o **balanço do dia** (medido × explicado, quanto falta explicar). Registros podem ser editados e a remoção pode ser desfeita. O formato salvo é o mesmo de antes.
+- O botão "Justificar consumo deste dia" do calendário abre o assistente já na data escolhida.
+- Com o perfil configurado, o Painel começa direto pelos números (a apresentação e os primeiros passos ficam para o primeiro acesso). Números técnicos (m³, vazão, status) ficam em "Ver todos os números". Dados demonstrativos foram para a aba Sistema.
+- Tour guiado reescrito para o novo Painel; alertas do Painel mostram o mais importante primeiro (também no celular); menu de páginas rola na horizontal no celular.
+- Textos de "Sobre nós" e "Fontes e estudos" atualizados sobre o aviso de água correndo.
+
 ## 1.2.2 — 2026-11-04
 
 ### Corrigido

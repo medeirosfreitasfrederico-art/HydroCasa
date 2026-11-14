@@ -30,7 +30,7 @@ if(quickAccess)quickAccess.after(card);
 else {const dashboard=q('#dashboard .section-heading');if(dashboard)dashboard.after(card);}
 card.setAttribute('aria-label','Situação e avisos do monitoramento');
 /* Expansao progressiva somente na versao desktop, sem alterar os alertas. */
-let alertPreviewVisible=3;
+let alertPreviewVisible=1;
 const alertExpandButton=document.createElement('button');
 alertExpandButton.type='button';
 alertExpandButton.className='ghost-btn alerts-expand-button';
@@ -39,9 +39,9 @@ card.querySelector('#alertsTopList').after(alertExpandButton);
 function updateAlertPreviewLimit(){
  const items=[...card.querySelectorAll('#alertsTopList .alerts-inline-item')];
  const desktop=window.innerWidth>700;
- items.forEach((item,i)=>{item.hidden=desktop&&i>=alertPreviewVisible;});
+ items.forEach((item,i)=>{item.hidden=i>=alertPreviewVisible;});
  const left=Math.max(0,items.length-alertPreviewVisible);
- alertExpandButton.hidden=!desktop||left===0;
+ alertExpandButton.hidden=left===0;
  alertExpandButton.textContent='Mostrar mais ('+Math.min(3,left)+') ↓';
  alertExpandButton.setAttribute('aria-label','Exibir mais '+Math.min(3,left)+' alertas');
 }

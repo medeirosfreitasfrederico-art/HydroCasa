@@ -4,7 +4,7 @@
 const q=s=>document.querySelector(s),qa=s=>[...document.querySelectorAll(s)];
 const PROJECT_AFFILIATION='Projeto acadêmico · Engenharia';
 const affiliation=q('#heroAcademic');if(affiliation)affiliation.textContent=PROJECT_AFFILIATION;
-const names={dashboard:'Visão geral',calendar:'Calendário',analysis:'Análise',activities:'Atividades',settings:'Sistema'};
+const names={dashboard:'Visão geral',calendar:'Calendário',analysis:'Análise',activities:'Justificar consumo',settings:'Sistema'};
 const nav=q('.dashboard-shortcuts'),area=q('.dashboard-shortcuts-area'),hero=q('#dashboard-page .hero-premium'),guide=q('.getting-started'),house=q('.household-card'),metrics=q('.metrics-grid'),compare=q('.comparison-grid');
 if(!nav||!hero||!guide||!house)return;
 let interacted=false,guideDismissed=false,fromHistory=false;

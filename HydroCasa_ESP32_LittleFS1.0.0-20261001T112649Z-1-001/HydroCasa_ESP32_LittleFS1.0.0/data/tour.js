@@ -1,18 +1,17 @@
 (()=>{'use strict';
 const trigger=document.getElementById('openHydroTour');if(!trigger)return;
 const steps=[
- {selector:'#dashboard-page .hero-intro',title:'Bem-vindo ao HydroCasa',description:'Conheça as áreas principais da plataforma de monitoramento de água.'},
- {selector:'#connectionBadge, .header-actions',title:'Estado da conexão',description:'Online indica conexão com o sistema. Offline não significa que os dados do simulador sejam medições.'},
- {selector:'#dashboard-page .hero-premium',title:'O que é o HydroCasa',description:'Esta é uma maquete acadêmica: os sensores enviam medições ao ESP32 e o painel apresenta os resultados.'},
- {selector:'#dashboard-page .metrics-grid',title:'Painel de consumo',description:'Estes indicadores pertencem ao monitoramento. O tour não cria nem modifica nenhuma leitura.'},
- {selector:'#demoDataDetails > summary',title:'Personalizar dados demonstrativos',description:'Este botão abre o editor atual de dados demonstrativos. Clique nele depois de concluir o tour para configurar os consumos semanais, escolher o período e aplicar ou limpar o histórico fictício.'},
- {selector:'#dashboard-page .tabs',title:'Explore o painel',description:'Use as abas para consultar a visão geral, o calendário, análises e configurações.'},
- {selector:'[data-page="consumption"]',title:'Meu consumo',description:'Acompanhe o histórico e as informações disponíveis no navegador.'},
- {selector:'[data-page="simulator"]',title:'Simulador',description:'Escolha o tipo de vazão do chuveiro, ajuste os hábitos e compare estimativas fictícias. Nenhuma dessas informações altera as leituras reais.'},
- {selector:'[data-page="about"]',title:'Sobre nós',description:'Conheça a proposta acadêmica e os objetivos do projeto.'},
- {selector:'[data-page="sources"]',title:'Fontes e estudos',description:'Consulte a origem das referências, a metodologia das comparações e os limites das estimativas. Isso ajuda a interpretar corretamente os resultados.'},
- {selector:'#personalizar, #guideConfigureProfile',title:'Configurar moradores',description:'Informe quantas pessoas moram na residência e ajuste a abrangência dos sensores e as referências. Essas escolhas não mudam as leituras coletadas.'},
- {selector:'#heroTourButton',title:'Tour guiado',description:'Você chegou ao final do tour! Este botão no topo do site permite iniciar o passeio guiado novamente sempre que quiser.'}
+ {selector:'#hojeResumo .hc-main',title:'Hoje na sua casa',description:'Aqui aparece quanta água a casa usou hoje, em litros, e se isso está dentro do esperado para quem mora aí. Com o preço da água, mostra também o valor em reais.'},
+ {selector:'#hcGauge',title:'Comparação com o esperado',description:'O círculo mostra quanto do consumo esperado para o dia já foi usado. Verde: dentro do esperado. Amarelo, laranja e vermelho: acima.'},
+ {selector:'#hcNow',title:'Água correndo agora',description:'Mostra, em tempo real, se a água está passando por algum sensor. Se ela ficar correndo sem parar, aparece um aviso vermelho no topo da página.'},
+ {selector:'#connectionBadge, .header-actions',title:'Conexão com o ESP32',description:'“Online” quer dizer que o painel está recebendo as medições dos sensores. O botão de perfil e o Relatório PDF também ficam aqui em cima.'},
+ {selector:'#usoGraficos',title:'Quando e onde a água foi usada',description:'Os gráficos mostram o uso em cada hora de hoje, os últimos 7 dias comparados com o esperado e quanto cada ponto da casa gastou.'},
+ {selector:'#dashboard-page .tabs',title:'Abas do painel',description:'Calendário mostra os dias anteriores. Em “Justificar consumo” você conta o que aconteceu no dia (banho longo, máquina de lavar…) para explicar o gasto.'},
+ {selector:'#hcJustify',title:'Justificar consumo',description:'Gastou mais por um motivo? Use este botão: escolha a atividade, diga quanto tempo durou e veja quanto da água medida ficou explicado.'},
+ {selector:'[data-page="consumption"]',title:'Meu consumo',description:'Histórico completo, com filtros por período e uma tabela com todos os dias.'},
+ {selector:'[data-page="simulator"]',title:'Simulador',description:'Teste hábitos (como banhos mais curtos) e veja a economia estimada. Nada do simulador muda as medições reais.'},
+ {selector:'[data-page="sources"]',title:'Fontes e estudos',description:'De onde vêm as referências usadas nas comparações e os limites de cada estimativa.'},
+ {selector:'#hcTour, #heroTourButton',title:'Pronto!',description:'Você pode refazer este tour quando quiser por este botão.'}
 ];
 let index=0,active=false,previousFocus=null,previousOverflow='',highlighted=null;
 const spotlight=document.createElement('div');spotlight.className='hydro-tour-spotlight';spotlight.hidden=true;document.body.appendChild(spotlight);

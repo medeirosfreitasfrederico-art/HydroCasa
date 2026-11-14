@@ -430,6 +430,12 @@ Facens — Sorocaba/SP
 
 Projeto desenvolvido para fins acadêmicos e educacionais.
 
+## Atualização 1.3.0 — painel para leigos
+
+O Painel começa por **Hoje na sua casa**: litros do dia, se está dentro do esperado, quanto custou, água correndo agora e gráficos por hora, por dia e por sensor. O site avisa quando a água fica correndo sem parar, recebe quem chega com uma configuração guiada e traz o assistente **Justificar consumo**, que mostra quanto da água medida foi explicado pelas atividades do dia.
+
+- [Roteiro de apresentação](docs/APRESENTACAO.md)
+
 ## Atualização 1.2.0 — relatório em PDF e perfil dinâmico
 
 O botão **Relatório PDF** (cabeçalho, Painel e Meu consumo) gera no próprio navegador, sem internet, um relatório completo do período escolhido: dia específico, hoje, mês atual, mês passado, ano passado ou datas personalizadas. Um checklist define o que entra no arquivo. O relatório traz água medida, gasto até agora, previsão do período, valor esperado para os moradores, meta mensal, gráfico, tabela, ramais, atividades, alertas, dicas e metodologia. O **Perfil da residência** ganhou um painel lateral dinâmico, com edição rápida, valores da conta de água e acompanhamento ao vivo.

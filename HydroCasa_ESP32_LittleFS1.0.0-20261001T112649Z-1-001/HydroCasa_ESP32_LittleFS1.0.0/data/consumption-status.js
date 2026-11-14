@@ -75,7 +75,7 @@ function realDay(){
 }
 function paint(){
   if(!F?.spendingLevel)return;
-  const day=demoToday()||realDay();
+  const day=window.HydroInicio?.today?.()||demoToday()||realDay();
   const level=day&&day.expected>0?F.spendingLevel((day.total/day.expected-1)*100,day.tolerance):null;
   const active=level&&level.id!=='normal';
   if(active)document.body.dataset.gasto=level.id;else delete document.body.dataset.gasto;
@@ -95,4 +95,5 @@ const form=document.getElementById('householdForm');
 if(form)form.addEventListener('submit',()=>setTimeout(update,0));
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)update();});
 setInterval(()=>{if(!document.hidden)paint();},5000);
+window.addEventListener('hydrocasa:inicio-pronto',paint);
 })();

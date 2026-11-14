@@ -9,7 +9,7 @@ function setup(values={}){
   const storage=new Map(Object.entries(values));
   const localStorage={getItem:k=>storage.get(k)??null,setItem:(k,v)=>storage.set(k,v)};
   const ctx=vm.createContext({HydroConsumption,localStorage,Date,Math,Number,JSON});
-  const profileCode=source.slice(source.indexOf('function applyProfile('),source.indexOf('function activityInput('));
+  const profileCode=source.slice(source.indexOf('function applyProfile('),source.indexOf('function selectActivity('));
   vm.runInContext(source.slice(0,source.indexOf('async function poll()'))+profileCode+'\nglobalThis.api={state,addSnapshot,save,applyProfile};',ctx);
   return {...ctx.api,storage,localStorage};
 }
@@ -86,4 +86,11 @@ test('first profile after collection starts makes today comparable without chang
   assert.equal(a.state.history[day].profileMixed,false);
   assert.equal(a.state.history[day].total1,4);
   assert.notEqual(HydroConsumption.compareDay(a.state.history[day],a.state.household).label,'Configure os moradores');
+});
+test('volume is also split by hour of day without changing the daily total',()=>{
+  const a=setup(),t0=new Date(2026,9,13,8,59,50).getTime();
+  a.addSnapshot(day,sample(0,0),t0);a.addSnapshot(day,sample(3,1),t0+4000);a.addSnapshot(day,sample(5,2),t0+12000);
+  const h=a.state.history[day];
+  assert.equal(h.hours.length,24);assert.equal(h.hours[8],4);assert.equal(h.hours[9],3);
+  assert.equal(h.hours.reduce((s,v)=>s+v,0),h.total1+h.total2);
 });
