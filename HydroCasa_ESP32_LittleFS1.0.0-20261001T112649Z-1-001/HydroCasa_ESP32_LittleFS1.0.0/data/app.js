@@ -63,7 +63,7 @@ function ensureDay(k){
 function ensureToday(){ ensureDay(todayKey()); }
 
 function addSnapshot(k, d, now=Date.now()){
-  const h=ensureDay(k),previous=state.cursor;
+  const h=ensureDay(k),previous=state.cursor,before=h.total1+h.total2;
   if(!h.readings && state.household) h.profile=M.clone(state.household);
   if(previous && previous.day===k && previous.device===d.device_id){
     if(previous.session!==d.session_id){
@@ -83,6 +83,12 @@ function addSnapshot(k, d, now=Date.now()){
     // First observation or day/device change: do not assign an unknown interval to this day.
     h.partial=true;
     if(previous && state.history[previous.day]) state.history[previous.day].partial=true;
+  }
+  // Volume por hora do dia (gráfico "Quando a água foi usada"); não altera os totais.
+  const added=h.total1+h.total2-before;
+  if(added>0){
+    if(!Array.isArray(h.hours)||h.hours.length!==24)h.hours=Array(24).fill(0);
+    h.hours[new Date(now).getHours()]+=added;
   }
   h.readings=(h.readings||0)+1;
   h.snapshots.push({t:now,l1:d.liters1,l2:d.liters2});
@@ -330,7 +336,7 @@ function openDayModal(d){
  content+=records.length?records.map((r,i)=>'<div class="activity-entry"><b>'+escapeHtml(r.name)+'</b><p>'+escapeHtml(r.quantity)+' ocorrência(s)'+(r.minutes?'; '+escapeHtml(r.minutes)+' min':'')+'</p><div class="activity-calendar-actions"><button class="ghost-btn" type="button" data-edit-day-activity="'+i+'">Editar</button><button class="ghost-btn" type="button" data-delete-day-activity="'+i+'">Remover</button></div></div>').join(''):'<p>Nenhuma atividade cadastrada para esta data.</p>';
  // O registro manual é descritivo e fica exclusivamente em activityRecords[k].
  // Não grava nem modifica leituras, totais, snapshots ou perfil dos sensores.
- content+='<button type="button" class="primary-btn calendar-add-toggle" id="calendarAddToggle" aria-expanded="false" aria-controls="calendarAddForm">+ Adicionar atividade neste dia</button>';
+ content+='<button type="button" class="primary-btn calendar-add-toggle" id="calendarAddToggle" aria-expanded="false" aria-controls="calendarAddForm">+ Justificar consumo deste dia</button>';
  content+='<form id="calendarAddForm" class="calendar-add-form" hidden><h4>Adicionar atividade</h4>'+
  '<label for="calendarActivitySelect">Atividade<select id="calendarActivitySelect" name="activity" required>'+M.activities.map(a=>'<option value="'+escapeHtml(a.id)+'">'+escapeHtml(a.name)+'</option>').join('')+'</select></label>'+
  '<label for="calendarActivityQuantity">Ocorrências<input id="calendarActivityQuantity" name="quantity" type="number" min="1" max="100" step="1" value="1" required></label>'+
@@ -350,7 +356,7 @@ function openDayModal(d){
    addForm.elements.custom.max=activity?.id==="pool"?"100":activity?.id==="cleaning"?"1":"100";
    if(activity?.minutes)addForm.elements.minutes.value=activity.minutes;
  };
- addToggle.onclick=()=>{addForm.hidden=!addForm.hidden;addToggle.setAttribute("aria-expanded",String(!addForm.hidden));if(!addForm.hidden)addForm.elements.activity.focus();};
+ addToggle.onclick=()=>{if(window.HydroAtividades){closeModal();window.HydroAtividades.open(k);return;}addForm.hidden=!addForm.hidden;addToggle.setAttribute("aria-expanded",String(!addForm.hidden));if(!addForm.hidden)addForm.elements.activity.focus();};
  $("#calendarCancelAdd").onclick=()=>{addForm.hidden=true;addToggle.setAttribute("aria-expanded","false");addToggle.focus();};
  addForm.elements.activity.onchange=syncFields;syncFields();
  addForm.onsubmit=event=>{
@@ -476,43 +482,9 @@ function applyProfile(next,now=Date.now()){
   return p;
 }
 
-function activityInput(){
- const activity=M.activities.find(x=>x.id===$("#activitySelect").value);
- const params={residents:state.household&&state.household.residents,quantity:Number($("#activityQuantity").value),minutes:Number($("#activityMinutes").value),customLiters:$("#customActivityM3").value===""?NaN:Number($("#customActivityM3").value)*1000};
- return {a:activity,params,liters:M.estimate(activity.id,params),observed:null};
-}
-
-function updateActivityPreview(){
- const el=$("#activityPreview");
- try{
-  const {a,params}=activityInput();
-  el.textContent='Registro descritivo: '+params.quantity+' ocorrência(s)'+(a.minutes?' de '+params.minutes+' min':'')+'. Não altera o volume registrado pelos sensores.';
-  el.classList.remove('form-error');
- }catch(err){el.textContent=err.message;el.classList.add('form-error');}
-}
-
-function selectActivity(){
-  const a=M.activities.find(x=>x.id===$("#activitySelect").value);
-  $("#quantityLabel").textContent=a.perPerson?"Ocorrências por morador":"Ocorrências da casa";
-  $("#activityQuantity").max=a.id==="pool"?5:a.id==="cleaning"?10: a.id==="shower"||a.id==="shower-electric"?5:20;
-  $("#minutesLabel").hidden=!a.minutes;
-  $("#activityMinutes").required=!!a.minutes;
-  $("#activityMinutes").disabled=!a.minutes;
-  if(a.minutes)$("#activityMinutes").value=a.minutes;
-  $("#customActivityLabel").hidden=a.liters!==null;
-  $("#customActivityM3").required=a.liters===null;
-  $("#customActivityM3").max=a.id==="pool"?"100":a.id==="cleaning"?"1":"100";
-  $("#customActivityM3").disabled=a.liters!==null;
-  $("#activitySource").textContent="";
-  updateActivityPreview();
-}
-
-function renderActivityLog(){
-  const records=Array.isArray(state.activityRecords[todayKey()])?state.activityRecords[todayKey()]:[];
-  const legacy=Array.isArray(state.justifications[todayKey()])?state.justifications[todayKey()]:[];
-  $("#activityLog").innerHTML=(records.length?records.map((r,i)=>`<div class="activity-entry"><b>${escapeHtml(r.name)}</b><br>Estimativa: ${volume(r.liters)}. <br><small>${r.residentsUsed?escapeHtml(r.residentsUsed)+" morador(es); ":""}${escapeHtml(r.quantity)} ocorrência(s)${r.minutes?"; "+escapeHtml(r.minutes)+" min":""}. Fonte: ${escapeHtml(r.sourceName)}.</small><br><button class="ghost-btn" type="button" data-remove-activity="${i}">Remover registro</button></div>`).join(""):"<p>Nenhuma atividade registrada hoje.</p>")+(legacy.length?`<details><summary>Registros anteriores à atualização (${legacy.length})</summary><p>Preservados como estimativas antigas, sem fonte validada. Não entram na nova comparação.</p>${legacy.map(x=>`<p>${escapeHtml(x.name)}: ${volume(x.liters)}</p>`).join("")}</details>`:"");
-  $$('[data-remove-activity]').forEach(b=>b.onclick=()=>{records.splice(Number(b.dataset.removeActivity),1);save();renderActivityLog();updateAnalysis();updateHousehold();});
-}
+// O assistente de justificativa fica em atividades.js; estas funções mantêm os pontos de chamada.
+function selectActivity(){window.HydroAtividades?.refresh();}
+function renderActivityLog(){window.HydroAtividades?.refresh();}
 
 // Check vetorial inteiro: entrada suave de opacidade e escala ao confirmar o salvamento.
 // Recriar os elementos reinicia a animação a cada confirmação, sem temporizadores.
@@ -563,7 +535,6 @@ function setupFieldFeedback(form){
 }
 function setupConsumptionUI(){
   setupFieldFeedback($("#householdForm"));
-  setupFieldFeedback($("#activityForm"));
   fillProfileForm();
   $("#householdForm").addEventListener("input",profilePending);
   $("#householdForm").addEventListener("change",profilePending);
@@ -580,20 +551,6 @@ function setupConsumptionUI(){
   };
   for(const [id,delta] of [["residentsMinus",-1],["residentsPlus",1]])$("#"+id).onclick=()=>{const el=$("#residentsInput");el.value=Math.max(1,Math.min(100,(Number(el.value)||0)+delta));profilePending();};
   $("#referenceMode").onchange=()=>{$("#referenceM3").disabled=$("#referenceMode").value==="snis";if($("#referenceM3").disabled)$("#referenceM3").value=.1521;profilePending();};
-  $("#activitySelect").innerHTML=M.activities.map(a=>`<option value="${a.id}">${escapeHtml(a.name)}</option>`).join("");
-  $("#activitySelect").onchange=selectActivity;
-  for(const id of ["activityQuantity","activityMinutes","customActivityM3"])$("#"+id).oninput=updateActivityPreview;
-  $("#activityForm").onsubmit=e=>{
-    e.preventDefault();
-    try {
-      const {a,params,liters,observed}=activityInput(),k=todayKey(),tolerance=state.household?state.household.tolerance:10;
-      if(!Array.isArray(state.activityRecords[k]))state.activityRecords[k]=[];
-      state.activityRecords[k].push({name:a.name,id:a.id,liters,observed,quantity:params.quantity,minutes:a.minutes?params.minutes:null,residentsUsed:a.perPerson?params.residents:null,sourceName:M.sources[a.source].name,sourceId:a.source,referenceVersion:"2026-10-13",tolerance,comparison:observed===null?null:M.classify(observed,liters,tolerance,{complete:true}),at:Date.now()});
-      save();renderActivityLog();updateAnalysis();updateHousehold();
-      $("#activityMessage").textContent=state.storageError?"Registro mantido nesta sessão; falha ao salvar no navegador.":"Atividade registrada. O volume dos sensores não foi alterado.";
-    }catch(err){$("#activityMessage").textContent=err.message;}
-  };
-  
   $("#methodologyContent").textContent="Consulte a página Fontes e estudos para referências, métodos e documentação.";
   $("#sourcesPageContent").innerHTML=`<h2>Metodologia e referências</h2><p>1 m³ = 1.000 L. As estimativas não substituem medições dos sensores nem são subtraídas do volume real.</p><p>A média SNIS é histórica, não um limite individual. A margem de comparação é configurável no perfil.</p>`+Object.keys(M.sources).map(id=>`<div class="source-inline"><p>${sourceHtml(id)}</p><p>${escapeHtml(M.sources[id].note)}</p></div>`).join("")+`<h3>Exemplos por atividade</h3>`+M.activities.map(item=>`<div class="source-inline"><b>${escapeHtml(item.name)}</b><p>${escapeHtml(item.conditions)}</p><p>${sourceHtml(item.source)}</p></div>`).join("");
 
@@ -605,11 +562,11 @@ function closeModal(){$("#modal").classList.remove("open");$("#modal").setAttrib
 $("#closeModal").onclick=closeModal;$(".modal-backdrop").onclick=closeModal;
 
 function openJustification(){
-  $('.tab[data-panel="activities"]').click();
-  $("#activitySelect").focus();
+  if(window.HydroAtividades)window.HydroAtividades.open();
+  else $('.tab[data-panel="activities"]').click();
 }
 
-$("#openJustify").onclick=openJustification;$("#openJustify2").onclick=openJustification;
+for(const id of ["openJustify","openJustify2"]){const b=document.getElementById(id);if(b)b.onclick=openJustification;}
 $("#openLegend").onclick=()=>showModal(`<span class="eyebrow">GUIA RÁPIDO</span><h3>Como o HydroCasa funciona</h3><p>Os sensores Hall geram pulsos conforme a água passa. O ESP32 converte pulsos em litros usando o fator de calibração. O LittleFS entrega este painel HTML/CSS/JS diretamente pelo ESP32.</p><p>O navegador usa a data e a hora do computador para organizar o calendário. Os snapshots são enviados ao ESP32 e também ficam no armazenamento local do navegador para a apresentação.</p><p><b>Importante:</b> o fator de 450 pulsos/L é apenas uma referência para sensores YF-S201. Faça uma calibração física para obter uma leitura defensável na apresentação.</p>`);
 
 $$(".tab").forEach(b=>b.onclick=()=>{$$(".tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");$$(".panel").forEach(p=>p.classList.remove("active-panel"));$("#"+b.dataset.panel).classList.add("active-panel");if(b.dataset.panel==="calendar")renderCalendar();if(b.dataset.panel==="analysis")updateAnalysis();if(b.dataset.panel==="activities"){selectActivity();renderActivityLog()}});
@@ -625,6 +582,9 @@ function clock(){
   const d=new Date();$("#clock").textContent=d.toLocaleTimeString("pt-BR");$("#dateLabel").textContent=d.toLocaleDateString("pt-BR",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});
 }
 setInterval(clock,1000);clock();
+// Ponte explícita para os módulos de interface (atividades.js, inicio.js).
+window.HydroApp={state,save,todayKey,keyForDate,volume,escapeHtml,
+  refresh(){renderCalendar();updateAnalysis();updateHousehold();if(typeof window.HydroInicio?.refresh==="function")window.HydroInicio.refresh();}};
 setupConsumptionUI();ensureToday();renderCalendar();updateLive();
 if(location.hostname.endsWith(".vercel.app")) enableDemo();
 else runPoll();

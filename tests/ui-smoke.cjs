@@ -37,13 +37,30 @@ function seedLedger(){
     await page.waitForTimeout(2500);
     assert.equal(await page.locator('.demo-dialog-backdrop').count(),0,'diálogo de demonstração indevido');
 
-    // Perfil no cartão do Painel: pré-visualização ao vivo antes de aplicar.
-    await page.locator('#residentsInput').fill('4');
-    assert.match(await page.locator('#householdLivePreview').textContent(),/4 moradores.*0,608 m³/);
-    await page.locator('#householdForm button[type=submit]').click();
-    assert.equal(await page.locator('#householdTarget').textContent(),'0,6084 m³');
-    assert.match(await page.locator('#profileMessage').textContent(),/salvo/);
+    // Primeiro acesso: boas-vindas guiada configura moradores, sensores e preço.
+    await page.locator('.hc-wiz').waitFor();
+    await page.locator('[data-w=next]').click();                 // Começar
+    await page.locator('[data-w=plus]').click();                 // 3 → 4 moradores
+    assert.match(await page.locator('#hcWizPeopleNote').textContent(),/608 L/);
+    await page.locator('[data-w=next]').click();
+    await page.locator('[data-spot="2"][data-v="Chuveiro"]').click();
+    await page.locator('[data-w=next]').click();
+    await page.locator('#hcWizPrice').fill('8');
+    await page.locator('[data-w=next]').click();                 // salva
+    await page.locator('[data-w=next]').click();                 // Ir para o painel
+    await page.locator('.hc-wiz').waitFor({state:'detached'});
+    let saved=await page.evaluate(()=>JSON.parse(localStorage.getItem('hydrocasa_ledger_v2')).household);
+    assert.equal(saved.residents,4);assert.equal(saved.ramal1,'Cozinha');assert.equal(saved.ramal2,'Chuveiro');assert.equal(saved.scope,'whole');
+    assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('hydrocasa:financeiro')).pricePerM3),8);
     assert.equal(await page.locator('.pf-strip').isVisible(),true,'faixa de perfil configurado');
+    // "Hoje na sua casa": litros, situação em palavras simples, água correndo agora e gráficos.
+    await page.waitForFunction(()=>document.querySelector('#hcLiters').textContent!=='—');
+    assert.match(await page.locator('#hcVerdict').textContent(),/esperado/);
+    assert.match(await page.locator('#hcNow').textContent(),/Água correndo|Nenhuma água/);
+    assert.match(await page.locator('#hcGaugeCap').textContent(),/608 L/);
+    assert.equal(await page.locator('#hcWeek .hc-day').count(),7);
+    assert.match(await page.locator('#hcSplit').textContent(),/Chuveiro/);
+    assert.equal(await page.locator('.hero-premium').isVisible(),false,'com perfil, a página começa pelos números');
 
     // Painel lateral do perfil: edição rápida e valores da conta.
     await page.locator('#hydroProfileBtn').click();
@@ -91,14 +108,43 @@ function seedLedger(){
     assert.equal(await page.locator('[name=reportPeriod]:checked').inputValue(),'last7');
     await page.keyboard.press('Escape');
 
+    // Fluxo contínuo real: com limite de 1 min e água correndo há 2 min, o aviso aparece sozinho.
+    await page.evaluate(()=>{localStorage.setItem('hydrocasa:vazamento-minutos','1');const n=Date.now();sessionStorage.setItem('hydrocasa:fluxo-continuo',JSON.stringify({r0:{since:n-120000,last:n,flow:2}}));});
     await page.goto(base);await page.waitForFunction(()=>document.querySelector('#connectionBadge').textContent.includes('Online'));
+    await page.locator('#hcLeak:not([hidden])').waitFor({timeout:8000});
+    assert.match(await page.locator('#hcLeak').textContent(),/sem parar há 2 minutos — Cozinha/);
+    assert.doesNotMatch(await page.locator('#hcLeak').textContent(),/TESTE/);
+    await page.locator('#hcLeak [data-hc=leak-ok]').click();
+    await page.waitForTimeout(2500);
+    assert.equal(await page.locator('#hcLeak').isHidden(),true,'"está tudo bem" silencia até a água parar');
+    // Justificar consumo: dia, atividade, duração, balanço, editar e desfazer remoção.
+    await page.locator('#hcJustify').click();
+    await page.locator('#jcForm').waitFor();
+    await page.locator('[data-group=banho]').click();await page.locator('[data-variant=shower]').click();await page.locator('[data-min="15"]').click();
+    assert.match(await page.locator('#jcResult').textContent(),/675 L/,'5 pessoas × ducha 15 min');
+    await page.locator('#jcSubmit').click();
+    assert.match(await page.locator('#jcBalance').textContent(),/Banho — ducha/);
+    await page.locator('[data-day=yesterday]').click();
+    assert.match(await page.locator('#jcBalance').textContent(),/Medido pelos sensores\s*300 L/);
+    await page.locator('[data-group=roupa]').click();await page.locator('#jcSubmit').click();
+    assert.match(await page.locator('#jcBalance .jc-verdict').textContent(),/Faltam 165 L/);
+    await page.locator('[data-remove="0"]').click();
+    assert.match(await page.locator('#jcBalance').textContent(),/Nenhuma atividade registrada/);
+    await page.locator('#jcUndo').click();
+    assert.match(await page.locator('#jcBalance').textContent(),/Roupas/);
+    const records=await page.evaluate(()=>JSON.parse(localStorage.getItem('hydrocasa_ledger_v2')).activityRecords);
+    assert.equal(Object.values(records).flat().length,2);
+    // Aviso de água correndo (teste pela aba Sistema).
+    await page.locator('[data-panel=settings]').click();
+    await page.locator('#hcLeakTest').click();
+    assert.match(await page.locator('#hcLeak').textContent(),/TESTE.*Água correndo sem parar/);
+    await page.locator('#hcLeak [data-hc=leak-ok]').click();
+    assert.equal(await page.locator('#hcLeak').isHidden(),true);
     await page.locator('[data-panel=activities]').click();
-    await page.locator('#activityMinutes').fill('5');
-    assert.match(await page.locator('#activityPreview').textContent(),/5 min/);
-    await page.locator('#activityForm button[type=submit]').click();
-    assert.match(await page.locator('#activityLog').textContent(),/chuveiro elétrico/);
     await page.screenshot({path:'/tmp/hydrocasa-activities-desktop.png',fullPage:true});
     await page.setViewportSize({width:390,height:844});
+    await page.locator('[data-panel=dashboard]').click();
+    assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),true,'Painel sem rolagem lateral no celular');
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),true);
     await page.locator('#hydroReportBtn').click();
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth),true);
@@ -106,6 +152,6 @@ function seedLedger(){
     await page.locator('[data-panel=settings]').click();assert.match(await page.locator('#methodologyContent').textContent(),/Fontes e estudos/);
     await page.locator('#themeBtn').click();await page.screenshot({path:'/tmp/hydrocasa-system-mobile-dark.png',fullPage:true});
     assert.deepEqual(errors,[]);
-    console.log('Browser checks passed: connection, profile card and drawer, finance settings, PDF report (period, checklist, bill helper, download), consumption shortcut, activities, mobile width and dark theme.');
+    console.log('Browser checks passed: connection, welcome wizard, today summary and charts, profile drawer, finance settings, PDF report (period, checklist, bill helper, download), consumption shortcut, justify-consumption assistant, leak warning, mobile width and dark theme.');
   }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
 })().catch(e=>{console.error(e);server.close();process.exitCode=1;});

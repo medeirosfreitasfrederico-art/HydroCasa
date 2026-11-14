@@ -294,6 +294,10 @@ void setup() {
   server.serveStatic("/relatorio.css", LittleFS, "/relatorio.css");
   server.serveStatic("/perfil.js", LittleFS, "/perfil.js");
   server.serveStatic("/perfil.css", LittleFS, "/perfil.css");
+  server.serveStatic("/atividades.js", LittleFS, "/atividades.js");
+  server.serveStatic("/atividades.css", LittleFS, "/atividades.css");
+  server.serveStatic("/inicio.js", LittleFS, "/inicio.js");
+  server.serveStatic("/inicio.css", LittleFS, "/inicio.css");
 
   server.onNotFound([]() {
     server.send(404, "text/plain", "404 - recurso nao encontrado");

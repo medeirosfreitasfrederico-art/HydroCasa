@@ -40,6 +40,8 @@ HydroCasa/
             ├── pdf-simples.js        # Gerador de PDF sem dependências (funciona offline)
             ├── relatorio.js / relatorio.css  # Relatório em PDF: janela, checklist e montagem
             ├── perfil.js / perfil.css        # Perfil da residência dinâmico
+            ├── inicio.js / inicio.css        # Hoje na sua casa, gráficos, aviso de água correndo, boas-vindas
+            ├── atividades.js / atividades.css # Assistente "Justificar consumo"
             ├── dashboard-ux.js / dashboard-ux.css
             ├── demo-overlay.js / demo-overlay.css
             ├── hero.css / system-improvements.css
@@ -68,6 +70,7 @@ HydroCasa/
 - **Tour guiado:** `tour.js`, `tour.css`.
 - **Alertas:** `alertas.js`, `alertas-ui.js`, `alertas-config.js`, `alertas.css`.
 - **Perfil da residência:** `perfil.js`, `perfil.css` (painel lateral do botão de perfil, pré-visualização no cartão de moradores e faixa de perfil configurado).
+- **Painel para leigos:** `inicio.js`, `inicio.css` (resumo de hoje, gráficos por hora/dia/sensor, aviso de água correndo sem parar e boas-vindas guiada) e `atividades.js`, `atividades.css` (assistente "Justificar consumo"). Os dois usam a ponte `window.HydroApp` exposta por `app.js`.
 - **Relatório e finanças:** `financas.js` (regras), `pdf-simples.js` (PDF), `relatorio.js`, `relatorio.css` (interface). Valores da conta em `localStorage` (`hydrocasa:financeiro`).
 - **Simulação:** `simulador.html`, `demo-overlay.js`, `demo-overlay.css`; valores simulados não devem substituir medições reais.
 - **Imagens:** nomes `hydrocasa-*`, `icon-*` e arquivos de representação do produto. Os caminhos no HTML precisam corresponder a arquivos publicados.
