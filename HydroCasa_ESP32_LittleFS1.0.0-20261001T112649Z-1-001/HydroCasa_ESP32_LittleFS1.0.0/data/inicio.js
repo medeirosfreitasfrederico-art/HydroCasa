@@ -45,7 +45,8 @@ function dayData(k){
   const h=realDay(k);
   if(h)return {k,r1:h.total1,r2:h.total2,total:h.total1+h.total2,hours:Array.isArray(h.hours)&&h.hours.length===24?h.hours:null,profile:M.dayProfile(h,state.household),demo:false};
   const w=demoOn()&&demoWeek();
-  if(w){const d=new Date(k+'T12:00:00'),v=w.values[d.getDay()];
+  const age=Math.round((new Date(A.todayKey()+'T12:00:00')-new Date(k+'T12:00:00'))/864e5);
+  if(w&&age>=0&&age<Math.min(366,w.days||30)){const d=new Date(k+'T12:00:00'),v=w.values[d.getDay()];
     // Na demonstração, o dia de hoje cresce ao longo do dia para não mostrar o total antes da hora.
     let f=1;if(k===A.todayKey()){const n=new Date();f=Math.min(1,cumulative(n.getHours()+n.getMinutes()/60));}
     const r1=v[0]*f,r2=v[1]*f;
@@ -106,6 +107,103 @@ charts.innerHTML=`
 <article class="glass-card hc-chart-card hc-split"><div class="hc-chart-head"><div><h3>Onde a água foi usada hoje</h3><p>Cada sensor mede um ponto da casa.</p></div></div><div id="hcSplit"></div></article>`;
 hoje.after(charts);
 
+/* ---------- Quanto sua água custa: gasto, previsão e ritmo ---------- */
+const COST_PERIODS=[['today','Hoje'],['thisWeek','Esta semana'],['thisMonth','Este mês'],['thisYear','Este ano']];
+const COST_KEY='hydrocasa:custo-periodo',SAVE_KEY='hydrocasa:custo-economia';
+let costPeriod=COST_PERIODS.some(p=>p[0]===store.get(COST_KEY))?store.get(COST_KEY):'thisMonth';
+let saveLiters=(()=>{const v=Number(store.get(SAVE_KEY));return v>=10&&v<=300?v:50;})();
+const custo=document.createElement('section');custo.id='hcCusto';custo.className='hc-custo';custo.setAttribute('aria-labelledby','hcCustoTitle');
+custo.innerHTML=`<div class="hc-custo-head"><div><span class="hc-kicker-plain">QUANTO SUA ÁGUA CUSTA</span><h2 id="hcCustoTitle">Gasto e previsão</h2><p>Quanto já foi gasto e quanto deve custar se a casa continuar no ritmo de agora.</p></div>
+<div class="hc-seg" role="tablist" aria-label="Período da previsão">${COST_PERIODS.map(([id,l])=>`<button type="button" role="tab" id="hcCp-${id}" data-cp="${id}" aria-controls="hcCustoBody">${l}</button>`).join('')}</div></div>
+<div class="hc-price-cta" id="hcPriceCta" hidden><span>Os valores estão em litros. <b>Informe o preço da água</b> para ver tudo em reais.</span><button type="button" class="primary-btn" data-hc="price">Informar preço</button></div>
+<div class="hc-custo-body" id="hcCustoBody" role="tabpanel"></div>
+<div class="hc-ritmo" id="hcRitmo"></div>
+<div class="hc-sim" id="hcSim"><div class="hc-sim-head"><h3>E se a casa economizar?</h3><p>Arraste para ver quanto uma pequena economia por dia representa no fim do mês e do ano.</p></div>
+<div class="hc-sim-ctrl"><label for="hcSimRange">Economizar <output id="hcSimOut"></output> por dia</label><input type="range" id="hcSimRange" min="10" max="300" step="10"><small id="hcSimEq"></small></div>
+<div class="hc-sim-res" id="hcSimRes" aria-live="polite"></div></div>
+<p class="hc-custo-note" id="hcCustoNote"></p>`;
+hoje.after(custo);
+const simRange=$('hcSimRange');simRange.value=saveLiters;
+simRange.addEventListener('input',()=>{saveLiters=Number(simRange.value);store.set(SAVE_KEY,String(saveLiters));renderSim();});
+custo.querySelector('.hc-seg').addEventListener('click',e=>{const b=e.target.closest('[data-cp]');if(!b)return;costPeriod=b.dataset.cp;store.set(COST_KEY,costPeriod);renderCusto();});
+custo.querySelector('.hc-seg').addEventListener('keydown',e=>{const ids=COST_PERIODS.map(p=>p[0]),i=ids.indexOf(costPeriod);let n=null;if(e.key==='ArrowRight')n=(i+1)%ids.length;if(e.key==='ArrowLeft')n=(i+ids.length-1)%ids.length;if(n!==null){e.preventDefault();costPeriod=ids[n];store.set(COST_KEY,costPeriod);renderCusto();$('hcCp-'+costPeriod).focus();}});
+
+/* Histórico usado nas contas: o real; na demonstração, os dias fictícios do período escolhido. */
+function calcHistory(){
+  const w=demoOn()&&demoWeek();if(!w)return state.history;
+  const h={},t=A.todayKey();
+  for(let i=0;i<Math.min(366,w.days||30);i++){const k=dayKey(-i),d=dayData(k);if(d)h[k]={readings:1,total1:d.r1,total2:d.r2,partial:k===t,profile:d.profile};}
+  return h;
+}
+function calcProfile(){const w=demoOn()&&demoWeek();return profile()||(w?{...M.defaults,residents:w.residents,scope:'whole'}:null);}
+const hasPrice=()=>{const p=settings().pricePerM3;return Number.isFinite(p)&&p>0;};
+const vol=l=>L(l);
+/** Valor principal em reais (com o volume como apoio) ou só volume quando não há preço. */
+const val=(l,r)=>hasPrice()&&Number.isFinite(r)?{main:money(r),sub:vol(l)}:{main:vol(l),sub:Number.isFinite(l)?m3(l):''};
+const PERIOD_WORDS={today:{big:'Previsão para hoje',end:'o fim do dia',unit:'dia'},thisWeek:{big:'Previsão para esta semana',end:'sábado',unit:'semana'},thisMonth:{big:'Previsão para o mês',end:'o fim do mês',unit:'mês'},thisYear:{big:'Previsão para o ano',end:'dezembro',unit:'ano'}};
+function renderCusto(){
+  custo.querySelectorAll('[data-cp]').forEach(b=>{const on=b.dataset.cp===costPeriod;b.setAttribute('aria-selected',String(on));b.tabIndex=on?0:-1;b.classList.toggle('on',on);});
+  $('hcCustoBody').setAttribute('aria-labelledby','hcCp-'+costPeriod);
+  const s=settings(),now=new Date(),priced=hasPrice(),prof=calcProfile();
+  $('hcPriceCta').hidden=priced;
+  let sum=null;try{sum=F.summarize({period:F.resolvePeriod(costPeriod,{},now),history:calcHistory(),currentProfile:prof,settings:s,now});}catch{}
+  const body=$('hcCustoBody'),W=PERIOD_WORDS[costPeriod];
+  if(!sum||!sum.data.length){body.innerHTML=`<p class="hc-empty hc-custo-empty">Ainda não há medições ${costPeriod==='today'?'hoje':'neste período'}. A previsão aparece com as primeiras leituras do ESP32.</p>`;}
+  else{
+    const m=sum.money,res=prof?.residents||sum.residents,exp=res?sum.referenceFull:null,tol=prof?.tolerance??10;
+    const spent=val(sum.measured,m.measuredWithFixed),proj=val(sum.projected,m.projectedWithFixed),expV=exp!==null?val(exp,m.expectedWithFixed):null;
+    const goal=priced&&Number.isFinite(m.goal)?m.goal:null;
+    const lv=exp?levelFor(sum.projected,exp,tol)||'normal':null;
+    // Diferença da previsão para o esperado, em reais quando houver preço.
+    let verdict='';
+    if(exp){const dl=sum.projected-exp,dm=priced&&Number.isFinite(m.projectedWithFixed)&&Number.isFinite(m.expectedWithFixed)?m.projectedWithFixed-m.expectedWithFixed:null;
+      const amount=dm!==null?money(Math.abs(dm)):vol(Math.abs(dl)),who=`${res} morador${res>1?'es':''}`;
+      verdict=dl>exp*tol/100?`Se continuar assim, ${costPeriod==='today'?'hoje':(W.unit==='semana'?'a ':'o ')+W.unit} vai ${dm!==null?'custar':'usar'} <b>${amount} a mais</b> do que o esperado para ${who}.`
+        :dl>0?`Se continuar assim, fica <b>dentro do esperado</b> para ${who} (só ${amount} acima, dentro da margem de ${num(tol)}%).`
+        :`Se continuar assim, fica <b>${amount} abaixo</b> do esperado para ${who}. Ótimo!`;}
+    else verdict='Informe quantas pessoas moram na casa para comparar com o esperado.';
+    // Barras comparando já gasto, previsão, esperado e meta na mesma escala.
+    const rows=[['Já gasto até agora',sum.measured,m.measuredWithFixed,'spent'],[`Previsão até ${W.end}`,sum.projected,m.projectedWithFixed,'proj'],
+      exp!==null?[`Esperado para ${res} morador${res>1?'es':''}`,exp,m.expectedWithFixed,'exp']:null,
+      goal!==null?['Sua meta de gasto',null,goal,'goal']:null].filter(Boolean);
+    const metric=r=>priced?r[2]:r[1];const max=Math.max(...rows.map(r=>Number(metric(r))||0),1);
+    const total=sum.period.days.length,elapsed=sum.period.elapsed.length;
+    const progress=costPeriod==='today'?`${num(Math.round(F.dayFraction(now)*100))}% do dia já passou`:`Dia ${elapsed} de ${total}`;
+    const goalNote=goal!==null&&Number.isFinite(m.projectedWithFixed)?(m.projectedWithFixed>goal?`A previsão passa <b>${money(m.projectedWithFixed-goal)}</b> da sua meta.`:`Dentro da sua meta, com folga de <b>${money(goal-m.projectedWithFixed)}</b>.`):'';
+    body.innerHTML=`<div class="hc-custo-main" data-tone="${lv?LEVEL[lv].tone:'neutral'}">
+      <span class="hc-custo-label">${W.big}</span><strong class="hc-custo-big">${proj.main}</strong><small>${proj.sub?proj.sub+' · ':''}se a casa continuar no ritmo de agora</small>
+      <p class="hc-custo-verdict">${verdict}</p>${goalNote?`<p class="hc-custo-goal">${goalNote}</p>`:''}
+      <div class="hc-custo-progress" aria-label="${progress}"><span style="width:${Math.min(100,(costPeriod==='today'?F.dayFraction(now):elapsed/total)*100)}%"></span></div><small class="hc-custo-prog-label">${progress} · ${sum.forecastBasis==='today'?'previsão pelo ritmo de hoje':`média de ${num(sum.average,0)} L por dia medido`}</small></div>
+      <div class="hc-custo-bars">${rows.map(r=>{const v=priced?{main:money(r[2]),sub:r[1]!==null?vol(r[1]):'meta proporcional ao período'}:{main:vol(r[1]),sub:''};
+        return `<div class="hc-cb hc-cb-${r[3]}"><div class="hc-cb-top"><span>${r[0]}</span><b>${v.main}</b></div><div class="hc-cb-track"><i style="width:${(Number(metric(r))||0)/max*100}%"></i></div>${v.sub?`<small>${v.sub}</small>`:''}</div>`;}).join('')}</div>`;
+  }
+  renderRitmo();renderSim();
+  const fx=s.fixedMonthly?` e taxa fixa de ${money(s.fixedMonthly)} por mês`:'';
+  const note=$('hcCustoNote'),noteHtml=priced?`Calculado com ${money(s.pricePerM3)} por m³${fx}. A conta real pode ter faixas de preço e outras taxas. <button type="button" class="hc-inline-link" data-hc="price">Alterar valores</button>`:'';
+  if(note.dataset.h!==noteHtml){note.innerHTML=noteHtml;note.dataset.h=noteHtml;}
+}
+function renderRitmo(){
+  const r=F.rates({history:calcHistory(),currentProfile:calcProfile(),settings:settings(),now:new Date()}),box=$('hcRitmo');
+  if(r.perDayLiters===null){box.hidden=true;return;}
+  box.hidden=false;
+  const head=r.basis==='days'?`média dos últimos ${r.daysUsed} dia${r.daysUsed>1?'s':''} medido${r.daysUsed>1?'s':''}: <b>${L(r.perDayLiters)} por dia</b>`:`ritmo de hoje: <b>cerca de ${L(r.perDayLiters)} por dia</b>`;
+  const cells=[['day','Por dia'],['week','Por semana'],['month','Por mês'],['year','Por ano']].map(([k,l])=>{const x=r.spans[k],v=val(x.liters,x.money);
+    const e=x.expectedLiters!==null?(hasPrice()&&Number.isFinite(x.expectedMoney)?money(x.expectedMoney):vol(x.expectedLiters)):null;
+    const up=x.expectedLiters!==null&&x.liters>x.expectedLiters*(1+(calcProfile()?.tolerance??10)/100);
+    return `<div class="${up?'is-up':''}"><span>${l}</span><b>${v.main}</b><small>${v.sub}${e?`<br>esperado: ${e}`:''}</small></div>`;});
+  if(r.perPersonMonth!==null&&hasPrice())cells.push(`<div><span>Por pessoa, no mês</span><b>${money(r.perPersonMonth)}</b><small>${r.residents} morador${r.residents>1?'es':''}</small></div>`);
+  box.innerHTML=`<h3>Quanto custa no ritmo atual</h3><p>Com base na ${head}.</p><div class="hc-ritmo-grid">${cells.join('')}</div>`;
+}
+function renderSim(){
+  const now=new Date(),s=settings(),sv=F.savings(saveLiters,s,now),r=F.rates({history:calcHistory(),currentProfile:calcProfile(),settings:s,now});
+  $('hcSimOut').textContent=L(saveLiters);
+  $('hcSimEq').textContent=`≈ ${num(Math.max(1,Math.round(saveLiters/9)))} min a menos de ducha por dia (cerca de 9 L por minuto)`;
+  const priced=hasPrice(),mm=r.spans.month.money;
+  $('hcSimRes').innerHTML=`<div><span>Em um mês</span><b>${priced?money(sv.month.money):vol(sv.month.liters)}</b><small>${priced?vol(sv.month.liters)+' a menos':'a menos'}</small></div>
+    <div><span>Em um ano</span><b>${priced?money(sv.year.money):vol(sv.year.liters)}</b><small>${priced?vol(sv.year.liters)+' a menos':'a menos'}</small></div>
+    ${priced&&Number.isFinite(mm)&&mm>sv.month.money?`<div class="hc-sim-bill"><span>Sua conta do mês</span><b>${money(mm)} → ${money(mm-sv.month.money)}</b><small>no ritmo atual, com a economia</small></div>`:''}`;
+}
+
 /* Números técnicos ficam recolhidos para não confundir. */
 const tech=document.createElement('details');tech.className='hc-tecnico';tech.id='numerosDetalhados';
 tech.innerHTML='<summary><span><b>Ver todos os números</b><small>Volumes em m³, vazão de cada sensor, referência e status técnico.</small></span></summary><div class="hc-tecnico-body"></div>';
@@ -133,7 +231,7 @@ function renderHoje(){
   // Dinheiro
   const s=settings(),c=t?cost(t.total):null;
   if(c!==null){
-    let proj='';try{if(!t.demo){const sum=F.summarize({period:F.resolvePeriod('thisMonth',{},now),history:state.history,currentProfile:state.household,settings:s,now});if(Number.isFinite(sum.money.projectedWithFixed))proj=`<span>Previsão da conta do mês: <b>${money(sum.money.projectedWithFixed)}</b></span>`;}}catch{}
+    let proj='';try{const sum=F.summarize({period:F.resolvePeriod('thisMonth',{},now),history:calcHistory(),currentProfile:calcProfile(),settings:s,now});if(Number.isFinite(sum.money.projectedWithFixed))proj=`<span>Previsão da conta do mês: <b>${money(sum.money.projectedWithFixed)}</b></span>`;}catch{}
     $('hcMoney').innerHTML=`<span>Custo de hoje: <b>${money(c)}</b></span>${proj}`;
   }else $('hcMoney').innerHTML=s.pricePerM3?'':`<button type="button" class="hc-inline-btn" data-hc="price">Quer ver em reais? Informe o preço da água →</button>`;
   // Situação
@@ -352,7 +450,8 @@ $('hcReport').onclick=()=>$('hydroReportBtn')?.click();
 $('hcTour').onclick=()=>$('openHydroTour')?.click();
 
 function syncProfileClass(){document.body.classList.toggle('hc-perfil-ok',!!profile());}
-function refresh(){syncProfileClass();renderHoje();renderHours();renderWeek();renderSplit();renderLeak();}
+/* Cada bloco é desenhado separadamente: um erro em um deles não apaga os outros. */
+function refresh(){for(const f of [syncProfileClass,renderHoje,renderCusto,renderHours,renderWeek,renderSplit,renderLeak]){try{f();}catch(e){console.warn('HydroCasa: falha ao atualizar',f.name,e);}}}
 /* Mesmo "dia de hoje" para o tom do site (consumption-status.js), inclusive na demonstração. */
 function today(){const t=dayData(A.todayKey());if(!t)return null;const p=t.profile||profile();if(!p)return null;
   return {total:t.total,expected:expectedFor(p),tolerance:p.tolerance??10,scope:p.scope,label:t.demo?'hoje (demonstração)':'hoje'};}

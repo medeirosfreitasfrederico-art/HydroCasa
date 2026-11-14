@@ -51,8 +51,9 @@ test('monthly summary computes spent, expected and projected money',()=>{
   assert.equal(s.money.measured,6);                      // 0,6 m³ × R$ 10
   assert.ok(Math.abs(s.money.fixedFull-30)<1e-9);       // mês inteiro = 1 taxa fixa
   assert.ok(Math.abs(s.money.fixedElapsed-4)<1e-9);     // 4 de 30 dias
-  assert.equal(s.projected,6000);                        // 200 L × 30 dias
-  assert.equal(s.money.projectedWithFixed,90);           // 6 m³ × 10 + 30
+  // Hoje (parcial, 100 L) conta como a média dos outros dias (250 L): 500 + 250 + 250 × 27 dias sem leitura.
+  assert.equal(s.projected,7500);assert.equal(s.forecastBasis,'average');
+  assert.equal(s.money.projectedWithFixed,105);          // 7,5 m³ × 10 + 30
   assert.ok(Math.abs(s.referenceFull-2*152.1*30)<1e-6);
   assert.ok(Math.abs(s.money.expected-91.26)<1e-6);
   assert.equal(s.money.goalStatus,'within');
@@ -100,4 +101,29 @@ test('spending level picks the tint band from the percent above the reference',(
   assert.equal(id(30,40),'normal','tolerância maior que a faixa leve');
   assert.equal(id(45,40),'moderado');
   assert.equal(F.spendingLevel(NaN),null);
+});
+test('this week runs from Sunday to Saturday',()=>{
+  const w=F.resolvePeriod('thisWeek',{},now);               // 04/11/2026 é quarta-feira
+  assert.deepEqual([w.from,w.to],['2026-11-01','2026-11-07']);assert.equal(w.elapsed.length,4);assert.equal(w.future.length,3);
+});
+test('with only today measured, the forecast follows today\'s pace',()=>{
+  const period=F.resolvePeriod('thisMonth',{},now);         // 10h → 41,7% do dia
+  const s=F.summarize({period,history:{'2026-11-04':{readings:3,total1:100,total2:0,partial:true,profile}},currentProfile:profile,now});
+  assert.equal(s.forecastBasis,'today');assert.ok(Math.abs(s.projected-100/(10/24)*30)<1e-6);
+});
+test('current pace gives daily, weekly, monthly and yearly cost',()=>{
+  const history={};for(let i=1;i<=9;i++){const d=new Date(2026,10,4-i,12);history[F.keyOf(d)]={readings:5,total1:i<=7?300:900,total2:100,partial:false,profile};}
+  const r=F.rates({history,currentProfile:profile,settings:{pricePerM3:10,fixedMonthly:30},now});
+  assert.equal(r.basis,'days');assert.equal(r.daysUsed,7);assert.equal(r.perDayLiters,400);   // só os 7 dias mais recentes
+  assert.equal(r.spans.day.money,4+1);                       // 0,4 m³ × 10 + 30/30
+  assert.equal(r.spans.week.liters,2800);
+  assert.equal(r.spans.month.money,400*30/1000*10+30);
+  assert.equal(r.spans.year.liters,400*365);assert.equal(r.spans.year.money,1460+360);
+  assert.ok(Math.abs(r.spans.month.expectedLiters-2*152.1*30)<1e-9);
+  assert.equal(r.perPersonMonth,75);
+  const empty=F.rates({history:{},currentProfile:profile,now});assert.equal(empty.perDayLiters,null);assert.equal(empty.spans.month.money,null);
+});
+test('daily savings are converted to month and year',()=>{
+  const s=F.savings(50,{pricePerM3:12},now);
+  assert.equal(s.month.liters,1500);assert.equal(s.month.money,18);assert.equal(s.year.liters,18250);assert.ok(Math.abs(s.year.money-219)<1e-9);
 });

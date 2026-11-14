@@ -130,10 +130,10 @@
     </details>
   </section>
   <div class="tour-launch-wrap shell tour-inline-access" id="tourLaunchWrap" hidden><button id="openHydroTour" class="tour-launch" type="button" aria-haspopup="dialog"><span aria-hidden="true">✦</span> Conhecer o HydroCasa</button></div>
-    <div class="dashboard-shortcuts-area"><span class="eyebrow">ACESSO RÁPIDO</span><p>Escolha o que deseja consultar no painel.</p>    <nav class="tabs dashboard-shortcuts" aria-label="Seções do painel">
+    <div class="dashboard-shortcuts-area"><span class="eyebrow">MAIS OPÇÕES</span><p>Calendário, detalhes, justificar consumo e configurações.</p>    <nav class="tabs dashboard-shortcuts" aria-label="Seções do painel">
       <button class="tab active" data-panel="dashboard">Visão geral</button>
       <button class="tab" data-panel="calendar">Calendário</button>
-      <button class="tab" data-panel="analysis">Análise</button>
+      <button class="tab" data-panel="analysis">Detalhes</button>
       <button class="tab" data-panel="activities">Justificar consumo</button>
       <button class="tab" data-panel="settings">Sistema</button>
     </nav></div>
@@ -283,16 +283,16 @@
 
     <section id="analysis" class="panel">
       <div class="section-heading">
-        <div><span class="eyebrow">ANÁLISE</span><h2>Relatório inteligente</h2></div>
-        <button class="primary-btn" id="openJustify2">+ Registrar atividade</button>
+        <div><span class="eyebrow">DETALHES</span><h2>Números de hoje em detalhe</h2><p>Medido pelos sensores, estimado pelas atividades e por morador.</p></div>
+        <button class="primary-btn" id="openJustify2">Justificar consumo</button>
       </div>
       <div class="analysis-grid">
-        <article class="glass-card big-number"><span>Volume monitorado</span><strong id="rawAnalysis">—</strong><small>Volume observado nos ramais, em m³.</small></article>
-        <article class="glass-card big-number"><span>Estimativas de atividades</span><strong id="justifiedValue">—</strong><small>Registros informados; não são leituras adicionais dos sensores.</small></article>
-        <article class="glass-card big-number highlight"><span>Volume por morador</span><strong id="contextualValue">—</strong><small>As estimativas não são subtraídas do volume medido.</small></article>
+        <article class="glass-card big-number"><span>Medido hoje pelos sensores</span><strong id="rawAnalysis">—</strong><small>Toda a água que passou pelos sensores hoje (em m³).</small></article>
+        <article class="glass-card big-number"><span>Explicado pelas atividades</span><strong id="justifiedValue">—</strong><small>Soma do que você registrou em “Justificar consumo”. É uma estimativa.</small></article>
+        <article class="glass-card big-number highlight"><span>Por morador</span><strong id="contextualValue">—</strong><small>Medido hoje dividido pelo número de moradores (média, não o uso de cada pessoa).</small></article>
       </div>
       <article class="glass-card report-card">
-        <div class="card-head"><div><h3>Detalhamento por ramal</h3><p>Volume observado hoje; os sensores não identificam atividades sozinhos.</p></div></div>
+        <div class="card-head"><div><h3>Cada ponto da casa</h3><p>Quanto passou por cada sensor hoje.</p></div></div>
         <div id="analysisBars"></div>
       </article>
     </section>

@@ -24,7 +24,7 @@ const persist=demo=>{try{(demo?sessionStorage:localStorage).setItem(demo?demoKey
 const bell=document.createElement('button');bell.id='hydroAlertBell';bell.type='button';bell.className='icon-btn alert-bell';bell.setAttribute('aria-haspopup','dialog');bell.setAttribute('aria-label','Abrir alertas');bell.innerHTML='<span class="hydro-header-icon hydro-header-icon-alert" aria-hidden="true"></span><span id="hydroAlertCount" class="alert-count" hidden>0</span>';
 q('.header-actions')?.insertBefore(bell,q('#themeBtn'));
 const card=document.createElement('section');card.className='glass-card alerts-overview';card.id='alertsOverview';card.setAttribute('aria-labelledby','alertsOverviewTitle');
-card.innerHTML='<div class="alerts-heading"><div><span class="alerts-kicker">ACOMPANHAMENTO</span><h3 id="alertsOverviewTitle">Alertas e orientações</h3><p class="alerts-subtitle">Ocorrências ordenadas por prioridade, sem precisar abrir outra janela.</p></div><button type="button" class="ghost-btn" data-open-alerts>Histórico de alertas</button></div><div id="alertsTopList" class="alerts-inline-list" role="region" aria-label="Alertas atuais">Dados insuficientes para comparar.</div>';
+card.innerHTML='<div class="alerts-heading"><div><span class="alerts-kicker">ACOMPANHAMENTO</span><h3 id="alertsOverviewTitle">Alertas e orientações</h3><p class="alerts-subtitle">Avisos sobre o consumo da casa, do mais importante para o menos importante.</p></div><button type="button" class="ghost-btn" data-open-alerts>Histórico de alertas</button></div><div id="alertsTopList" class="alerts-inline-list" role="region" aria-label="Alertas atuais">Dados insuficientes para comparar.</div>';
 const quickAccess=q('#dashboard-page .dashboard-shortcuts-area');
 if(quickAccess)quickAccess.after(card);
 else {const dashboard=q('#dashboard .section-heading');if(dashboard)dashboard.after(card);}
@@ -105,7 +105,7 @@ function render(){
  const comparable=!!(snapshot?.online&&snapshot.profile?.scope==='whole'&&snapshot.profile?.referenceLiters>0&&snapshot.profile?.residents>0&&day?.readings>0&&Number.isFinite(day.total1)&&Number.isFinite(day.total2)&&day.total1>=0&&day.total2>=0&&!day.profileMixed);
  const active=list.filter(a=>a.status==='ativo'&&(!a.silenciadoAte||Date.now()>a.silenciadoAte)),isComparable=comparable;
  const empty=isComparable?'Nenhum problema detectado nas condições avaliadas.':'Ainda não há informações suficientes para avaliar o consumo.';
- stateLine.textContent=!snapshot?.online?'Sensor offline — verifique a conexão do ESP32.':!day?.readings?'Conectado, mas ainda sem leituras suficientes.':active.length?'Atenção: há '+active.length+' ocorrência(s) que precisam de verificação.':isComparable?'Consumo dentro dos parâmetros configurados.':'Leituras disponíveis; comparação parcial do dia.';
+ stateLine.textContent=!snapshot?.online?'Sem conexão com o ESP32 — confira se ele está ligado e no Wi-Fi.':!day?.readings?'Conectado. Aguardando as primeiras medições.':active.length?(active.length===1?'Há 1 aviso para você ver.':'Há '+active.length+' avisos para você ver.'):isComparable?'Tudo certo: o consumo está dentro do esperado.':'Medições chegando; o dia ainda não terminou.';
  q('#hydroAlertCount').hidden=active.length===0;q('#hydroAlertCount').textContent=String(active.length);
  bell.setAttribute('aria-label','Abrir alertas: '+active.length+' ativo(s)');
  const preview=q('#alertsTopList');
@@ -142,7 +142,7 @@ function dailyConsumptionAnomalies(d){
   const excess=(total/threshold-1)*100;
   const nivel=excess>=50?'Crítico':excess>=25?'Moderado':'Leve';
   const id='anomalia-consumo:'+date;
-  out.push({id,tipo:'consumo',nivel,alvo:'Residência · '+date,valor:total,referencia:threshold,diferenca:Math.round(excess),dataOcorrencia:date,mensagem:(source==='demo'?'Demonstração fictícia · ':'')+date.split('-').reverse().join('/')+': '+fmt(total)+' L no dia, '+Math.round(excess)+'% acima da referência de '+fmt(threshold)+' L. Classificação: '+nivel+'.'+(source==='demo'?' Este valor é simulado, não uma leitura do ESP32.':'')});
+  out.push({id,tipo:'consumo',nivel,alvo:'Residência · '+date,valor:total,referencia:threshold,diferenca:Math.round(excess),dataOcorrencia:date,mensagem:(source==='demo'?'Demonstração fictícia · ':'')+new Date(date+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'2-digit'})+': a casa usou '+fmt(total)+' L, '+fmt(total-threshold)+' L além do limite de '+fmt(threshold)+' L (esperado para '+residents+' morador'+(residents>1?'es':'')+' mais a margem de '+fmt(Math.max(HydroAlertConfig.dailyTolerancePercent,tolerance))+'%).'+(source==='demo'?' Este valor é simulado, não uma leitura do ESP32.':'')});
  };
  for(const [date,row] of Object.entries(d?.history||{})){
   if(row&&row.readings>0&&!row.profileMixed&&Number.isFinite(row.total1)&&Number.isFinite(row.total2))add(date,row.total1+row.total2,'real');

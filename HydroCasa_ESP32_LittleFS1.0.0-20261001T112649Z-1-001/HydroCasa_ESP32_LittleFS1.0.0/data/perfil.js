@@ -246,8 +246,8 @@ function syncDashboard(){
   const t=todayInfo();
   strip.innerHTML=`<div class="pf-avatars pf-avatars-strip" aria-hidden="true">${avatars(p.residents,5)}</div>
   <div class="pf-strip-copy"><span class="pf-kicker">PERFIL CONFIGURADO ✓</span><strong>${esc(s.householdName||'Sua residência')} · ${p.residents} ${p.residents===1?'morador':'moradores'}</strong>
-  <span>Referência ${esc(F.m3(p.residents*p.referenceLiters))}/dia${s.pricePerM3?' · água a '+esc(F.money(s.pricePerM3))+'/m³':''}${t.total!==null?' · hoje: '+esc(F.m3(t.total)):''}</span></div>
-  <div class="pf-strip-actions"><button type="button" class="primary-btn" data-strip="edit">Editar perfil</button><button type="button" class="ghost-btn" data-strip="guide" aria-expanded="${start.classList.contains('pf-start-done')?'false':'true'}">${start.classList.contains('pf-start-done')?'Ver guia de primeiro acesso':'Ocultar guia'}</button></div>`;
+  <span>Esperado: até ${esc(F.liters(p.residents*p.referenceLiters))} por dia${s.pricePerM3?' · água a '+esc(F.money(s.pricePerM3))+' o m³':''}${t.total!==null?' · hoje: '+esc(F.liters(t.total)):''}</span></div>
+  <div class="pf-strip-actions"><button type="button" class="primary-btn" data-strip="edit">Editar perfil</button><button type="button" class="ghost-btn" data-strip="guide" aria-expanded="${start.classList.contains('pf-start-done')?'false':'true'}">${start.classList.contains('pf-start-done')?'Ver guia de primeiros passos':'Ocultar guia'}</button></div>`;
   if(details&&start.classList.contains('pf-start-done'))details.open=false;
  }
 }

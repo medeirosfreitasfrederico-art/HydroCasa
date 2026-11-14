@@ -82,7 +82,8 @@ function paint(){
   strip.hidden=!active;
   if(active){
     const pct=Math.round(level.percent).toLocaleString('pt-BR');
-    strip.innerHTML='<span class="gasto-faixa-dot" aria-hidden="true"></span><strong>'+level.label+'</strong><span>Consumo de '+day.label+' '+pct+'% acima da referência para os moradores'+(day.scope==='whole'?'':' (comparação ilustrativa)')+'.</span>';
+    const quando=/^hoje/.test(day.label)?'Hoje a casa já usou':day.label==='ontem'?'Ontem a casa usou':'Em '+day.label+' a casa usou';
+    strip.innerHTML='<span class="gasto-faixa-dot" aria-hidden="true"></span><strong>'+level.label+'</strong><span>'+quando+' '+pct+'% a mais que o esperado para os moradores'+(/demonstra/.test(day.label)?' (demonstração)':'')+(day.scope==='whole'?'':' — comparação ilustrativa')+'.</span>';
   }
 }
 function update(){render();paint();}

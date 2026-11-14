@@ -55,3 +55,9 @@ O arquivo é validado nos testes: estrutura, tabela `xref`, páginas e presença
 ## Limitações
 
 Os valores em reais são estimativas. Tarifas por faixa, impostos, multas e outras cobranças da fatura não são modelados. Coletas parciais podem subestimar o consumo. O relatório usa apenas o histórico salvo neste navegador.
+
+## Previsão com o dia em andamento (1.4.0)
+
+O dia de hoje ainda não terminou, então o valor medido até agora não representa o dia inteiro. Na previsão, hoje conta como o **maior** entre o já medido e a média dos outros dias com leitura do período; os demais dias sem leitura recebem essa média. Quando hoje é o único dia medido, a previsão usa o ritmo de hoje: o volume medido dividido pela fração do dia já passada (no mínimo 25%, para não exagerar logo cedo). O resumo informa a base usada em `forecastBasis` (`average` ou `today`).
+
+O quadro **Quanto custa no ritmo atual** (`HydroFinance.rates`) usa a média dos últimos 7 dias com leitura antes de hoje e soma a taxa fixa proporcional. O simulador (`HydroFinance.savings`) converte uma economia diária em litros e reais por mês e por ano.
