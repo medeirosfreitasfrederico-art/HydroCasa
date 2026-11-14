@@ -1,6 +1,6 @@
 # Roteiro de apresentação — HydroCasa 1.3.0
 
-Este roteiro leva de 5 a 7 minutos e mostra o site rodando no ESP32. Ele não depende de internet.
+Este roteiro leva de 6 a 8 minutos e mostra o site rodando no ESP32. Ele não depende de internet.
 
 ## Antes de começar (no dia)
 
@@ -16,10 +16,11 @@ Este roteiro leva de 5 a 7 minutos e mostra o site rodando no ESP32. Ele não de
 | 1 | Recarregue a página. A **boas-vindas** abre. Informe os moradores, nomeie os sensores (ex.: Cozinha e Banheiro), deixe "Sim, toda a água passa por eles" e informe o preço do m³ (ou calcule pela conta). | "Qualquer pessoa configura em 1 minuto, sem termos técnicos." |
 | 2 | Mostre **Hoje na sua casa**. Abra a torneira da maquete. | "O consumo aparece em litros, com o equivalente em m³ da conta. O círculo compara com o esperado para quem mora na casa. O quadro **Agora** mostra a água correndo em cada sensor, ao vivo." |
 | 3 | Deixe a água correndo por mais de 1 minuto. | "Se a água fica correndo sem parar, o painel avisa em vermelho e explica como verificar torneira, descarga ou vazamento." Clique em **Está tudo bem, é uso normal** e feche a torneira. |
-| 4 | Role até os **gráficos**. | "Dá para ver em que hora a água foi usada, os últimos 7 dias comparados com o esperado (verde dentro, amarelo, laranja e vermelho acima) e quanto cada ponto da casa gastou." |
-| 5 | Clique em **Justificar o consumo de hoje**. Escolha **Banho → Ducha → 15 min** e depois **Adicionar ao dia de hoje**. | "Os sensores medem quanto passou, mas não em quê. Aqui a pessoa conta o que fez, e o **balanço do dia** mostra quanto da água medida ficou explicado e quanto falta explicar." Mostre **Remover** e **Desfazer**. |
-| 6 | Clique em **Relatório PDF**, escolha **Este mês** e baixe. | "O relatório completo é gerado no próprio navegador, sem internet." |
-| 7 | Se sobrar tempo: **Como funciona? Fazer o tour**. | Passeio guiado pelo painel. |
+| 4 | Mostre **Quanto sua água custa**: troque entre Hoje, Esta semana, Este mês e Este ano e arraste o simulador "E se a casa economizar?". | "A pessoa vê quanto vai pagar no fim do mês, se está acima do esperado e quanto economizaria com, por exemplo, 5 minutos a menos de banho por dia." |
+| 5 | Role até os **gráficos**. | "Dá para ver em que hora a água foi usada, os últimos 7 dias comparados com o esperado (verde dentro, amarelo, laranja e vermelho acima) e quanto cada ponto da casa gastou." |
+| 6 | Clique em **Justificar o consumo de hoje**. Escolha **Banho → Ducha → 15 min** e depois **Adicionar ao dia de hoje**. | "Os sensores medem quanto passou, mas não em quê. Aqui a pessoa conta o que fez, e o **balanço do dia** mostra quanto da água medida ficou explicado e quanto falta explicar." Mostre **Remover** e **Desfazer**. |
+| 7 | Clique em **Relatório PDF**, escolha **Este mês** e baixe. | "O relatório completo é gerado no próprio navegador, sem internet." |
+| 8 | Se sobrar tempo: **Como funciona? Fazer o tour**. | Passeio guiado pelo painel. |
 
 ## Plano B (sem ESP32 ou sem Wi-Fi)
 

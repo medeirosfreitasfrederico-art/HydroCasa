@@ -29,7 +29,7 @@ function seedLedger(){
   try{
     const context=await browser.newContext({viewport:{width:1440,height:1000},timezoneId:'America/Sao_Paulo',locale:'pt-BR',acceptDownloads:true});
     await context.addInitScript(ledger=>{try{if(!sessionStorage.getItem('seeded')){localStorage.setItem('hydrocasa_ledger_v2',ledger);sessionStorage.setItem('seeded','1');}}catch{}},seedLedger());
-    const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
+    const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(/falha ao atualizar/.test(m.text()))errors.push(m.text());});
     await page.goto(base);
     await page.waitForFunction(()=>document.querySelector('#connectionBadge').textContent.includes('Online'));
     assert.match(await page.locator('#flow1').textContent(),/0,002 m³\/min/);
@@ -61,6 +61,16 @@ function seedLedger(){
     assert.equal(await page.locator('#hcWeek .hc-day').count(),7);
     assert.match(await page.locator('#hcSplit').textContent(),/Chuveiro/);
     assert.equal(await page.locator('.hero-premium').isVisible(),false,'com perfil, a página começa pelos números');
+    // Quanto sua água custa: previsão por período, ritmo atual e simulador de economia.
+    assert.match(await page.locator('#hcCustoBody').textContent(),/Previsão para o mês\s*R\$/);
+    await page.locator('[data-cp=thisWeek]').click();
+    assert.match(await page.locator('#hcCustoBody').textContent(),/Previsão para esta semana.*Esperado para 4 moradores/s);
+    await page.locator('[data-cp=today]').click();
+    assert.match(await page.locator('#hcCustoBody').textContent(),/Previsão para hoje/);
+    assert.match(await page.locator('#hcRitmo').textContent(),/Por dia.*Por semana.*Por mês.*Por ano.*Por pessoa/s);
+    await page.locator('#hcSimRange').fill('100');
+    assert.match(await page.locator('#hcSimRes').textContent(),/Em um mês\s*R\$\s?2[34],\d\d/,'100 L/dia × 29–31 dias × R$ 8/m³');
+    await page.locator('[data-cp=thisMonth]').click();
 
     // Painel lateral do perfil: edição rápida e valores da conta.
     await page.locator('#hydroProfileBtn').click();

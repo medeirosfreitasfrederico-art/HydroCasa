@@ -1,5 +1,19 @@
 # Histórico de versões
 
+## 1.4.0 — 2026-11-14
+
+### Adicionado
+- **Quanto sua água custa** (Painel, logo abaixo de "Hoje na sua casa"): gasto até agora e **previsão para hoje, esta semana, este mês ou este ano**, comparados com o esperado para os moradores e com a meta, em barras na mesma escala e com uma frase direta ("se continuar assim, o mês vai custar R$ X a mais do que o esperado").
+- **Quanto custa no ritmo atual:** média dos últimos 7 dias medidos convertida em custo por dia, semana, mês, ano e por pessoa, destacando o que passa do esperado.
+- **E se a casa economizar?** Simulador: arraste quantos litros economizar por dia e veja quanto isso representa no mês e no ano, e como ficaria a conta do mês (com o equivalente em minutos de ducha).
+- Sem preço da água, tudo aparece em litros, com um convite para informar o preço.
+- Período **Esta semana** (domingo a sábado) também no relatório em PDF.
+
+### Alterado
+- Previsões (Painel e PDF): o dia de hoje, ainda em andamento, não puxa mais a média para baixo — conta como o maior valor entre o já medido e a média dos outros dias; sem outros dias, a previsão segue o ritmo de hoje.
+- Textos em linguagem simples: avisos e alertas ("a casa usou 520 L, 64 L além do limite…"), faixa de tom do site ("Hoje a casa já usou 27% a mais que o esperado"), níveis ("Um pouco acima / Acima / Bem acima / Muito acima do esperado"), faixa do perfil em litros, aba **Análise → Detalhes** com rótulos explicados.
+- Cada bloco do Painel é atualizado separadamente: uma falha em um deles não apaga os outros.
+
 ## 1.3.0 — 2026-11-14
 
 Foco: deixar o site claro para quem não é técnico.

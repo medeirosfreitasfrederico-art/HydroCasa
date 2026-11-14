@@ -60,6 +60,7 @@ const PERIODS=[
  {id:'yesterday',label:'Ontem',hint:'O dia anterior completo'},
  {id:'day',label:'Um dia específico',hint:'Escolha a data'},
  {id:'last7',label:'Últimos 7 dias',hint:'Hoje e os 6 dias anteriores'},
+ {id:'thisWeek',label:'Esta semana',hint:'De domingo a sábado, com previsão'},
  {id:'thisMonth',label:'Este mês',hint:'Do dia 1 até o fim do mês, com previsão'},
  {id:'lastMonth',label:'Mês passado',hint:'O mês anterior completo'},
  {id:'month',label:'Um mês específico',hint:'Escolha o mês'},
@@ -86,6 +87,7 @@ function resolvePeriod(kind,opts={},now=new Date()){
   case 'yesterday':from=to=shift(-1);title='Ontem, '+from.toLocaleDateString('pt-BR');break;
   case 'day':{const d=parseKey(opts.day);if(!d)throw new Error('Escolha o dia do relatório.');from=to=d;title=d.toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'long',year:'numeric'});break;}
   case 'last7':from=shift(-6);to=today;title='Últimos 7 dias';break;
+  case 'thisWeek':from=shift(-today.getDay());to=shift(6-today.getDay());title='Semana de '+from.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})+' a '+to.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});break;
   case 'last30':from=shift(-29);to=today;title='Últimos 30 dias';break;
   case 'thisMonth':from=new Date(today.getFullYear(),today.getMonth(),1,12);to=new Date(today.getFullYear(),today.getMonth()+1,0,12);title='Mês de '+monthName(today);break;
   case 'lastMonth':from=new Date(today.getFullYear(),today.getMonth()-1,1,12);to=new Date(today.getFullYear(),today.getMonth(),0,12);title='Mês de '+monthName(from);break;
@@ -100,6 +102,40 @@ function resolvePeriod(kind,opts={},now=new Date()){
  const todayKey=keyOf(today);
  return {kind,title,from:days[0],to:days.at(-1),days,todayKey,elapsed:days.filter(d=>d<=todayKey),future:days.filter(d=>d>todayKey),
   label:PERIODS.find(p=>p.id===kind)?.label||'Período'};
+}
+
+/** Fração do dia já passada (mínimo 25%, para não exagerar a previsão logo cedo). */
+function dayFraction(now=new Date()){const start=new Date(now.getFullYear(),now.getMonth(),now.getDate());return Math.min(1,Math.max(.25,(now-start)/864e5));}
+
+/**
+ * Ritmo atual de consumo e custo: média dos últimos dias completos (até 7) antes de hoje.
+ * Sem dias anteriores, usa o ritmo de hoje projetado para o dia inteiro.
+ * Retorna litros e reais por dia, semana, mês e ano, além do esperado para os moradores.
+ */
+function rates({history={},currentProfile=null,settings:s=defaults,now=new Date(),window=7}={}){
+ const fin=maybeSettings(s),p=C?C.maybeProfile(currentProfile):currentProfile;
+ const today=keyOf(now),days=[];
+ for(let i=1;i<=60&&days.length<window;i++){const d=new Date(now.getFullYear(),now.getMonth(),now.getDate()-i,12),h=history[keyOf(d)];if(validDay(h))days.push(h.total1+h.total2);}
+ let perDay=null,basis=null;
+ if(days.length){perDay=days.reduce((a,b)=>a+b,0)/days.length;basis='days';}
+ else{const h=history[today];if(validDay(h)){perDay=(h.total1+h.total2)/(h.partial===false?1:dayFraction(now));basis='today';}}
+ const dim=daysInMonth(now),dy=(new Date(now.getFullYear(),1,29).getMonth()===1)?366:365;
+ const spans={day:1,week:7,month:dim,year:dy};
+ const fixedPerDay=(fin.fixedMonthly||0)/dim;
+ const expectedDay=p?p.residents*p.referenceLiters:null;
+ const out={basis,daysUsed:days.length,perDayLiters:perDay,expectedDayLiters:expectedDay,residents:p?.residents||null,price:fin.pricePerM3,configured:isNum(fin.pricePerM3),spans:{}};
+ for(const [k,n] of Object.entries(spans)){
+  const L=perDay===null?null:perDay*n,E=expectedDay===null?null:expectedDay*n,fixed=k==='year'?(fin.fixedMonthly||0)*12:k==='month'?(fin.fixedMonthly||0):fixedPerDay*n;
+  const money=L===null?null:costOf(L,fin),exp=E===null?null:costOf(E,fin);
+  out.spans[k]={days:n,liters:L,expectedLiters:E,money:money===null?null:money+fixed,expectedMoney:exp===null?null:exp+fixed};
+ }
+ out.perPersonMonth=out.residents&&out.spans.month.money!==null?out.spans.month.money/out.residents:null;
+ return out;
+}
+/** Quanto uma economia diária (em litros) representa por mês e por ano. */
+function savings(litersPerDay,s=defaults,now=new Date()){
+ const fin=maybeSettings(s),dim=daysInMonth(now);
+ return {month:{liters:litersPerDay*dim,money:costOf(litersPerDay*dim,fin)},year:{liters:litersPerDay*365,money:costOf(litersPerDay*365,fin)}};
 }
 
 /* ---------- Resumo do período ---------- */
@@ -132,7 +168,13 @@ function summarize({period,history={},currentProfile=null,settings:s=defaults,ac
  const referenceFull=rows.every(r=>r.reference===null)?null:sum(rows,r=>r.reference);
  const referenceWithData=data.every(r=>r.reference===null)?null:sum(data,r=>r.reference);
  // Previsão: os dias sem leitura (passados ou futuros) recebem a média dos dias medidos.
- const projected=average!==null?measured+average*(rows.length-data.length):null;
+ // O dia de hoje ainda está em andamento: não puxa a média para baixo. Ele conta como
+ // o maior entre o já medido e a média dos outros dias; sem outros dias, segue o ritmo de hoje.
+ const todayRow=data.find(r=>r.day===period.todayKey&&r.partial&&!r.demo),others=data.filter(r=>r!==todayRow);
+ let projected=null,forecastBasis=null;
+ if(todayRow&&others.length){const avg=sum(others,r=>r.total)/others.length;projected=measured-todayRow.total+Math.max(todayRow.total,avg)+avg*(rows.length-data.length);forecastBasis='average';}
+ else if(todayRow){const est=todayRow.total/dayFraction(now);projected=measured-todayRow.total+est+est*(rows.length-data.length);forecastBasis='today';}
+ else if(average!==null){projected=measured+average*(rows.length-data.length);forecastBasis='average';}
  const fixedFull=sum(rows,r=>r.fixedShare),fixedElapsed=sum(elapsed,r=>r.fixedShare);
  const goalFull=fin.monthlyGoal?sum(rows,r=>r.goalShare):null,goalElapsed=fin.monthlyGoal?sum(elapsed,r=>r.goalShare):null;
  const price=fin.pricePerM3;
@@ -174,7 +216,7 @@ function summarize({period,history={},currentProfile=null,settings:s=defaults,ac
  const ratio=referenceWithData?measured/referenceWithData*100-100:null;
  const scopeWhole=profileNow?.scope==='whole';
  return {
-  period,rows,data,measured,r1,r2,average,projected,referenceElapsed,referenceFull,referenceWithData,ratio,
+  period,rows,data,measured,r1,r2,average,projected,forecastBasis,referenceElapsed,referenceFull,referenceWithData,ratio,
   coverage:{total:rows.length,elapsed:elapsed.length,future:rows.length-elapsed.length,withData:data.length,partial:data.filter(r=>r.partial&&!r.demo).length,demo:data.filter(r=>r.demo).length,empty:elapsed.length-data.length},
   daysAbove:data.filter(r=>r.above).length,
   peak:sorted[0]||null,lowest:sorted.length>1?sorted.at(-1):null,
@@ -202,20 +244,20 @@ function verdict(sum){
  * Até a tolerância do perfil é "normal"; as faixas seguintes nunca começam antes dela.
  */
 const LEVELS=[
- {id:'leve',label:'Levemente acima',upTo:25},
- {id:'moderado',label:'Moderadamente acima',upTo:50},
- {id:'alto',label:'Gasto alto',upTo:100},
- {id:'extremo',label:'Extremamente acima',upTo:Infinity}
+ {id:'leve',label:'Um pouco acima do esperado',upTo:25},
+ {id:'moderado',label:'Acima do esperado',upTo:50},
+ {id:'alto',label:'Bem acima do esperado',upTo:100},
+ {id:'extremo',label:'Muito acima do esperado',upTo:Infinity}
 ];
 function spendingLevel(percent,tolerance=10){
  if(!isNum(percent))return null;
  const tol=isNum(tolerance)&&tolerance>=0?tolerance:10;
- if(percent<=tol)return {id:'normal',label:'Dentro da referência',percent};
+ if(percent<=tol)return {id:'normal',label:'Dentro do esperado',percent};
  const level=LEVELS.find(l=>percent<=Math.max(l.upTo,tol))||LEVELS.at(-1);
  return {id:level.id,label:level.label,percent};
 }
 
-const api={STORAGE_KEY,defaults,MAX_DAYS,PERIODS,LEVELS,spendingLevel,settings,maybeSettings,read,write,priceFromBill,money,m3,liters,percent,dateLabel,costOf,keyOf,parseKey,daysInMonth,range,resolvePeriod,summarize,verdict};
+const api={STORAGE_KEY,rates,savings,dayFraction,defaults,MAX_DAYS,PERIODS,LEVELS,spendingLevel,settings,maybeSettings,read,write,priceFromBill,money,m3,liters,percent,dateLabel,costOf,keyOf,parseKey,daysInMonth,range,resolvePeriod,summarize,verdict};
 root.HydroFinance=api;
 if(typeof module==='object'&&module.exports)module.exports=api;
 })(typeof globalThis!=='undefined'?globalThis:this);
