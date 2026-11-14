@@ -6,7 +6,7 @@ Arquivos:
 Envie a pasta data/ inteira. Cada arquivo do site precisa de uma rota
 serveStatic correspondente no HydroCasa.ino (ex.: financas.js, pdf-simples.js,
 relatorio.js, relatorio.css, perfil.js, perfil.css, inicio.js, inicio.css,
-atividades.js, atividades.css). O relatório em PDF é
+atividades.js, atividades.css, ajuda.js). O relatório em PDF é
 gerado no próprio navegador, sem internet e sem bibliotecas externas.
 
 No Arduino IDE, utilize o método de upload LittleFS compatível com a versão do core ESP32 instalada.

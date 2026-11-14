@@ -62,7 +62,7 @@ function estimate(){try{return {liters:M.estimate(ui.id,params())};}catch(e){ret
 
 /* ---------- Estrutura do painel ---------- */
 panel.innerHTML=`
-<div class="section-heading jc-heading"><div><span class="eyebrow">JUSTIFICAR CONSUMO</span><h2>Explique para onde foi a água</h2>
+<div class="section-heading jc-heading"><div><span class="eyebrow">JUSTIFICAR CONSUMO</span><h2>Explique para onde foi a água ${window.HydroAjuda?window.HydroAjuda.html('<strong>Por que justificar?</strong>Os sensores sabem <b>quanto</b> de água passou, mas não <b>em quê</b> ela foi usada. Quando você conta o que aconteceu no dia, o HydroCasa compara a soma das atividades com o que foi medido.<br><br><strong>Como ler o balanço</strong>Se as atividades cobrem a água medida, o consumo está explicado. Se ainda falta muita água sem explicação, pode ser algo que ninguém registrou (descarga, pia) ou um vazamento.<br><br><strong>De onde vêm os valores</strong>(SAAE e Câmara/Sabesp): ducha, cerca de 9 L por minuto; chuveiro elétrico, cerca de 3 L por minuto; louça com a torneira aberta, cerca de 7,8 L por minuto, ou cerca de 20 L na cuba; máquina de 5 kg, cerca de 135 L por ciclo; mangueira, cerca de 18,6 L por minuto; carro com baldes, cerca de 40 L. Na piscina e na limpeza, você informa os litros.<br><br>As atividades são estimativas e <b>nunca mudam</b> o que os sensores mediram.','Como funciona o Justificar consumo'):''}</h2>
 <p>Os sensores medem <b>quanto</b> de água passou, mas não sabem <b>em quê</b> ela foi usada. Conte o que aconteceu no dia e veja se isso explica o consumo medido.</p></div></div>
 <ol class="jc-how" aria-label="Como funciona">
   <li><span>1</span><div><b>Escolha o dia</b><small>Hoje, ontem ou outra data.</small></div></li>
@@ -193,7 +193,7 @@ function renderBalance(){
     <h4 class="jc-list-title">Registrado neste dia <span>${list.length}</span></h4>
     ${list.length?`<ul class="jc-list">${list.map((x,i)=>`<li style="--c:${colorOf(x.id)}"><span class="jc-li-icon">${ICONS[groupOf(x.id).key]}</span><div><b>${esc(x.name)}</b><small>${esc(describe(x))}</small></div><strong>${L(x.liters)}</strong><div class="jc-li-actions"><button type="button" class="ghost-btn" data-edit="${i}" aria-label="Editar ${esc(x.name)}">Editar</button><button type="button" class="ghost-btn" data-remove="${i}" aria-label="Remover ${esc(x.name)}">Remover</button></div></li>`).join('')}</ul>`
       :'<p class="jc-empty">Nenhuma atividade registrada neste dia.</p>'}
-    <p class="jc-note">As atividades são estimativas e não mudam o que os sensores mediram.</p>`;
+    `;
   const box=$('#jcBalance');if(html===lastBalance)return;
   // Mantém o foco do teclado no mesmo botão quando o balanço é atualizado ao vivo.
   const f=document.activeElement,keep=box.contains(f)&&f.dataset?(f.dataset.edit!==undefined?`[data-edit="${f.dataset.edit}"]`:f.dataset.remove!==undefined?`[data-remove="${f.dataset.remove}"]`:null):null;

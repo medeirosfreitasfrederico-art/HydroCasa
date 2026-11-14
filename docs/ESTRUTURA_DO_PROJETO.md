@@ -42,6 +42,7 @@ HydroCasa/
             ├── perfil.js / perfil.css        # Perfil da residência dinâmico
             ├── inicio.js / inicio.css        # Hoje na sua casa, gráficos, aviso de água correndo, boas-vindas
             ├── atividades.js / atividades.css # Assistente "Justificar consumo"
+            ├── ajuda.js                      # Botão "?" de ajuda (estilos em inicio.css)
             ├── dashboard-ux.js / dashboard-ux.css
             ├── demo-overlay.js / demo-overlay.css
             ├── hero.css / system-improvements.css

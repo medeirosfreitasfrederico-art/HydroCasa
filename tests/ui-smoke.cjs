@@ -71,6 +71,16 @@ function seedLedger(){
     await page.locator('#hcSimRange').fill('100');
     assert.match(await page.locator('#hcSimRes').textContent(),/Em um mês\s*R\$\s?2[34],\d\d/,'100 L/dia × 29–31 dias × R$ 8/m³');
     await page.locator('[data-cp=thisMonth]').click();
+    // Ajuda "?": abre a explicação, continua aberta nas atualizações ao vivo e fecha com Esc.
+    const help=page.locator('#hcCusto h2 .hc-help');
+    await help.click();
+    assert.equal(await help.getAttribute('aria-expanded'),'true');
+    assert.match(await page.locator('#hcCusto h2 .hc-help-pop').textContent(),/Como a previsão é feita.*R\$\s?8,00 por m³/s);
+    await page.waitForTimeout(2300);
+    assert.equal(await page.locator('#hcCusto h2 .hc-help-pop').isVisible(),true,'a ajuda não fecha sozinha');
+    await page.keyboard.press('Escape');
+    assert.equal(await page.locator('.hc-help-pop:visible').count(),0);
+    assert.ok(await page.locator('.hc-help').count()>=10,'textos secundários viraram ajuda');
 
     // Painel lateral do perfil: edição rápida e valores da conta.
     await page.locator('#hydroProfileBtn').click();
