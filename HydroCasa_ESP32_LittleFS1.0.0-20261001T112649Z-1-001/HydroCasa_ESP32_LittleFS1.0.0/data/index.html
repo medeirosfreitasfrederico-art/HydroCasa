@@ -524,7 +524,8 @@ document.addEventListener('click',event=>{
         const levels=summary.rows.filter(r=>r.h).map(r=>({r,lv:level(r.h)})),above=levels.filter(x=>x.lv.id&&x.lv.id!=='normal').length;
         const exp=levels.length?levels[levels.length-1].lv.exp:null;
         q('periodVolume').textContent=summary.count?L(summary.total):'—';
-        q('periodVolumeNote').textContent=summary.count?(money(summary.total)?'≈ '+money(summary.total)+' · '+M.m3(summary.total):M.m3(summary.total)):'';
+        const m3t=(summary.total/1000).toLocaleString('pt-BR',{minimumFractionDigits:3,maximumFractionDigits:3})+' m³';
+        q('periodVolumeNote').textContent=summary.count?(money(summary.total)?'≈ '+money(summary.total)+' · '+m3t:m3t):'';
         q('periodAverage').textContent=summary.average===null?'—':L(summary.average);
         q('periodAverageNote').textContent=summary.average===null?'':(money(summary.average)?'≈ '+money(summary.average)+' por dia':'')+(exp?(money(summary.average)?' · ':'')+'esperado: '+L(exp):'');
         q('periodAbove').textContent=summary.count&&exp?above+' de '+summary.count:'—';
