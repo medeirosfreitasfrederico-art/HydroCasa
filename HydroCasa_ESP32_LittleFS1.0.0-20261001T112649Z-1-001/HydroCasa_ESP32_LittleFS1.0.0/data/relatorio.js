@@ -436,7 +436,7 @@ function readDemoHistory(real,profile){
 function hasDemo(){return !!readJSON(sessionStorage,'hydrocasa:semana-demo',null);}
 
 let overlay=null,lastFocus=null,objectUrl=null,previewTimer=null;
-const PERIOD_ICONS={today:'◷',yesterday:'↺',day:'▣',last7:'7',thisMonth:'▦',lastMonth:'◧',month:'▤',last30:'30',thisYear:'◫',lastYear:'◰',custom:'⇆'};
+const PERIOD_ICONS={today:'◷',yesterday:'↺',day:'▣',last7:'7',thisWeek:'S',thisMonth:'▦',lastMonth:'◧',month:'▤',last30:'30',thisYear:'◫',lastYear:'◰',custom:'⇆'};
 
 function build(){
  overlay=document.createElement('div');overlay.className='report-overlay';overlay.hidden=true;
@@ -446,7 +446,7 @@ function build(){
  <form class="report-body" id="reportForm" novalidate>
   <div class="report-main">
    <fieldset class="report-step"><legend><span class="report-step-num">1</span>Qual período você quer ver?</legend>
-    <div class="report-periods">${F.PERIODS.map(p=>`<label class="report-period"><input type="radio" name="reportPeriod" value="${p.id}"><span class="report-period-icon" aria-hidden="true">${PERIOD_ICONS[p.id]}</span><span class="report-period-text"><strong>${esc(p.label)}</strong><small>${esc(p.hint)}</small></span></label>`).join('')}</div>
+    <div class="report-periods">${F.PERIODS.map(p=>`<label class="report-period"><input type="radio" name="reportPeriod" value="${p.id}"><span class="report-period-icon" aria-hidden="true">${PERIOD_ICONS[p.id]||'•'}</span><span class="report-period-text"><strong>${esc(p.label)}</strong><small>${esc(p.hint)}</small></span></label>`).join('')}</div>
     <div class="report-period-extra">
      <label data-extra="day" hidden>Dia do relatório<input type="date" id="reportDay"></label>
      <label data-extra="month" hidden>Mês do relatório<input type="month" id="reportMonth"></label>
